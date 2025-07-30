@@ -18,6 +18,8 @@ let accidentHistory;
 let types = new Map();
 let brands = new Map();
 
+deserializeStoredData();
+
 if (window.location.search) {
     handleOAuthCallback();
 }
@@ -29,12 +31,24 @@ else {
 }
 
 async function fetchData() {
+    let fetchTime = localStorage.getItem("fetchDataTime");
+
+    if (fetchTime) {
+        fetchTime = new Date(fetchTime);
+        let now = new Date();
+        if ((now - fetchTime) / 1000 < 60) {
+            console.log(`Tried to fetch data but it's been ${(now - fetchTime) / 1000} seconds since last fetch`);
+            return;
+        }
+    }
+
     console.log("Attempting to fetch data with the following token:");
     const token = getTokenDebugObject();
     console.log(token);
 
     await fetchChangeHistory();
     await fetchAccidentHistory();
+    localStorage.setItem("fetchDataTime", new Date().toUTCString());
 }
 
 async function fetchChangeHistory() {
@@ -43,8 +57,7 @@ async function fetchChangeHistory() {
     });
 
     changeHistory = await fetchObjectFromAPI(CHANGE_API_URL, params, "change history");
-    // let type = await getType(changeHistory.data[0].diapers[0].typeId);
-    // let brand = await getBrand(type.type.brand_code);
+    localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
 }
 
 async function fetchAccidentHistory() {
@@ -53,6 +66,7 @@ async function fetchAccidentHistory() {
     });
 
     accidentHistory = await fetchObjectFromAPI(ACCIDENT_API_URL, params, "accident history");
+    localStorage.setItem("accidentHistory", JSON.stringify(accidentHistory));
 }
 
 async function getType(id) {
@@ -60,10 +74,15 @@ async function getType(id) {
         return types.get(id);
 
     let type = await fetchObjectFromAPI(`${TYPES_API_URL}/${id}`, null, `type ${id}`);
-    if (type != null)
+    if (type != null) {
+        types.set(id, type);
+        localStorage.setItem("types", JSON.stringify(Array.from(types.entries())));
         return type;
+    }
 
     type = await fetchObjectFromAPI(`${CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
+    types.set(id, type);
+    localStorage.setItem("types", JSON.stringify(Array.from(types.entries())));
     return type;
 }
 
@@ -72,6 +91,8 @@ async function getBrand(code) {
         return brands.get(code);
 
     let brand = await fetchObjectFromAPI(`${BRANDS_API_URL}/${code}`, null, `brand ${code}`);
+    brands.set(code, brand);
+    localStorage.setItem("brands", JSON.stringify(Array.from(brands.entries())));
     return brand;
 }
 
@@ -99,15 +120,28 @@ async function fetchObjectFromAPI(url, params, debugString) {
     return obj;
 }
 
+function deserializeStoredData() {
+    let temp = localStorage.getItem("changeHistory");
+    if (temp) changeHistory = JSON.parse(temp);
+
+    temp = localStorage.getItem("accidentHistory");
+    if (temp) accidentHistory = JSON.parse(temp);
+
+    temp = localStorage.getItem("types");
+    if (temp) types = new Map(JSON.parse(temp));
+
+    temp = localStorage.getItem("brands");
+    if (temp) brands = new Map(JSON.parse(temp));
+}
+
 async function login() {
     const { code_verifier, code_challenge } = await generatePKCECodes();
     const state = crypto.randomUUID();
     const nonce = crypto.randomUUID();
 
-    // Store in sessionStorage for use after redirect
+    // Store in sessionStorage for use after redirect to get token
     sessionStorage.setItem("pkce_code_verifier", code_verifier);
     sessionStorage.setItem("oauth_state", state);
-    sessionStorage.setItem("oauth_nonce", nonce);
 
     const params = new URLSearchParams({
         response_type: "code",
@@ -170,6 +204,8 @@ async function handleOAuthCallback() {
 
 function clearSearchParameters() {
     window.history.replaceState({ additionalInformation: 'Cleared OAuth callback parameters' }, '', REDIRECT_URI);
+    sessionStorage.removeItem("pkce_code_verifier");
+    sessionStorage.removeItem("oauth_state");
 }
 
 function saveToken(data) {
@@ -234,7 +270,7 @@ async function generatePKCECodes() {
 }
 
 function logout() {
-    sessionStorage.clear();
+    localStorage.removeItem('auth_token');
     changeHistory = null;
     accidentHistory = null;
     types = new Map();
