@@ -1,17 +1,28 @@
+let possibleWidgets = [];
 let createdWidgets = new Map();
 let createdStorageWidgets = new Map();
 
+function createWidget(dashboardId, widgetClassIndex, widgetId = -1) {
+    let widget = Object.assign(Object.create(Object.getPrototypeOf(possibleWidgets[widgetClassIndex])), possibleWidgets[widgetClassIndex]);
+    widget.create(dashboards.get(dashboardId).board, widgetClassIndex, dashboardId, widgetId);
+}
+
+function destroyWidget(widgetId) {
+    let widget = createdWidgets.get(widgetId);
+    widget.destroy();
+}
+
 class Widget {
     mainDiv = null;
-    headerDiv = null;
     widgetId = -1;
     classIndex = -1;
+    dashboardId = -1;
 
-    create(parentElement, classIndex, widgetId = -1) {
-        this.mainDiv = createElement("div", parentElement, "widget");
-        this.headerDiv = createElement("div", this.mainDiv, "widget-header");
+    create(dashboardElement, classIndex, dashboardId, widgetId = -1) {
+        this.mainDiv = createElement("div", dashboardElement, "widget");
 
         this.classIndex = classIndex;
+        this.dashboardId = dashboardId;
         if (widgetId >= 0) {
             this.widgetId = widgetId;
         }
@@ -20,10 +31,10 @@ class Widget {
         }
 
         createdWidgets.set(this.widgetId, this);
-        createdStorageWidgets.set(this.widgetId, this.classIndex);
-        localStorage.widgets = JSON.stringify(Array.from(createdStorageWidgets.entries()));
+        createdStorageWidgets.set(this.widgetId, {class: this.classIndex, dashboard: this.dashboardId});
+        this.saveWidgets();
         this.mainDiv.style.transform = localStorage.getItem(this.getCookieBaseName() + "-pos");
-        Draggable.create(this.mainDiv, {trigger: this.headerDiv, onDragEnd: this.savePosition, onDragEndParams: [this]});
+        Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.savePosition, onDragEndParams: [this]});
     }
 
     destroy() {
@@ -31,11 +42,15 @@ class Widget {
         this.mainDiv.remove();
         createdWidgets.delete(this.widgetId);
         createdStorageWidgets.delete(this.widgetId);
-        localStorage.widgets = JSON.stringify(Array.from(createdStorageWidgets.entries()));
+        this.saveWidgets();
     }
 
     getCookieBaseName() {
         return this.mainDiv.id + this.widgetId;
+    }
+
+    saveWidgets() {
+        localStorage.widgets = JSON.stringify(Array.from(createdStorageWidgets.entries()));
     }
 
     savePosition(widget) {
