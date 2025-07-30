@@ -1,9 +1,22 @@
+// Swager: https://api.diapstash.com/api/docs/#/History
+// Account: https://account.diapstash.com/account
+
 const CLIENT_ID = "test-api-eada8297";
 const REDIRECT_URI = "http://localhost:8080";
 const AUTH_URL = "https://account.diapstash.com/oidc/auth";
 const TOKEN_URL = "https://account.diapstash.com/oidc/token";
-const CHANGE_API_URL = "https://api.diapstash.com/api/v1/history/changes";
-const SCOPE = "openid cloud-sync.history";
+const BASE_API_URL = "https://api.diapstash.com/api";
+const CHANGE_API_URL = `${BASE_API_URL}/v1/history/changes`;
+const ACCIDENT_API_URL = `${BASE_API_URL}/v1/history/accidents`;
+const TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types`;
+const CUSTOM_TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types/custom`;
+const BRANDS_API_URL = `${BASE_API_URL}/v0/diaper/brands`;
+const SCOPE = "openid cloud-sync.history cloud-sync.types";
+
+let changeHistory;
+let accidentHistory;
+let types = new Map();
+let brands = new Map();
 
 if (window.location.search) {
     handleOAuthCallback();
@@ -13,6 +26,77 @@ else if (getValidToken() == null) {
 }
 else {
     fetchData();
+}
+
+async function fetchData() {
+    console.log("Attempting to fetch data with the following token:");
+    const token = getTokenDebugObject();
+    console.log(token);
+
+    await fetchChangeHistory();
+    await fetchAccidentHistory();
+}
+
+async function fetchChangeHistory() {
+    let params = new URLSearchParams({
+        size: 0
+    });
+
+    changeHistory = await fetchObjectFromAPI(CHANGE_API_URL, params, "change history");
+    // let type = await getType(changeHistory.data[0].diapers[0].typeId);
+    // let brand = await getBrand(type.type.brand_code);
+}
+
+async function fetchAccidentHistory() {
+    let params = new URLSearchParams({
+        size: 0
+    });
+
+    accidentHistory = await fetchObjectFromAPI(ACCIDENT_API_URL, params, "accident history");
+}
+
+async function getType(id) {
+    if (types.has(id))
+        return types.get(id);
+
+    let type = await fetchObjectFromAPI(`${TYPES_API_URL}/${id}`, null, `type ${id}`);
+    if (type != null)
+        return type;
+
+    type = await fetchObjectFromAPI(`${CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
+    return type;
+}
+
+async function getBrand(code) {
+    if (brands.has(code))
+        return brands.get(code);
+
+    let brand = await fetchObjectFromAPI(`${BRANDS_API_URL}/${code}`, null, `brand ${code}`);
+    return brand;
+}
+
+async function fetchObjectFromAPI(url, params, debugString) {
+    const token = getValidToken();
+    if (token == null) {
+        console.error(`Tried to fetch ${debugString} with null token`);
+        return;
+    }
+
+    if (params != null)
+        url = `${url}?${params}`;
+
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "DS-API-CLIENT-ID": CLIENT_ID
+        }
+    });
+
+    let obj = await response.json();
+    console.log(`Fetched ${debugString}:`);
+    console.log(obj);
+    return obj;
 }
 
 async function login() {
@@ -120,29 +204,19 @@ function getValidToken() {
     }
 }
 
-async function fetchData() {
-    await fetchChangeHistory();
-}
-
-async function fetchChangeHistory() {
-    const token = getValidToken();
-    if (token == null) {
-        console.error("Tried to fetch change history with null token");
-        return;
+function getTokenDebugObject() {
+    let token = localStorage.getItem('auth_token');
+    try {
+        if (token) {
+            token = JSON.parse(token);
+            token.expires_at = new Date(token.expires_at * 1000);
+        }
+    }
+    catch (err) {
+        console.log("Invalid token data");
     }
 
-    console.log(token);
-    const response = await fetch(`${CHANGE_API_URL}?size=0`, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "DS-API-CLIENT-ID": CLIENT_ID
-        }
-    });
-
-    const data = await response.json();
-    console.log(data);
-    document.body.innerText = JSON.stringify(data, null, 2);
+    return token;
 }
 
 function base64URLEncode(str) {
@@ -161,5 +235,9 @@ async function generatePKCECodes() {
 
 function logout() {
     sessionStorage.clear();
+    changeHistory = null;
+    accidentHistory = null;
+    types = new Map();
+    brands = new Map();
     window.location.href = "/";
 }
