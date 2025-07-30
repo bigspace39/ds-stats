@@ -1,11 +1,18 @@
 const CLIENT_ID = "test-api-eada8297";
 const REDIRECT_URI = "http://localhost:8080";
+const AUTH_URL = "https://account.diapstash.com/oidc/auth";
+const TOKEN_URL = "https://account.diapstash.com/oidc/token";
+const CHANGE_API_URL = "https://api.diapstash.com/api/v1/history/changes";
+const SCOPE = "openid cloud-sync.history";
 
 if (window.location.search) {
     handleOAuthCallback();
 }
 else if (getValidToken() == null) {
     login();
+}
+else {
+    fetchData();
 }
 
 async function login() {
@@ -22,14 +29,14 @@ async function login() {
         response_type: "code",
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
-        scope: "openid cloud-sync.history",
+        scope: SCOPE,
         code_challenge: code_challenge,
         code_challenge_method: "S256",
         state,
         nonce,
     });
 
-    window.location.href = `https://account.diapstash.com/oidc/auth?${params}`;
+    window.location.href = `${AUTH_URL}?${params}`;
 }
 
 async function handleOAuthCallback() {
@@ -38,7 +45,7 @@ async function handleOAuthCallback() {
     const state = params.get("state");
 
     if (code == null || state == null) {
-        window.location.href = REDIRECT_URI;
+        clearSearchParameters();
         console.warn("Search parameters are not an OAuth callback, ignoring...");
         return;
     }
@@ -46,6 +53,7 @@ async function handleOAuthCallback() {
     const expectedState = sessionStorage.getItem("oauth_state");
     if (state !== expectedState) {
         alert("Invalid state");
+        clearSearchParameters();
         return;
     }
 
@@ -55,11 +63,11 @@ async function handleOAuthCallback() {
         grant_type: "authorization_code",
         code,
         client_id: CLIENT_ID,
-        redirect_uri: "http://localhost:8080",
+        redirect_uri: REDIRECT_URI,
         code_verifier: code_verifier
     });
 
-    const response = await fetch("https://account.diapstash.com/oidc/token", {
+    const response = await fetch(TOKEN_URL, {
         method: "POST",
         body: data,
     });
@@ -67,11 +75,17 @@ async function handleOAuthCallback() {
     const tokenResult = await response.json();
     if (tokenResult.error) {
         alert("Token exchange failed: " + tokenResult.error_description);
+        clearSearchParameters();
         return;
     }
 
     saveToken(tokenResult);
-    window.location.href = REDIRECT_URI;
+    clearSearchParameters();
+    await fetchData();
+}
+
+function clearSearchParameters() {
+    window.history.replaceState({ additionalInformation: 'Cleared OAuth callback parameters' }, '', REDIRECT_URI);
 }
 
 function saveToken(data) {
@@ -106,10 +120,20 @@ function getValidToken() {
     }
 }
 
+async function fetchData() {
+    await fetchChangeHistory();
+}
+
 async function fetchChangeHistory() {
     const token = getValidToken();
+    if (token == null) {
+        console.error("Tried to fetch change history with null token");
+        return;
+    }
 
-    const response = await fetch("https://api.diapstash.com/api/v1/history/changes?size=0", {
+    console.log(token);
+    const response = await fetch(`${CHANGE_API_URL}?size=0`, {
+        method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
             "DS-API-CLIENT-ID": CLIENT_ID
