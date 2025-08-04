@@ -13,17 +13,63 @@ html, body {
     flex-direction: row;
     display: flex;
     height: 40px;
-    background-color: gray;
+    background-color: rgb(0, 0, 0);
 }
 
 #dashboard-tab {
     width: 200px;
-    background-color: black;
+    background-color: rgb(29, 29, 29);
+    position: relative;
+}
+
+#dashboard-tab-close {
+    width: 22px;
+    height: 22px;
+    top: 9px;
+    right: 9px;
+    padding: 0;
+    background-color: transparent;
+    color: white;
+    position: absolute;
+    border: none;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-around;
+    border-radius: 3px;
+    font-size: 20px;
+    text-align: center;
+    transition-duration: 0.5s;
+    cursor: pointer;
+    user-select: none;
+}
+
+#dashboard-tab-close:hover {
+    background-color: rgb(80, 80, 80);
+    transition-duration: 0.5s;
 }
 
 #dashboard {
     height: 100%;
-    background-color: black;
+    background-color: rgb(29, 29, 29);
+}
+
+#dashboard-add-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 20px;
+    border: none;
+    outline: black 2px;
+    order: 100;
+    color: white;
+    background-color: rgb(29, 29, 29);
+    transition-duration: 0.5s;
+}
+
+#dashboard-add-button:hover {
+    background-color: rgb(80, 80, 80);
+    transition-duration: 0.5s;
 }
 
 #widget {

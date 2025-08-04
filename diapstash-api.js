@@ -18,17 +18,17 @@ let accidentHistory;
 let types = new Map();
 let brands = new Map();
 
-deserializeStoredData();
+// deserializeStoredData();
 
-if (window.location.search) {
-    handleOAuthCallback();
-}
-else if (getValidToken() == null) {
-    login();
-}
-else {
-    fetchData();
-}
+// if (window.location.search) {
+//     handleOAuthCallback();
+// }
+// else if (getValidToken() == null) {
+//     login();
+// }
+// else {
+//     fetchData();
+// }
 
 async function fetchData() {
     let fetchTime = localStorage.getItem("fetchDataTime");
