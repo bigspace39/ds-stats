@@ -51,8 +51,12 @@ html, body {
 }
 
 #dashboard {
-    height: 100%;
+    position: absolute;
+    height: calc(100% - 40px);
+    width: 100%;
     background-color: rgb(29, 29, 29);
+    top: 40px;
+    left: 0px;
 }
 
 #dashboard-add-button {
