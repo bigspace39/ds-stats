@@ -1,6 +1,7 @@
 import "./ui/ui-imports.js"
 import "./widgets/widget-imports.js"
 
+// handleAPI();
 loadSavedData();
 createWidget(0, 0);
 
@@ -13,7 +14,10 @@ function createSavedDashboards() {
     if (localStorage.dashboards) {
         let tempDashboards = JSON.parse(localStorage.dashboards);
         for (let i = 0; i < tempDashboards.length; i++) {
-            createDashboard(tempDashboards[i]);
+            const current = createDashboard(tempDashboards[i]);
+
+            if (selectedDashboard == null)
+                selectDashboard(current);
         }
 
         if (dashboards.size > 0)

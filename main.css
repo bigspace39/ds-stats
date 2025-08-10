@@ -16,10 +16,24 @@ html, body {
     background-color: rgb(0, 0, 0);
 }
 
-#dashboard-tab {
-    width: 200px;
+#dashboard-tab-active {
+    flex: 1;
     background-color: rgb(29, 29, 29);
     position: relative;
+    transition-duration: 0.5s;
+}
+
+#dashboard-tab-inactive {
+    flex: 1;
+    background-color: rgb(0, 0, 0);
+    position: relative;
+    cursor: pointer;
+    transition-duration: 0.5s;
+}
+
+#dashboard-tab-inactive:hover:not(:has(#dashboard-tab-close:hover)) {
+    background-color: rgb(80, 80, 80);
+    transition-duration: 0.5s;
 }
 
 #dashboard-tab-close {
@@ -59,17 +73,31 @@ html, body {
     left: 0px;
 }
 
+#dashboard-add-parent {
+    width: 40px;
+    order: 100;
+    background-color: rgb(0, 0, 0);
+}
+
 #dashboard-add-button {
+    width: 22px;
+    height: 22px;
+    top: 9px;
+    right: 9px;
+    padding: 0;
+    background-color: transparent;
+    color: white;
+    position: absolute;
+    border: none;
+    outline: none;
     display: inline-flex;
     align-items: center;
     justify-content: space-around;
+    border-radius: 3px;
     font-size: 20px;
-    border: none;
-    outline: black 2px;
-    order: 100;
-    color: white;
-    background-color: rgb(29, 29, 29);
+    text-align: center;
     transition-duration: 0.5s;
+    cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
 }
