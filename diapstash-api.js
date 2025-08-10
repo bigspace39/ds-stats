@@ -11,7 +11,7 @@ const ACCIDENT_API_URL = `${BASE_API_URL}/v1/history/accidents`;
 const TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types`;
 const CUSTOM_TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types/custom`;
 const BRANDS_API_URL = `${BASE_API_URL}/v0/diaper/brands`;
-const SCOPE = "openid cloud-sync.history cloud-sync.types";
+const SCOPE = "openid username cloud-sync.history cloud-sync.stock cloud-sync.types";
 
 let changeHistory;
 let accidentHistory;
@@ -25,7 +25,7 @@ function handleAPI() {
         handleOAuthCallback();
     }
     else if (getValidToken() == null) {
-        login();
+        loginPrompt.show();
     }
     else {
         fetchData();
@@ -153,10 +153,11 @@ async function login() {
         code_challenge: code_challenge,
         code_challenge_method: "S256",
         state,
-        nonce,
+        nonce
     });
 
-    window.location.href = `${AUTH_URL}?${params}`;
+    let url = `${AUTH_URL}?${params}`;
+    window.location.href = url;
 }
 
 async function handleOAuthCallback() {
@@ -165,8 +166,12 @@ async function handleOAuthCallback() {
     const state = params.get("state");
 
     if (code == null || state == null) {
+        if (params.get("error"))
+            console.warn(params.toString());
+        else
+            console.warn("Search parameters are not an OAuth callback, ignoring...");
+        
         clearSearchParameters();
-        console.warn("Search parameters are not an OAuth callback, ignoring...");
         return;
     }
 
@@ -199,6 +204,9 @@ async function handleOAuthCallback() {
         return;
     }
 
+    let jwt = decodeJwt(tokenResult.id_token);
+    console.log(`Got token for user: ${jwt.username}`);
+
     saveToken(tokenResult);
     clearSearchParameters();
     await fetchData();
@@ -214,6 +222,7 @@ function saveToken(data) {
     const now = Math.floor(Date.now() / 1000);
     const tokenData = {
         access_token: data.access_token,
+        refresh_token: data.refresh_token,
         expires_at: now + data.expires_in
     };
     localStorage.setItem('auth_token', JSON.stringify(tokenData));
@@ -255,6 +264,17 @@ function getTokenDebugObject() {
     }
 
     return token;
+}
+
+function decodeJwt(token) {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    try {
+        const payload = atob(parts[1]);
+        return JSON.parse(payload);
+    } catch {
+        return null;
+    }
 }
 
 function base64URLEncode(str) {

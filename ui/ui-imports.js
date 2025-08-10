@@ -1,1 +1,5 @@
 import "./dashboard-add-button.js"
+import "./login-prompt.js"
+import "./toolbar.js"
+import "./add-widget-dialog.js"
+import "./settings-dialog.js"

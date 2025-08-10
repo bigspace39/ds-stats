@@ -1,9 +1,15 @@
-import "./ui/ui-imports.js"
 import "./widgets/widget-imports.js"
+import "./ui/ui-imports.js"
 
-// handleAPI();
+handleAPI();
 loadSavedData();
-createWidget(0, 0);
+
+if (crypto.subtle) {
+    console.log("Web Crypto API (subtle) is available.");
+}
+else {
+    console.log("Web Crypto API (subtle) is not available.");
+}
 
 function loadSavedData() {
     createSavedDashboards();
