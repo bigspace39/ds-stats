@@ -26,9 +26,23 @@ function selectDashboard(dashboard) {
     selectedDashboard = dashboard;
 }
 
+function saveDashboards() {
+    let temp = new Array();
+    let keys = Array.from(dashboards.keys());
+    for (let i = 0; i < keys.length; i++) {
+        const id = keys[i];
+        let current = new Object();
+        current.id = id;
+        current.label = dashboards.get(id).getLabel();
+        temp.push(current);
+    }
+    localStorage.dashboards = JSON.stringify(temp);
+}
+
 class Dashboard {
     board;
     tab;
+    tabLabel;
     tabClose;
     boardId;
     exists = false;
@@ -36,6 +50,7 @@ class Dashboard {
     constructor(boardId) {
         this.board = createElement("div", mainDiv, "dashboard");
         this.tab = createElement("div", headerDiv, "dashboard-tab-inactive");
+        this.tabLabel = createElement("p", this.tab, "dashboard-tab-label");
         this.tabClose = createElement("button", this.tab, "dashboard-tab-close");
         this.tabClose.innerText = "✕";
         if (boardId < 0) {
@@ -50,7 +65,9 @@ class Dashboard {
 
         this.boardId = boardId;
         dashboards.set(this.boardId, this);
-        this.#saveDashboards();
+        saveDashboards();
+
+        this.tabLabel.innerText = `Dashboard ${boardId + 1}`;
 
         this.tabClose.addEventListener("click", function() {
             this.dashboard.destroy();
@@ -93,7 +110,7 @@ class Dashboard {
         this.board.remove();
         this.tab.remove();
         dashboards.delete(this.boardId);
-        this.#saveDashboards();
+        saveDashboards();
         this.exists = false;
     }
 
@@ -107,7 +124,12 @@ class Dashboard {
         this.board.style.display = "none";
     }
 
-    #saveDashboards() {
-        localStorage.dashboards = JSON.stringify(Array.from(dashboards.keys()));
+    getLabel() {
+        return this.tabLabel.innerText;
+    }
+
+    setLabel(text) {
+        this.tabLabel.innerText = text;
+        saveDashboards();
     }
 }

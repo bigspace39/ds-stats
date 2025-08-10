@@ -14,7 +14,8 @@ function createSavedDashboards() {
     if (localStorage.dashboards) {
         let tempDashboards = JSON.parse(localStorage.dashboards);
         for (let i = 0; i < tempDashboards.length; i++) {
-            const current = createDashboard(tempDashboards[i]);
+            const current = createDashboard(tempDashboards[i].id);
+            current.setLabel(tempDashboards[i].label);
 
             if (selectedDashboard == null)
                 selectDashboard(current);
