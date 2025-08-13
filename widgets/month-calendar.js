@@ -5,6 +5,7 @@ class MonthCalendar extends Widget {
 
     monthHeader = null;
     monthLabel = null;
+    monthPrice = null;
     navigationDiv = null;
     prevButton = null;
     todayButton = null;
@@ -13,6 +14,7 @@ class MonthCalendar extends Widget {
     dates = new Array();
     datesTextBoxes = new Array();
     statusBars = new Array();
+    selectedMonth;
 
     create(dashboardElement, classIndex, dashboardId, widgetId = -1) {
         super.create(dashboardElement, classIndex, dashboardId, widgetId);
@@ -22,7 +24,10 @@ class MonthCalendar extends Widget {
 
         this.monthHeader = createElement("div", this.contentDiv, "month-header");
         this.monthLabel = createElement("p", this.monthHeader, "month-label");
+        this.monthLabel = createElement("p", this.monthHeader, "month-label");
         this.monthLabel.innerText = "January 2025";
+        this.monthPrice = createElement("p", this.monthHeader, "month-price");
+        this.monthPrice.innerText = "100 kr";
         this.navigationDiv = createElement("div", this.monthHeader, "month-navigation");
 
         this.prevButton = createElement("button", this.navigationDiv, "month-navigation-button");
@@ -75,22 +80,52 @@ class MonthCalendar extends Widget {
 
             const statusBar = createElement("div", week, "status-bar");
             this.statusBars.push(statusBar);
+            this.today();
         }
     }
 
-    prev() {
+    update() {
+        let monthStr = this.selectedMonth.toLocaleString(dateLocale, { month: 'long' });
+        monthStr += ' ' + this.selectedMonth.getFullYear();
+        this.monthLabel.innerText = monthStr;
 
+        if (data.price != null && data.price != '') {
+            monthPrice.innerText = toCurrencyString(parseFloat(data.price).toFixed(2));
+        }
+        else {
+            monthPrice.innerText = toCurrencyString(0);
+        }
+
+        // TODO: FINISH
+    }
+
+    prev() {
+        this.selectedMonth.setMonth(this.selectedMonth.getMonth() - 1);
+        this.update();
     }
 
     today() {
-
+        const currentDate = new Date();
+        this.selectedMonth = new Date(currentDate.getFullYear(), currentDate.getMonth());
+        this.update();
     }
 
     next() {
+        const currentDate = new Date();
+        this.selectedMonth.setMonth(this.selectedMonth.getMonth() + 1);
+        if ((this.selectedMonth.getFullYear() == currentDate.getFullYear() && this.selectedMonth.getMonth() > currentDate.getMonth()) ||
+            this.selectedMonth.getFullYear() > currentDate.getFullYear()) {
+            this.selectedMonth = new Date(currentDate.getFullYear(), currentDate.getMonth());
+        }
 
+        this.update();
     }
 
     onClickMonthGraphDate(index) {
 
+    }
+
+    prepareMonthData() {
+        // TODO: FINISH
     }
 }

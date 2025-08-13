@@ -79,6 +79,8 @@ class Widget {
         this.exitEditMode();
     }
 
+    update() {}
+
     enterEditMode() {
         this.draggable.enable();
         this.deleteButton.style.display = "";

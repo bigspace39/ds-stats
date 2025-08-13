@@ -1,13 +1,13 @@
 :root {
   --calendar-date-width: 75px;
   --calendar-date-height: 45px;
-  --transition-duration: 0.5s;
+  --calendar-header-height: 45px;
 }
 
 /* Month Calendar stuff */
 #month-header {
     width: calc(var(--calendar-date-width) * 7);
-    height: 45px;
+    height: var(--calendar-header-height);
     background-color: red;
     display: flex;
     flex-direction: column;
@@ -26,6 +26,19 @@
     height: fit-content;
     margin: 0;
     font-family: var(--ui-font);
+}
+
+#month-price {
+    font-family: var(--ui-font);
+    color: white;
+    position: absolute;
+    right: 10px;
+    top: 0px;
+    margin: 0;
+    width: fit-content;
+    height: var(--calendar-header-height);
+    display: inline-flex;
+    align-items: center;
 }
 
 #month-navigation {
