@@ -1,3 +1,11 @@
+:root {
+    --white-hover: rgb(200, 200, 200);
+    --white-press: rgb(175, 175, 175);
+    --dashboard-color: rgb(29, 29, 29);
+    --dashboard-hover: rgb(80, 80, 80);
+    --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
 html, body {
     margin: 0%;
     touch-action: manipulation;
@@ -14,7 +22,7 @@ html, body {
     flex-direction: row;
     display: flex;
     height: 40px;
-    background-color: rgb(0, 0, 0);
+    background-color: black;
 }
 
 #login-box {
@@ -69,12 +77,12 @@ html, body {
 
 #toolbar-button:hover {
     transition-duration: 0.5s;
-    background-color: rgb(200, 200, 200);
+    background-color: var(--white-hover);
 }
 
 #toolbar-button:active {
     transition-duration: 0.5s;
-    background-color: rgb(175, 175, 175);
+    background-color: var(--white-press);
 }
 
 #dashboard-tab-label {
@@ -94,21 +102,21 @@ html, body {
 
 #dashboard-tab-active {
     flex: 1;
-    background-color: rgb(29, 29, 29);
+    background-color: var(--dashboard-color);
     position: relative;
     transition-duration: 0.5s;
 }
 
 #dashboard-tab-inactive {
     flex: 1;
-    background-color: rgb(0, 0, 0);
+    background-color: black;
     position: relative;
     cursor: pointer;
     transition-duration: 0.5s;
 }
 
 #dashboard-tab-inactive:hover:not(:has(#dashboard-tab-close:hover)) {
-    background-color: rgb(80, 80, 80);
+    background-color: var(--dashboard-hover);
     transition-duration: 0.5s;
 }
 
@@ -136,7 +144,7 @@ html, body {
 }
 
 #dashboard-tab-close:hover {
-    background-color: rgb(80, 80, 80);
+    background-color: var(--dashboard-hover);
     transition-duration: 0.5s;
 }
 
@@ -144,7 +152,7 @@ html, body {
     position: absolute;
     height: calc(100% - 40px);
     width: 100%;
-    background-color: rgb(29, 29, 29);
+    background-color: var(--dashboard-color);
     top: 40px;
     left: 0px;
 }
@@ -152,7 +160,7 @@ html, body {
 #dashboard-add-parent {
     width: 40px;
     order: 100;
-    background-color: rgb(0, 0, 0);
+    background-color: black;
 }
 
 #dashboard-add-button {
@@ -179,7 +187,7 @@ html, body {
 }
 
 #dashboard-add-button:hover {
-    background-color: rgb(80, 80, 80);
+    background-color: var(--dashboard-hover);
     transition-duration: 0.5s;
 }
 
@@ -198,20 +206,28 @@ html, body {
 
 #widget-add-button:hover {
     transition-duration: 0.5s;
-    background-color: rgb(200, 200, 200);
+    background-color: var(--white-hover);
 }
 
 #widget-add-button:active {
     transition-duration: 0.5s;
-    background-color: rgb(175, 175, 175);
+    background-color: var(--white-press);
 }
 
 #widget {
-    background-color: white;
-    width: 200px;
-    height: 100px;
-    border-radius: 20px;
+    width: fit-content;
+    height: fit-content;
     position: absolute;
+}
+
+#widget-content {
+    background-color: white;
+    width: fit-content;
+    height: fit-content;
+    min-width: 50px;
+    min-height: 50px;
+    border-radius: 20px;
+    overflow: hidden;
 }
 
 #widget-delete-button, #widget-settings-button {

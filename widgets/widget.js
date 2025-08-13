@@ -37,6 +37,7 @@ function setInEditMode(value) {
 
 class Widget {
     mainDiv = null;
+    contentDiv = null;
     deleteButton = null;
     settingsButton = null;
     draggable = null;
@@ -46,6 +47,7 @@ class Widget {
 
     create(dashboardElement, classIndex, dashboardId, widgetId = -1) {
         this.mainDiv = createElement("div", dashboardElement, "widget");
+        this.contentDiv = createElement("div", this.mainDiv, "widget-content");
         this.deleteButton = createElement("button", this.mainDiv, "widget-delete-button");
         this.deleteButton.innerText = "✕";
         this.deleteButton.addEventListener("click", function() {
