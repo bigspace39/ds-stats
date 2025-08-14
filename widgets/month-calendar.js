@@ -11,10 +11,17 @@ class MonthCalendar extends Widget {
     todayButton = null;
     nextButton = null;
     weekdays = null;
+    firstDateIndex;
     dates = new Array();
     datesTextBoxes = new Array();
     statusBars = new Array();
+    statusBarSections = new Array();
     selectedMonth;
+
+    days = new Map();
+    changeBeforeMonth = null;
+    accumulatedPercentage = 0.0;
+    price = 0;
 
     create(dashboardElement, classIndex, dashboardId, widgetId = -1) {
         super.create(dashboardElement, classIndex, dashboardId, widgetId);
@@ -23,7 +30,6 @@ class MonthCalendar extends Widget {
         this.contentDiv.style.flexDirection = "column";
 
         this.monthHeader = createElement("div", this.contentDiv, "month-header");
-        this.monthLabel = createElement("p", this.monthHeader, "month-label");
         this.monthLabel = createElement("p", this.monthHeader, "month-label");
         this.monthLabel.innerText = "January 2025";
         this.monthPrice = createElement("p", this.monthHeader, "month-price");
@@ -57,7 +63,7 @@ class MonthCalendar extends Widget {
             let weekdayDate = new Date(2025, 0, 5 + weekdayInt + firstDayOfTheWeek);
             const weekday = weekdayDate.toLocaleString(dateLocale, { weekday: 'long' });
 
-            const button = createElement("button", weekdays, "weekday");
+            const button = createElement("button", this.weekdays, "weekday");
             button.innerText = weekday;
         }
 
@@ -80,8 +86,9 @@ class MonthCalendar extends Widget {
 
             const statusBar = createElement("div", week, "status-bar");
             this.statusBars.push(statusBar);
-            this.today();
         }
+
+        this.today();
     }
 
     update() {
@@ -89,14 +96,155 @@ class MonthCalendar extends Widget {
         monthStr += ' ' + this.selectedMonth.getFullYear();
         this.monthLabel.innerText = monthStr;
 
-        if (data.price != null && data.price != '') {
-            monthPrice.innerText = toCurrencyString(parseFloat(data.price).toFixed(2));
-        }
-        else {
-            monthPrice.innerText = toCurrencyString(0);
+        this.prepareMonthData();
+
+        this.monthPrice.innerText = toCurrencyString(parseFloat(this.price).toFixed(2));
+
+        const currentDate = new Date();
+        let current = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth(), 1);
+        let maxDate = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth() + 1, 0);
+        let enable = false;
+        let done = false;
+        for (let i = 0; i < this.dates.length; i++) {
+            let button = this.dates[i];
+            let buttonTextBox = this.datesTextBoxes[i];
+            if (!enable && !done) {
+                if (current.getDay() == (i + firstDayOfTheWeek) % 7) {
+                    enable = true;
+                    this.firstDateIndex = i;
+                }
+            }
+
+            button.className = enable ? 'date' : 'gap';
+            if (enable && current.getFullYear() == currentDate.getFullYear() && 
+                current.getMonth() == currentDate.getMonth() && 
+                current.getDate() == currentDate.getDate()) {
+                button.className = 'currentDate';
+            }
+            if (enable) {
+                const date = current.getDate();
+                button.innerText = date;
+
+                if (this.days.has(date)) {
+                    let day = this.days.get(date);
+                    buttonTextBox.innerText = day.length;
+                }
+                else {
+                    buttonTextBox.innerText = '';
+                }
+
+                if (current.getDate() == maxDate.getDate()) {
+                    done = true;
+                    enable = false;
+                }
+                else {
+                    current.setDate(current.getDate() + 1);
+                }
+            }
+            else {
+                button.innerText = '';
+                buttonTextBox.innerText = '';
+            }
         }
 
-        // TODO: FINISH
+        const dayLengthInMinutes = 60 * 24;
+        const weekLengthInMinutes = dayLengthInMinutes * 7;
+        const monthStartDate = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth(), 1);
+
+        for(let i = 0; i < this.statusBarSections.length; i++) {
+            this.statusBarSections[i].remove();
+        }
+        this.statusBarSections = new Array();
+        
+        this.accumulatedPercentage = 0.0;
+        let lastChange = this.changeBeforeMonth;
+        if (this.firstDateIndex > 0) {
+            const percentage = (this.firstDateIndex * (100.0 / 7.0));
+            this.addStatusBarSection(percentage, 'transparent');
+        }
+
+        let monthChanges = new Array();
+        monthChanges.push(this.changeBeforeMonth);
+
+        for (let i = 0; i < this.days.size; i++) {
+            let day = this.days.get(i + 1);
+
+            for (let j = 0; j < day.length; j++) {
+                monthChanges.push(day[j]);
+            }
+        }
+
+        for (let i = 0; i < monthChanges.length; i++) {
+            const change = monthChanges[i];
+            if (change == null)
+                continue;
+
+            const startDate = change.startTime;
+            const lastEndDate = lastChange != null ? lastChange.endTime : null;
+            let notWearingDurationBeforeCurrent = (startDate - lastEndDate) / 1000.0 / 60.0;
+            if (i == 1 && (lastChange == null || lastEndDate < monthStartDate)) {
+                notWearingDurationBeforeCurrent = (startDate - monthStartDate) / 1000.0 / 60.0;
+            }
+            if (i > 0 && notWearingDurationBeforeCurrent > 0.001) {
+                const percentage = (notWearingDurationBeforeCurrent / weekLengthInMinutes) * 100.0;
+                this.addStatusBarSection(percentage, notWearingColor);
+            }
+
+            // TODO: FIX COLOR
+            let type = change.type;
+            let data = typeData.get(type);
+            const color = data.color;
+            let changeDurationInMins = (change.startTime - (change.endTime != null ? change.endTime : new Date())) / 1000.0 / 60.0;
+            let percentage = (changeDurationInMins / weekLengthInMinutes) * 100.0;
+            if (i == 0) {
+                if (lastEndDate < monthStartDate)
+                    continue;
+
+                let durationInMins = (change.endTime - monthStartDate) / 1000.0 / 60.0;
+                percentage = (durationInMins / weekLengthInMinutes) * 100.0;
+            }
+            this.addStatusBarSection(percentage, color);
+            lastChange = change;
+        }
+
+        let monthMaxPercentage = (((maxDate.getDate() + this.firstDateIndex) * dayLengthInMinutes) / weekLengthInMinutes) * 100.0;
+        let remainingPercentage = monthMaxPercentage - this.accumulatedPercentage;
+        let isViewingCurrentMonth = currentDate.getFullYear() == this.selectedMonth.getFullYear() && currentDate.getMonth() == this.selectedMonth.getMonth();
+        if (remainingPercentage > 0.001 && !isViewingCurrentMonth) {
+            this.addStatusBarSection(remainingPercentage, notWearingColor);
+        }
+    }
+
+    addStatusBarSection(percentage, color) {
+        let baseAcc = this.accumulatedPercentage % 100;
+        let maxPercentage = 100.0 - baseAcc;
+        let index = Math.trunc(this.accumulatedPercentage / 100.0);
+        let statusBar = this.statusBars[index];
+
+        const dayLengthInMinutes = 60 * 24;
+        const weekLengthInMinutes = dayLengthInMinutes * 7;
+        const maxDate = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth() + 1, 0);
+        let done = false;
+        
+        let currentPercentage = Math.min(percentage, maxPercentage);
+        let monthMaxPercentage = (((maxDate.getDate() + this.firstDateIndex) * dayLengthInMinutes) / weekLengthInMinutes) * 100.0;
+        if ((this.accumulatedPercentage + currentPercentage) > monthMaxPercentage) {
+            currentPercentage = monthMaxPercentage - this.accumulatedPercentage;
+            done = true;
+        }
+
+        const section = createElement("div", statusBar, "status-bar-section");
+        section.style.backgroundColor = color;
+        section.style.width = currentPercentage + '%';
+        this.statusBarSections.push(section);
+
+        if (!done && percentage > maxPercentage && index < this.statusBars.length - 1) {
+            this.accumulatedPercentage = (index + 1) * 100.0;
+            this.addStatusBarSection(percentage - currentPercentage, color);
+        }
+        else {
+            this.accumulatedPercentage += currentPercentage;
+        }
     }
 
     prev() {
@@ -126,6 +274,42 @@ class MonthCalendar extends Widget {
     }
 
     prepareMonthData() {
-        // TODO: FINISH
+        this.days = new Map();
+        this.changeBeforeMonth = null;
+        this.price = 0;
+        if (changeHistory.length == 0)
+            return;
+
+        let maxMonthDate = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth() + 1, 0);
+
+        const lastChange = changeHistory[changeHistory.length - 1];
+        const lastChangeStartDate = new Date(lastChange.startTime);
+        if (maxMonthDate > lastChangeStartDate) {
+            maxMonthDate = new Date(lastChangeStartDate.getFullYear(), lastChangeStartDate.getMonth(), lastChangeStartDate.getDate());
+        }
+
+        for (let i = 1; i <= maxMonthDate.getDate(); i++) {
+            this.days.set(i, new Array());
+        }
+
+        for (let i = 0; i < changeHistory.length; i++) {
+            const change = changeHistory[i];
+            if (change.startTime.getFullYear() != this.selectedMonth.getFullYear() || 
+                change.startTime.getMonth() != this.selectedMonth.getMonth())
+            {
+                if (change.startTime < this.selectedMonth)
+                    this.changeBeforeMonth = change;
+
+                continue;
+            }
+            
+            let current = change;
+
+            if (current.price != null)
+                this.price += parseFloat(current.price);
+
+            const date = change.startTime.getDate();
+            this.days.get(date).push(current);
+        }
     }
 }

@@ -117,6 +117,11 @@
     top: 0px;
     left: 0px;
     pointer-events: none;
+    margin: 0;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
 
     font-family: var(--ui-font);
 }

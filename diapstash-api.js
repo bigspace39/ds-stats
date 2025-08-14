@@ -13,8 +13,8 @@ const CUSTOM_TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types/custom`;
 const BRANDS_API_URL = `${BASE_API_URL}/v0/diaper/brands`;
 const SCOPE = "openid username cloud-sync.history cloud-sync.stock cloud-sync.types";
 
-let changeHistory;
-let accidentHistory;
+let changeHistory = new Array();
+let accidentHistory = new Array();
 let types = new Map();
 let brands = new Map();
 
@@ -50,6 +50,13 @@ async function fetchData() {
 
     await fetchChangeHistory();
     await fetchAccidentHistory();
+    createdWidgets.forEach(function(value, key, map) {
+        if (value.dashboardId != selectedDashboard.boardId)
+            return;
+
+        value.update();
+    });
+
     localStorage.setItem("fetchDataTime", new Date().toUTCString());
 }
 
@@ -58,7 +65,23 @@ async function fetchChangeHistory() {
         size: 0
     });
 
-    changeHistory = await fetchObjectFromAPI(CHANGE_API_URL, params, "change history");
+    let history = await fetchObjectFromAPI(CHANGE_API_URL, params, "change history");
+    changeHistory = history.data;
+    for (let i = 0; i < changeHistory.length; i++) {
+        const change = changeHistory[i];
+        if (change.startTime != null)
+            change.startTime = new Date(change.startTime);
+
+        if (change.endTime != null)
+            change.endTime = new Date(change.endTime);
+
+        change.price = 0;
+        for (let j = 0; j < change.diapers.length; j++) {
+            const diaper = change.diapers[j];
+            change.price += diaper.price;
+        }
+    }
+
     localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
 }
 
@@ -67,7 +90,8 @@ async function fetchAccidentHistory() {
         size: 0
     });
 
-    accidentHistory = await fetchObjectFromAPI(ACCIDENT_API_URL, params, "accident history");
+    let history = await fetchObjectFromAPI(ACCIDENT_API_URL, params, "accident history");
+    accidentHistory = history.data;
     localStorage.setItem("accidentHistory", JSON.stringify(accidentHistory));
 }
 
@@ -293,8 +317,8 @@ async function generatePKCECodes() {
 
 function logout() {
     localStorage.removeItem('auth_token');
-    changeHistory = null;
-    accidentHistory = null;
+    changeHistory = new Array();
+    accidentHistory = new Array();
     types = new Map();
     brands = new Map();
     window.location.href = "/";
