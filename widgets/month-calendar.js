@@ -115,11 +115,11 @@ class MonthCalendar extends Widget {
                 }
             }
 
-            button.className = enable ? 'date' : 'gap';
+            button.id = enable ? 'date' : 'gap';
             if (enable && current.getFullYear() == currentDate.getFullYear() && 
                 current.getMonth() == currentDate.getMonth() && 
                 current.getDate() == currentDate.getDate()) {
-                button.className = 'currentDate';
+                button.id = 'current-date';
             }
             if (enable) {
                 const date = current.getDate();
@@ -152,6 +152,7 @@ class MonthCalendar extends Widget {
         const monthStartDate = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth(), 1);
 
         for(let i = 0; i < this.statusBarSections.length; i++) {
+            this.statusBarSections[i].innerHTML = "";
             this.statusBarSections[i].remove();
         }
         this.statusBarSections = new Array();
@@ -187,14 +188,14 @@ class MonthCalendar extends Widget {
             }
             if (i > 0 && notWearingDurationBeforeCurrent > 0.001) {
                 const percentage = (notWearingDurationBeforeCurrent / weekLengthInMinutes) * 100.0;
-                this.addStatusBarSection(percentage, notWearingColor);
+                this.addStatusBarSection(percentage, notWearingColor, notWearingLabel);
             }
 
             // TODO: FIX COLOR
-            let type = change.type;
-            let data = typeData.get(type);
-            const color = data.color;
-            let changeDurationInMins = (change.startTime - (change.endTime != null ? change.endTime : new Date())) / 1000.0 / 60.0;
+            // let type = change.type;
+            // let data = typeData.get(type);
+            const color = "rgb(255, 0, 0)";
+            let changeDurationInMins = ((change.endTime != null ? change.endTime : new Date()) - change.startTime) / 1000.0 / 60.0;
             let percentage = (changeDurationInMins / weekLengthInMinutes) * 100.0;
             if (i == 0) {
                 if (lastEndDate < monthStartDate)
@@ -203,7 +204,7 @@ class MonthCalendar extends Widget {
                 let durationInMins = (change.endTime - monthStartDate) / 1000.0 / 60.0;
                 percentage = (durationInMins / weekLengthInMinutes) * 100.0;
             }
-            this.addStatusBarSection(percentage, color);
+            this.addStatusBarSection(percentage, color, change.changeString);
             lastChange = change;
         }
 
@@ -211,11 +212,11 @@ class MonthCalendar extends Widget {
         let remainingPercentage = monthMaxPercentage - this.accumulatedPercentage;
         let isViewingCurrentMonth = currentDate.getFullYear() == this.selectedMonth.getFullYear() && currentDate.getMonth() == this.selectedMonth.getMonth();
         if (remainingPercentage > 0.001 && !isViewingCurrentMonth) {
-            this.addStatusBarSection(remainingPercentage, notWearingColor);
+            this.addStatusBarSection(remainingPercentage, notWearingColor, notWearingLabel);
         }
     }
 
-    addStatusBarSection(percentage, color) {
+    addStatusBarSection(percentage, color, tooltip = null) {
         let baseAcc = this.accumulatedPercentage % 100;
         let maxPercentage = 100.0 - baseAcc;
         let index = Math.trunc(this.accumulatedPercentage / 100.0);
@@ -233,14 +234,20 @@ class MonthCalendar extends Widget {
             done = true;
         }
 
-        const section = createElement("div", statusBar, "status-bar-section");
+        const transparent = color == "transparent";
+        const section = createElement("div", statusBar, transparent ? "status-bar-section-dummy" : "status-bar-section");
         section.style.backgroundColor = color;
         section.style.width = currentPercentage + '%';
         this.statusBarSections.push(section);
 
+        if (!transparent && tooltip != null) {
+            const tooltipElement = createElement("span", section, "status-bar-section-tooltip");
+            tooltipElement.innerText = tooltip;
+        }
+
         if (!done && percentage > maxPercentage && index < this.statusBars.length - 1) {
             this.accumulatedPercentage = (index + 1) * 100.0;
-            this.addStatusBarSection(percentage - currentPercentage, color);
+            this.addStatusBarSection(percentage - currentPercentage, color, tooltip);
         }
         else {
             this.accumulatedPercentage += currentPercentage;

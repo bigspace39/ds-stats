@@ -80,8 +80,12 @@ async function fetchChangeHistory() {
             const diaper = change.diapers[j];
             change.price += diaper.price;
         }
+
+        change.changeString = await getChangeString(change);
     }
 
+    console.log("Modified change history:");
+    console.log(changeHistory);
     localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
 }
 
@@ -99,14 +103,22 @@ async function getType(id) {
     if (types.has(id))
         return types.get(id);
 
-    let type = await fetchObjectFromAPI(`${TYPES_API_URL}/${id}`, null, `type ${id}`);
-    if (type != null) {
-        types.set(id, type);
-        localStorage.setItem("types", JSON.stringify(Array.from(types.entries())));
-        return type;
+    let type;
+    try {
+        type = await fetchObjectFromAPI(`${TYPES_API_URL}/${id}`, null, `type ${id}`);
+    }
+    catch {
+        console.warn(`Tried to fetch official type with id ${id} but got a ${type.status} ${type.name}, trying to fetch custom type instead!`);
+        try {
+            type = await fetchObjectFromAPI(`${CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
+        }
+        catch {
+            onsole.error(`Tried to fetch custom type with id ${id} but got a ${type.status} ${type.name}`);
+            return null;
+        }
     }
 
-    type = await fetchObjectFromAPI(`${CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
+    type = type.type;
     types.set(id, type);
     localStorage.setItem("types", JSON.stringify(Array.from(types.entries())));
     return type;
@@ -116,10 +128,49 @@ async function getBrand(code) {
     if (brands.has(code))
         return brands.get(code);
 
-    let brand = await fetchObjectFromAPI(`${BRANDS_API_URL}/${code}`, null, `brand ${code}`);
+    let brand;
+    try {
+        brand = await fetchObjectFromAPI(`${BRANDS_API_URL}/${code}`, null, `brand ${code}`);
+    }
+    catch {
+        console.error(`Tried to fetch brand with code ${code} but got a ${brand.status} ${brand.name}`);
+        return null;
+    }
+
+    brand = brand.brand;
     brands.set(code, brand);
     localStorage.setItem("brands", JSON.stringify(Array.from(brands.entries())));
     return brand;
+}
+
+async function getChangeString(change) {
+    let str = "";
+    let firstBrand = null;
+    for (let i = 0; i < change.diapers.length; i++) {
+        let diaper = change.diapers[i];
+        const type = await getType(diaper.typeId);
+        let brand = null;
+        if (type != null && type.brand_code != null) {
+            brand = await getBrand(type.brand_code);
+            if (i == 0)
+                firstBrand = brand;
+        }
+
+        if (i != 0)
+            str += ", ";
+
+        let fullName = "";
+        fullName += brand != null ? brand.name.trim() + " " : "";
+        fullName += type != null ? type.name.trim() : "Unknown";
+        diaper.name = fullName;
+
+        let name = "";
+        name += brand != null && (brand != firstBrand || i == 0) ? brand.name.trim() + " " : "";
+        name += type != null ? type.name.trim() : "Unknown";
+        str += name;
+    }
+
+    return str;
 }
 
 async function fetchObjectFromAPI(url, params, debugString) {
