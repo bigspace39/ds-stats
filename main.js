@@ -1,7 +1,7 @@
 import "./widgets/widget-imports.js"
 import "./ui/ui-imports.js"
 
-handleAPI();
+await handleAPI();
 loadSavedData();
 
 if (crypto.subtle) {

@@ -23,13 +23,13 @@ let accidentHistory = new Array();
 let types = new Map();
 let brands = new Map();
 
-function handleAPI() {
+async function handleAPI() {
     deserializeStoredData();
 
     if (window.location.search) {
         handleOAuthCallback();
     }
-    else if (getValidToken() == null) {
+    else if (await getValidToken() == null) {
         loginPrompt.show();
     }
     else {
@@ -48,10 +48,6 @@ async function fetchData() {
             return;
         }
     }
-
-    console.log("Attempting to fetch data with the following token:");
-    const token = getTokenDebugObject();
-    console.log(token);
 
     if (types.size == 0) {
         await fetchAllTypes();
@@ -80,7 +76,7 @@ async function fetchChangeHistory() {
     });
 
     let history = await fetchObjectFromAPI(CHANGE_API_URL, params, "change history");
-    if (history == null)
+    if (history == null || history.data == null)
         return;
 
     changeHistory = history.data;
@@ -112,7 +108,7 @@ async function fetchAccidentHistory() {
     });
 
     let history = await fetchObjectFromAPI(ACCIDENT_API_URL, params, "accident history");
-    if (history == null)
+    if (history == null || history.data == null)
         return;
 
     accidentHistory = history.data;
@@ -125,7 +121,7 @@ async function fetchAllTypes() {
     });
 
     let temp = await fetchObjectFromAPI(TYPES_API_URL, params, "types");
-    if (temp == null)
+    if (temp == null || temp.data == null)
         return;
     
     for (let i = 0; i < temp.data.length; i++) {
@@ -133,7 +129,7 @@ async function fetchAllTypes() {
     }
     
     // let customTemp = await fetchObjectFromAPI(CUSTOM_TYPES_API_URL, params, "custom types");
-    // if (customTemp == null)
+    // if (customTemp == null || customTemp.data == null)
     //     return;
 
     // for (let i = 0; i < customTemp.data.length; i++) {
@@ -147,7 +143,7 @@ async function fetchAllBrands() {
     });
 
     let temp = await fetchObjectFromAPI(BRANDS_API_URL, params, "brands");
-    if (temp == null)
+    if (temp == null || temp.data == null)
         return;
 
     for (let i = 0; i < temp.data.length; i++) {
@@ -169,7 +165,7 @@ async function getType(id) {
         }
     }
 
-    if (type == null)
+    if (type == null || type.type == null)
         return;
 
     type = type.type;
@@ -188,7 +184,7 @@ async function getBrand(code) {
         return null;
     }
 
-    if (brand == null)
+    if (brand == null || brand.brand == null)
         return;
 
     brand = brand.brand;
@@ -228,7 +224,7 @@ async function getChangeString(change) {
 }
 
 async function fetchObjectFromAPI(url, params, debugString) {
-    const token = getValidToken();
+    const token = await getValidToken();
     if (token == null) {
         console.warn("No valid token, login required!");
         loginPrompt.show();
@@ -326,8 +322,8 @@ async function handleOAuthCallback() {
         grant_type: "authorization_code",
         code,
         client_id: CLIENT_ID,
-        redirect_uri: REDIRECT_URI,
         code_verifier: code_verifier,
+        redirect_uri: REDIRECT_URI,
         prompt: "consent"
     });
 
@@ -343,10 +339,11 @@ async function handleOAuthCallback() {
         return;
     }
 
+    saveToken(tokenResult);
     let jwt = decodeJwt(tokenResult.id_token);
     console.log(`Got token for user: ${jwt.username}`);
+    console.log(getTokenDebugObject());
 
-    saveToken(tokenResult);
     clearSearchParameters();
     await fetchData();
 }
@@ -367,7 +364,7 @@ function saveToken(data) {
     localStorage.setItem('auth_token', JSON.stringify(tokenData));
 }
 
-function getValidToken() {
+async function getValidToken() {
     const raw = localStorage.getItem('auth_token');
     if (!raw) {
         return null;
@@ -379,13 +376,45 @@ function getValidToken() {
         if (now >= tokenData.access_expires_at) {
             console.warn('Stored token expired.');
             localStorage.removeItem('auth_token');
-            return null;
+
+            let result = await fetchAccessTokenFromRefreshToken(tokenData);
+            return result;
         }
         return tokenData.access_token;
     }
     catch (err) {
         console.error('Invalid token data:', err);
         localStorage.removeItem('auth_token');
+        return null;
+    }
+}
+
+async function fetchAccessTokenFromRefreshToken(tokenData) {
+    const data = new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: CLIENT_ID,
+        refresh_token: tokenData.refresh_token,
+        redirect_uri: REDIRECT_URI,
+        prompt: "consent"
+    });
+
+    try {
+        let response = await fetch(TOKEN_URL, {
+            method: "POST",
+            body: data,
+        });
+
+        response = await response.json();
+
+        saveToken(response);
+        let jwt = decodeJwt(response.id_token);
+        console.log(`Got token using refresh token for user: ${jwt.username}`);
+        console.log(getTokenDebugObject());
+
+        return response.access_token;
+    }
+    catch(err) {
+        console.error(`Failed to fetch access token using refresh token, error is: ${err}`);
         return null;
     }
 }
