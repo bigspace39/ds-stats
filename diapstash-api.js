@@ -2,7 +2,12 @@
 // Account: https://account.diapstash.com/account
 
 const CLIENT_ID = "test-api-eada8297";
-const REDIRECT_URI = "http://localhost:8080";
+let REDIRECT_URI = "http://localhost:8080/";
+if (window.location.protocol == "https:") {
+    REDIRECT_URI = "https://bigspace39.github.io/ds-stats/"
+    console.log(`We are using https, assuming production, changing redirect uri to ${REDIRECT_URI}`);
+}
+
 const AUTH_URL = "https://account.diapstash.com/oidc/auth";
 const TOKEN_URL = "https://account.diapstash.com/oidc/token";
 const BASE_API_URL = "https://api.diapstash.com/api";
@@ -11,7 +16,7 @@ const ACCIDENT_API_URL = `${BASE_API_URL}/v1/history/accidents`;
 const TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types`;
 const CUSTOM_TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types/custom`;
 const BRANDS_API_URL = `${BASE_API_URL}/v0/diaper/brands`;
-const SCOPE = "openid username cloud-sync.history cloud-sync.stock cloud-sync.types";
+const SCOPE = "openid offline_access username cloud-sync.history cloud-sync.stock cloud-sync.types";
 
 let changeHistory = new Array();
 let accidentHistory = new Array();
@@ -48,8 +53,17 @@ async function fetchData() {
     const token = getTokenDebugObject();
     console.log(token);
 
+    if (types.size == 0) {
+        await fetchAllTypes();
+    }
+
+    if (brands.size == 0) {
+        await fetchAllBrands();
+    }
+
     await fetchChangeHistory();
     await fetchAccidentHistory();
+
     createdWidgets.forEach(function(value, key, map) {
         if (value.dashboardId != selectedDashboard.boardId)
             return;
@@ -66,6 +80,9 @@ async function fetchChangeHistory() {
     });
 
     let history = await fetchObjectFromAPI(CHANGE_API_URL, params, "change history");
+    if (history == null)
+        return;
+
     changeHistory = history.data;
     for (let i = 0; i < changeHistory.length; i++) {
         const change = changeHistory[i];
@@ -95,28 +112,65 @@ async function fetchAccidentHistory() {
     });
 
     let history = await fetchObjectFromAPI(ACCIDENT_API_URL, params, "accident history");
+    if (history == null)
+        return;
+
     accidentHistory = history.data;
     localStorage.setItem("accidentHistory", JSON.stringify(accidentHistory));
+}
+
+async function fetchAllTypes() {
+    let params = new URLSearchParams({
+        size: 0
+    });
+
+    let temp = await fetchObjectFromAPI(TYPES_API_URL, params, "types");
+    if (temp == null)
+        return;
+    
+    for (let i = 0; i < temp.data.length; i++) {
+        types.set(temp.data[i].id, temp.data[i]);
+    }
+    
+    // let customTemp = await fetchObjectFromAPI(CUSTOM_TYPES_API_URL, params, "custom types");
+    // if (customTemp == null)
+    //     return;
+
+    // for (let i = 0; i < customTemp.data.length; i++) {
+    //     brands.set(customTemp.data[i].id, customTemp.data[i]);
+    // }
+}
+
+async function fetchAllBrands() {
+    let params = new URLSearchParams({
+        size: 0
+    });
+
+    let temp = await fetchObjectFromAPI(BRANDS_API_URL, params, "brands");
+    if (temp == null)
+        return;
+
+    for (let i = 0; i < temp.data.length; i++) {
+        brands.set(temp.data[i].code, temp.data[i]);
+    }
 }
 
 async function getType(id) {
     if (types.has(id))
         return types.get(id);
 
-    let type;
-    try {
-        type = await fetchObjectFromAPI(`${TYPES_API_URL}/${id}`, null, `type ${id}`);
-    }
-    catch {
+    let type = await fetchObjectFromAPI(`${TYPES_API_URL}/${id}`, null, `type ${id}`);
+    if (type.status == 404) {
         console.warn(`Tried to fetch official type with id ${id} but got a ${type.status} ${type.name}, trying to fetch custom type instead!`);
-        try {
-            type = await fetchObjectFromAPI(`${CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
-        }
-        catch {
-            onsole.error(`Tried to fetch custom type with id ${id} but got a ${type.status} ${type.name}`);
+        type = await fetchObjectFromAPI(`${CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
+        if (type.status == 404) {
+            console.error(`Tried to fetch custom type with id ${id} but got a ${type.status} ${type.name}`);
             return null;
         }
     }
+
+    if (type == null)
+        return;
 
     type = type.type;
     types.set(id, type);
@@ -128,14 +182,14 @@ async function getBrand(code) {
     if (brands.has(code))
         return brands.get(code);
 
-    let brand;
-    try {
-        brand = await fetchObjectFromAPI(`${BRANDS_API_URL}/${code}`, null, `brand ${code}`);
-    }
-    catch {
+    let brand = await fetchObjectFromAPI(`${BRANDS_API_URL}/${code}`, null, `brand ${code}`);
+    if (brand.status == 404) {
         console.error(`Tried to fetch brand with code ${code} but got a ${brand.status} ${brand.name}`);
         return null;
     }
+
+    if (brand == null)
+        return;
 
     brand = brand.brand;
     brands.set(code, brand);
@@ -176,20 +230,28 @@ async function getChangeString(change) {
 async function fetchObjectFromAPI(url, params, debugString) {
     const token = getValidToken();
     if (token == null) {
-        console.error(`Tried to fetch ${debugString} with null token`);
-        return;
+        console.warn("No valid token, login required!");
+        loginPrompt.show();
+        return null;
     }
 
     if (params != null)
         url = `${url}?${params}`;
 
-    const response = await fetch(url, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "DS-API-CLIENT-ID": CLIENT_ID
-        }
-    });
+    let response = null;
+    try {
+        response = await fetch(url, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "DS-API-CLIENT-ID": CLIENT_ID
+            }
+        });
+    }
+    catch(err) {
+        console.error(`Failed to fetch ${debugString}, error is: ${err}`);
+        return null;
+    }
 
     let obj = await response.json();
     console.log(`Fetched ${debugString}:`);
@@ -228,7 +290,8 @@ async function login() {
         code_challenge: code_challenge,
         code_challenge_method: "S256",
         state,
-        nonce
+        nonce,
+        prompt: "consent"
     });
 
     let url = `${AUTH_URL}?${params}`;
@@ -264,7 +327,8 @@ async function handleOAuthCallback() {
         code,
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
-        code_verifier: code_verifier
+        code_verifier: code_verifier,
+        prompt: "consent"
     });
 
     const response = await fetch(TOKEN_URL, {
@@ -294,11 +358,11 @@ function clearSearchParameters() {
 }
 
 function saveToken(data) {
-    const now = Math.floor(Date.now() / 1000);
+    const now = Date.now();
     const tokenData = {
         access_token: data.access_token,
         refresh_token: data.refresh_token,
-        expires_at: now + data.expires_in
+        access_expires_at: now + (data.expires_in * 1000)
     };
     localStorage.setItem('auth_token', JSON.stringify(tokenData));
 }
@@ -311,8 +375,8 @@ function getValidToken() {
 
     try {
         const tokenData = JSON.parse(raw);
-        const now = Math.floor(Date.now() / 1000);
-        if (now >= tokenData.expires_at) {
+        const now = Date.now();
+        if (now >= tokenData.access_expires_at) {
             console.warn('Stored token expired.');
             localStorage.removeItem('auth_token');
             return null;
@@ -331,7 +395,7 @@ function getTokenDebugObject() {
     try {
         if (token) {
             token = JSON.parse(token);
-            token.expires_at = new Date(token.expires_at * 1000);
+            token.access_expires_at = new Date(token.access_expires_at);
         }
     }
     catch (err) {
