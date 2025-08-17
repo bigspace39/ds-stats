@@ -1,7 +1,7 @@
 :root {
   --calendar-date-width: 75px;
   --calendar-date-height: 45px;
-  --calendar-header-height: 45px;
+  --calendar-header-height: 60px;
 }
 
 /* Month Calendar stuff */
@@ -21,6 +21,7 @@
 }
 
 #month-label {
+    font-size: large;
     color: white;
     width: fit-content;
     height: fit-content;
@@ -49,6 +50,8 @@
 #month-navigation-button {
     height: fit-content;
     width: fit-content;
+    font-size: large;
+    padding: 2px 6px;
     border: none;
     outline: none;
     background-color: transparent;

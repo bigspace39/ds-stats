@@ -38,6 +38,7 @@ class MonthCalendar extends Widget {
 
         this.prevButton = createElement("button", this.navigationDiv, "month-navigation-button");
         this.prevButton.innerText = "<";
+        this.prevButton.style.padding = "2px 20px";
         this.prevButton.calendar = this;
         this.prevButton.addEventListener("click", function() {
             this.calendar.prev();
@@ -52,6 +53,7 @@ class MonthCalendar extends Widget {
 
         this.nextButton = createElement("button", this.navigationDiv, "month-navigation-button");
         this.nextButton.innerText = ">";
+        this.nextButton.style.padding = "2px 20px";
         this.nextButton.calendar = this;
         this.nextButton.addEventListener("click", function() {
             this.calendar.next();

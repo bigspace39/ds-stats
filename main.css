@@ -123,11 +123,12 @@ html, body {
     transition-duration: var(--transition-duration);
 }
 
-#dashboard-tab-close {
-    width: 22px;
-    height: 22px;
-    top: 9px;
-    right: 9px;
+#dashboard-tab-close, #dashboard-add-button {
+    width: 30px;
+    height: 30px;
+    font-size: 28px;
+    top: 5px;
+    right: 5px;
     padding: 0;
     background-color: transparent;
     color: white;
@@ -138,7 +139,6 @@ html, body {
     align-items: center;
     justify-content: space-around;
     border-radius: 3px;
-    font-size: 20px;
     text-align: center;
     transition-duration: var(--transition-duration);
     cursor: pointer;
@@ -146,7 +146,7 @@ html, body {
     -webkit-user-select: none;
 }
 
-#dashboard-tab-close:hover {
+#dashboard-tab-close:hover, #dashboard-add-button:hover {
     background-color: var(--dashboard-hover);
     transition-duration: var(--transition-duration);
 }
@@ -164,34 +164,6 @@ html, body {
     width: 40px;
     order: 100;
     background-color: black;
-}
-
-#dashboard-add-button {
-    width: 22px;
-    height: 22px;
-    top: 9px;
-    right: 9px;
-    padding: 0;
-    background-color: transparent;
-    color: white;
-    position: absolute;
-    border: none;
-    outline: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-around;
-    border-radius: 3px;
-    font-size: 20px;
-    text-align: center;
-    transition-duration: var(--transition-duration);
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-#dashboard-add-button:hover {
-    background-color: var(--dashboard-hover);
-    transition-duration: var(--transition-duration);
 }
 
 #widget-add-button {

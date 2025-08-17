@@ -94,7 +94,7 @@ async function fetchChangeHistory() {
             change.price += diaper.price;
         }
 
-        change.changeString = await getChangeString(change);
+        await setChangeString(change);
     }
 
     console.log("Modified change history:");
@@ -193,7 +193,7 @@ async function getBrand(code) {
     return brand;
 }
 
-async function getChangeString(change) {
+async function setChangeString(change) {
     let str = "";
     let firstBrand = null;
     for (let i = 0; i < change.diapers.length; i++) {
@@ -220,7 +220,7 @@ async function getChangeString(change) {
         str += name;
     }
 
-    return str;
+    change.changeString = str;
 }
 
 async function fetchObjectFromAPI(url, params, debugString) {
