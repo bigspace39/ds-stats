@@ -23,23 +23,25 @@ let accidentHistory = new Array();
 let types = new Map();
 let brands = new Map();
 
-async function handleAPI() {
-    deserializeStoredData();
+let isFetching = false;
+let onStartFetchAPIData = new Delegate();
+let onStopFetchAPIData = new Delegate();
 
+async function handleAPI() {
     if (window.location.search) {
-        handleOAuthCallback();
+        await handleOAuthCallback();
     }
     else if (await getValidToken() == null) {
         loginPrompt.show();
     }
     else {
-        fetchData();
+        await fetchData();
     }
 }
 
 async function fetchData() {
     let fetchTime = localStorage.getItem("fetchDataTime");
-
+    
     if (fetchTime) {
         fetchTime = new Date(fetchTime);
         let now = new Date();
@@ -48,6 +50,9 @@ async function fetchData() {
             return;
         }
     }
+
+    isFetching = true;
+    onStartFetchAPIData.broadcast();
 
     if (types.size == 0) {
         await fetchAllTypes();
@@ -68,6 +73,8 @@ async function fetchData() {
     });
 
     localStorage.setItem("fetchDataTime", new Date().toUTCString());
+    onStopFetchAPIData.broadcast();
+    isFetching = false;
 }
 
 async function fetchChangeHistory() {
@@ -255,12 +262,29 @@ async function fetchObjectFromAPI(url, params, debugString) {
     return obj;
 }
 
-function deserializeStoredData() {
+function deserializeStoredAPIData() {
     let temp = localStorage.getItem("changeHistory");
-    if (temp) changeHistory = JSON.parse(temp);
+    if (temp) {
+        changeHistory = JSON.parse(temp);
+        for (let i = 0; i < changeHistory.length; i++) {
+            let change = changeHistory[i];
+            if (change.startTime != null)
+                change.startTime = new Date(change.startTime);
+
+            if (change.endTime != null)
+                change.endTime = new Date(change.endTime);
+        }
+    }
 
     temp = localStorage.getItem("accidentHistory");
-    if (temp) accidentHistory = JSON.parse(temp);
+    if (temp) {
+        accidentHistory = JSON.parse(temp);
+        for (let i = 0; i < accidentHistory.length; i++) {
+            let accident = accidentHistory[i];
+            if (accident.when != null)
+                accident.when = new Date(accident.when);
+        }
+    }
 
     temp = localStorage.getItem("types");
     if (temp) types = new Map(JSON.parse(temp));

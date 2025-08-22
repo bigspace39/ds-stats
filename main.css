@@ -76,6 +76,7 @@ html, body {
     cursor: pointer;
     transition-duration: var(--transition-duration);
     font-family: 'Courier New', Courier, monospace;
+    position: relative;
 }
 
 #toolbar-button:hover {
@@ -302,3 +303,46 @@ html, body {
     display: flex;
     flex-direction: column;
 }
+
+#spinner, #inactive-spinner {
+    --spinner-margin: 15px;
+    width: calc(100% - var(--spinner-margin) * 2);
+    height: calc(100% - var(--spinner-margin) * 2);
+    border: 3px solid black;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    box-sizing: border-box;
+    top: var(--spinner-margin);
+    left: var(--spinner-margin);
+    transform: rotate(-140deg);
+}
+
+#spinner::after, #inactive-spinner::after {
+  content: '';
+  position: absolute;
+  box-sizing: border-box;
+  left: 3px;
+  top: 10px;
+  border: 6px solid transparent;
+  border-right-color: black;
+  transform: rotate(-40deg);
+}
+
+#spinner {
+    animation: rotation 1s linear infinite;
+}
+
+#inactive-spinner {
+    animation: none;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(-140deg);
+    }
+    100% {
+        transform: rotate(220deg);
+    }
+} 

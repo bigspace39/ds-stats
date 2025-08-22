@@ -11,3 +11,29 @@ function createElement(tag, parentElement, id) {
     parentElement.appendChild(element);
     return element;
 }
+
+class Delegate {
+    constructor() {
+        this.functions = new Set();
+    }
+
+    addFunction(thisObj, fn) {
+        const boundFn = thisObj ? fn.bind(thisObj) : fn;
+        this.functions.add(boundFn);
+        return boundFn;
+    }
+
+    removeFunction(fn) {
+        this.functions.delete(fn);
+    }
+
+    broadcast(...args) {
+        for (let fn of this.functions) {
+            fn(...args);
+        }
+    }
+
+    clear() {
+        this.functions.clear();
+    }
+}

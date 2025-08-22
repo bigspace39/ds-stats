@@ -106,6 +106,9 @@
     height: 100%;
     top: 0px;
     left: 0px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 #date-parent {
@@ -128,6 +131,9 @@
     justify-content: center;
 
     font-family: var(--ui-font);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 #date, #current-date {
@@ -146,6 +152,9 @@
     height: 100%;
     top: 0px;
     left: 0px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 #current-date {
@@ -171,6 +180,7 @@
     height: 100%;
     position: relative;
     transition-duration: var(--transition-duration);
+    touch-action: none;
 }
 
 #status-bar-section:hover {

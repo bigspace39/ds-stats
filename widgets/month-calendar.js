@@ -67,6 +67,7 @@ class MonthCalendar extends Widget {
 
             const button = createElement("button", this.weekdays, "weekday");
             button.innerText = weekday;
+            button.inert = true;
         }
 
         for (let row = 0; row < 6; row++) {
@@ -124,6 +125,7 @@ class MonthCalendar extends Widget {
                 button.id = 'current-date';
             }
             if (enable) {
+                button.inert = false;
                 const date = current.getDate();
                 button.innerText = date;
 
@@ -146,6 +148,7 @@ class MonthCalendar extends Widget {
             else {
                 button.innerText = '';
                 buttonTextBox.innerText = '';
+                button.inert = true;
             }
         }
 

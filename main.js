@@ -1,8 +1,10 @@
 import "./widgets/widget-imports.js"
 import "./ui/ui-imports.js"
 
+deserializeStoredAPIData();
+createSavedDashboards();
+createSavedWidgets();
 await handleAPI();
-loadSavedData();
 
 if (crypto.subtle) {
     console.log("Web Crypto API (subtle) is available.");
@@ -11,17 +13,14 @@ else {
     console.log("Web Crypto API (subtle) is not available.");
 }
 
-function loadSavedData() {
-    createSavedDashboards();
-    createSavedWidgets();
-}
-
 function createSavedDashboards() {
     if (localStorage.dashboards) {
         let tempDashboards = JSON.parse(localStorage.dashboards);
         for (let i = 0; i < tempDashboards.length; i++) {
             const current = createDashboard(tempDashboards[i].id);
-            current.setLabel(tempDashboards[i].label);
+
+            if (tempDashboards[i].label != "")
+                current.setLabel(tempDashboards[i].label);
 
             if (selectedDashboard == null)
                 selectDashboard(current);
