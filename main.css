@@ -3,6 +3,9 @@
     --white-press: rgb(175, 175, 175);
     --dashboard-color: rgb(29, 29, 29);
     --dashboard-hover: rgb(80, 80, 80);
+    --accent-color: rgb(71, 40, 155);
+    --accent-color-hover: rgb(100, 69, 184);
+    --accent-color-press: rgb(120, 89, 204);
     --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     --transition-duration: 0.5s;
     --z-index-toolbar: calc(2147483647 - 100);
@@ -168,11 +171,12 @@ html, body {
 }
 
 #widget-add-button {
-    margin: 2px;
+    margin: 5px;
     border: none;
-    outline: solid black 2px;
+    outline: black solid 2px;
     width: auto;
     height: 50px;
+    border-radius: 25px;
     background-color: white;
     font-size: large;
     transition-duration: var(--transition-duration);
@@ -302,6 +306,37 @@ html, body {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#dialog-footer {
+    height: 60px;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#accent-button {
+    border: none;
+    outline: none;
+    background-color: var(--accent-color);
+    color: white;
+    width: fit-content;
+    height: fit-content;
+    padding: 8px;
+    font-size: large;
+    cursor: pointer;
+}
+
+#accent-button:hover {
+    background-color: var(--accent-color-hover);
+}
+
+#accent-button:active {
+    background-color: var(--accent-color-press);
 }
 
 #spinner, #inactive-spinner {

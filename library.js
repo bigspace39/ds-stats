@@ -7,7 +7,9 @@ let settingsDialog = null;
 
 function createElement(tag, parentElement, id) {
     let element = document.createElement(tag);
-    element.id = id;
+    if (id != null)
+        element.id = id;
+    
     parentElement.appendChild(element);
     return element;
 }
