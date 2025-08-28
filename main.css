@@ -327,7 +327,7 @@ html, body {
     width: fit-content;
     height: fit-content;
     padding: 8px;
-    font-size: large;
+    font-size: medium;
     cursor: pointer;
 }
 
@@ -337,6 +337,98 @@ html, body {
 
 #accent-button:active {
     background-color: var(--accent-color-press);
+}
+
+#horizontal-form {
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+    height: fit-content;
+}
+
+#segmented-control {
+    border: none;
+    outline: 1px solid gray;
+    background-color: white;
+    color: black;
+    width: fit-content;
+    height: fit-content;
+    padding: 8px;
+    font-size: large;
+    cursor: pointer;
+}
+
+#segmented-control, #selected-segmented-control {
+    border: none;
+    outline: 1px solid gray;
+    background-color: white;
+    color: black;
+    width: fit-content;
+    height: fit-content;
+    padding: 8px 15px 8px 15px;
+    font-size: medium;
+    cursor: pointer;
+}
+
+#segmented-control:hover {
+    background-color: var(--white-hover);
+}
+
+#segmented-control:active {
+    background-color: var(--white-press);
+}
+
+#selected-segmented-control {
+    background-color: var(--accent-color);
+    color: white;
+    cursor: default;
+}
+
+#collapsible-button, #collapsible-button-open {
+    width: 100%;
+    height: fit-content;
+    padding: 10px;
+    border: none;
+    background-color: lightgray;
+    cursor: pointer;
+    font-size: medium;
+    color: black;
+    text-align: left;
+}
+
+#collapsible-button:hover, #collapsible-button-open:hover {
+    background-color: var(--white-hover);
+}
+
+#collapsible-button:after, #collapsible-button-open:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: black;
+  float: right;
+  margin-left: 5px;
+}
+
+#collapsible-button-open:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+#collapsible-content {
+    width: 100%;
+    height: fit-content;
+}
+
+#list-ui-element {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: fit-content;
+    border: solid gray 1px;
+    margin-top: -1px;
+}
+
+#list-ui-element-content {
+    flex: 1;
+    height: fit-content;
 }
 
 #spinner, #inactive-spinner {

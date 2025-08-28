@@ -1,12 +1,15 @@
 class SettingsDialog extends DialogBox {
     footer;
     applyButton;
+    revertButton;
+    lastElementWasH2 = false;
 
     // === Account ===
     accountLoggedInText;
     loginButton;
 
     // === API Data ===
+    fetchNewHistory;
     changesText;
     fetchChangesButton;
     accidentsText;
@@ -18,8 +21,18 @@ class SettingsDialog extends DialogBox {
 
     // === Dashboard ===
     dashboardNameField;
-    defaultDiaperCatConfig;
-    defaultDiaperCatConfigValues = new Array();
+    defaultDiaperCatDropdown;
+    defaultDiaperCatValues = new Array();
+
+    // === Global ===
+    autoRefreshFrequencySegControl;
+    weekStartsOnSegControl;
+    weightUnitSegControl;
+    currencyField;
+    currencyPrefixSegControl;
+    hourClockFormatDropdown;
+
+    // === Diaper Category Configs ===
 
     constructor() {
         super();
@@ -30,6 +43,10 @@ class SettingsDialog extends DialogBox {
         this.applyButton = createElement("button", this.footer, "accent-button");
         this.applyButton.innerText = "Apply";
 
+        this.revertButton = createElement("button", this.footer, "accent-button");
+        this.revertButton.innerText = "Revert";
+        this.revertButton.style.marginRight = "10px";
+
         // === Account ===
         this.createText("h2", "Account");
         this.accountLoggedInText = this.createText("p", "Not currently logged in");
@@ -37,6 +54,7 @@ class SettingsDialog extends DialogBox {
 
         // === API Data ===
         this.createText("h2", "API Data");
+        this.fetchNewHistory = this.createButton("Fetch New History");
         this.changesText = this.createText("p", "Changes: 0");
         this.fetchChangesButton = this.createButton("Refetch All Changes");
         this.accidentsText = this.createText("p", "Accidents: 0");
@@ -48,40 +66,82 @@ class SettingsDialog extends DialogBox {
 
         // === Dashboard ===
         this.createText("h2", "Dashboard");
-        this.dashboardNameField = this.createTextField("Dashboard Name: ", "dashboard-name");
-        this.defaultDiaperCatConfig = this.createDropdown("Default Diaper Category Config: ", "default-diaper-category-config");
+        this.createText("p", "Dashboard Name");
+        this.dashboardNameField = this.createInputElement("text");
+        this.createText("p", "Default Diaper Category Config");
+        this.defaultDiaperCatDropdown = this.createDropdown();
+
+        // === Global ===
+        this.createText("h2", "Global");
+        this.createText("p", "Auto Refresh Frequency");
+        this.autoRefreshFrequencySegControl = new SegmentedControl(this.content, "Never", "1 minute", "5 minutes", "1 hour");
+        this.createText("p", "Week Starts On");
+        this.weekStartsOnSegControl = new SegmentedControl(this.content, "Saturday", "Sunday", "Monday");
+        this.createText("p", "Weight Unit");
+        this.weightUnitSegControl = new SegmentedControl(this.content, "g", "kg", "oz", "lb");
+        this.createText("p", "Currency Prefix/Suffix");
+        let horizontal = createElement("div", this.content, "horizontal-form");
+        this.currencyField = this.createInputElement("text", horizontal);
+        this.currencyPrefixSegControl = new SegmentedControl(horizontal, "Prefix", "Suffix");
+        this.createText("p", "Clock Format");
+        this.hourClockFormatDropdown = new SegmentedControl(this.content, "24h", "12h");
+
+        // === Diaper Category Configs ===
+        this.createText("h2", "Diaper Category Configs");
+
+        // let test = new ListUI(this.content);
+        // test.onCreateElement.addFunction(test, function(content) {
+        //     let collapsible = new CollapsibleUI(content, "Test");
+        //     new SegmentedControl(collapsible.collapsibleContent, "Test1", "Test2");
+        // });
     }
 
-    createText(tag, text, id = null) {
+    update() {
+        this.autoRefreshFrequencySegControl.updateBorderRadius();
+        this.weekStartsOnSegControl.updateBorderRadius();
+        this.weightUnitSegControl.updateBorderRadius();
+        this.currencyPrefixSegControl.updateBorderRadius();
+        this.hourClockFormatDropdown.updateBorderRadius();
+    }
+
+    show() {
+        super.show();
+        this.update();
+    }
+
+    createText(tag, text, id = null, overrideMarginTop = null) {
         let element = createElement(tag, this.content, id);
         element.innerText = text;
+        if (tag == "p") {
+            element.style.marginTop = this.lastElementWasH2 ? "0px" : "18px";
+            element.style.marginBottom = "6px";
+        }
+        this.lastElementWasH2 = tag == "h2";
         return element;
     }
 
     createButton(text) {
         let element = createElement("button", this.content, "accent-button");
         element.innerText = text;
+        this.lastElementWasH2 = false;
         return element;
     }
 
-    createTextField(labelText, id = null) {
-        let form = createElement("form", this.content, null);
-        let label = createElement("label", form, null);
-        label.htmlFor = id;
-        label.innerText = labelText;
-        let input = createElement("input", form, id);
-        input.name = id;
-        input.type = "text";
+    createInputElement(type, parentElement = null, id = null) {
+        if (parentElement == null)
+            parentElement = this.content;
+
+        let input = createElement("input", parentElement, id);
+        input.type = type;
+        this.lastElementWasH2 = false;
         return input;
     }
 
-    createDropdown(labelText, id = null, ...options) {
-        let form = createElement("form", this.content, null);
-        let label = createElement("label", form, null);
-        label.htmlFor = id;
-        label.innerText = labelText;
-        let select = createElement("select", form, id);
-        select.name = id;
+    createDropdown(parentElement = null, id = null, ...options) {
+        if (parentElement == null)
+            parentElement = this.content;
+
+        let select = createElement("select", parentElement, id);
 
         for (let i = 0; i < options.length; i++) {
             let option = options[i];
@@ -89,6 +149,7 @@ class SettingsDialog extends DialogBox {
             optionElement.innerText = option;
             optionElement.value = option.toLowerCase();
         }
+        this.lastElementWasH2 = false;
         return select;
     }
 }
