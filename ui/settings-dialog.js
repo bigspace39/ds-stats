@@ -33,6 +33,8 @@ class SettingsDialog extends DialogBox {
     hourClockFormatDropdown;
 
     // === Diaper Category Configs ===
+    diaperCategoryConfigList;
+    diaperCategoryElements;
 
     constructor() {
         super();
@@ -43,7 +45,7 @@ class SettingsDialog extends DialogBox {
         this.applyButton = createElement("button", this.footer, "accent-button");
         this.applyButton.innerText = "Apply";
 
-        this.revertButton = createElement("button", this.footer, "accent-button");
+        this.revertButton = createElement("button", this.footer, "cancel-button");
         this.revertButton.innerText = "Revert";
         this.revertButton.style.marginRight = "10px";
 
@@ -89,11 +91,10 @@ class SettingsDialog extends DialogBox {
         // === Diaper Category Configs ===
         this.createText("h2", "Diaper Category Configs");
 
-        // let test = new ListUI(this.content);
-        // test.onCreateElement.addFunction(test, function(content) {
-        //     let collapsible = new CollapsibleUI(content, "Test");
-        //     new SegmentedControl(collapsible.collapsibleContent, "Test1", "Test2");
-        // });
+        this.diaperCategoryConfigList = new ListUI(this.content);
+        this.diaperCategoryConfigList.onAddElement.addFunction(this, function(content) {
+            let diaperCategoryConfig = new DiaperCategoryConfigUI(content);
+        });
     }
 
     update() {
@@ -109,8 +110,11 @@ class SettingsDialog extends DialogBox {
         this.update();
     }
 
-    createText(tag, text, id = null, overrideMarginTop = null) {
-        let element = createElement(tag, this.content, id);
+    createText(tag, text, parentElement = null, id = null) {
+        if (parentElement == null)
+            parentElement = this.content;
+
+        let element = createElement(tag, parentElement, id);
         element.innerText = text;
         if (tag == "p") {
             element.style.marginTop = this.lastElementWasH2 ? "0px" : "18px";
@@ -120,8 +124,11 @@ class SettingsDialog extends DialogBox {
         return element;
     }
 
-    createButton(text) {
-        let element = createElement("button", this.content, "accent-button");
+    createButton(text, parentElement = null) {
+        if (parentElement == null)
+            parentElement = this.content;
+
+        let element = createElement("button", parentElement, "accent-button");
         element.innerText = text;
         this.lastElementWasH2 = false;
         return element;
@@ -155,3 +162,39 @@ class SettingsDialog extends DialogBox {
 }
 
 settingsDialog = new SettingsDialog();
+
+class DiaperCategoryConfigUI {
+    collapsible;
+    horizontal;
+    configNameField;
+    list;
+
+    constructor(parentElement) {
+        this.collapsible = new CollapsibleUI(parentElement, "Default");
+        this.horizontal = createElement("div", this.collapsible.collapsibleContent, "horizontal-form");
+        let label = createElement("p", this.horizontal, "form-inline-label");
+        label.innerText = "Config Name: ";
+        this.configName = settingsDialog.createInputElement("text", this.horizontal);
+        this.list = new ListUI(this.collapsible.collapsibleContent);
+        this.list.onAddElement.addFunction(this, function(content) {
+            content.style.height = "auto";
+            let diaperCategory = new DiaperCategoryUI(content);
+        });
+    }
+}
+
+class DiaperCategoryUI {
+    horizontal;
+    categoryName;
+    filter;
+    colorPicker;
+
+    constructor(parentElement) {
+        this.horizontal = createElement("div", parentElement, "horizontal-form");
+        this.horizontal.style.width = "100%";
+        this.horizontal.style.height = "100%";
+        this.categoryName = settingsDialog.createInputElement("text", this.horizontal);
+        this.filter = new DiaperTypeFilter(this.horizontal);
+        this.colorPicker = new ColorPicker(this.horizontal);
+    }
+}

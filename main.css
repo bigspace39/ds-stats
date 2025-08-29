@@ -6,6 +6,9 @@
     --accent-color: rgb(71, 40, 155);
     --accent-color-hover: rgb(100, 69, 184);
     --accent-color-press: rgb(120, 89, 204);
+    --cancel-color: rgb(231, 76, 60);
+    --cancel-color-hover: rgb(192, 57, 43);
+    --cancel-color-press: rgb(179, 54, 41);
     --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     --transition-duration: 0.5s;
     --z-index-toolbar: calc(2147483647 - 100);
@@ -319,7 +322,7 @@ html, body {
     padding-right: 15px;
 }
 
-#accent-button {
+#accent-button, #cancel-button {
     border: none;
     outline: none;
     background-color: var(--accent-color);
@@ -337,6 +340,19 @@ html, body {
 
 #accent-button:active {
     background-color: var(--accent-color-press);
+}
+
+#cancel-button {
+    background-color: var(--cancel-color);
+    color: white;
+}
+
+#cancel-button:hover {
+    background-color: var(--cancel-color-hover);
+}
+
+#cancel-button:active {
+    background-color: var(--cancel-color-press);
 }
 
 #horizontal-form {
@@ -429,6 +445,31 @@ html, body {
 #list-ui-element-content {
     flex: 1;
     height: fit-content;
+}
+
+#diaper-type-filter {
+    flex: 1;
+    height: auto;
+    justify-content: center;
+    align-items: center;
+    display: inline-flex;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    background-color: lightgray;
+    color: black;
+}
+
+#color-picker-preview {
+    background-color: red;
+    height: auto;
+    width: auto;
+    aspect-ratio: 1;
+    cursor: pointer;
+}
+
+#form-inline-label {
+    margin: 6px 6px;
 }
 
 #spinner, #inactive-spinner {

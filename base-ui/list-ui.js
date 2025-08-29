@@ -1,6 +1,7 @@
 class ListUI {
     listDiv = null;
-    onCreateElement = new Delegate();
+    onAddElement = new Delegate();
+    onRemoveElement = new Delegate();
     elements = new Array();
     addButton = null;
 
@@ -18,7 +19,7 @@ class ListUI {
     addElement() {
         let element = createElement("div", this.listDiv, "list-ui-element");
         let content = createElement("div", element, "list-ui-element-content");
-        let remove = createElement("button", element, "accent-button");
+        let remove = createElement("button", element, "cancel-button");
         remove.innerText = "-";
         remove.style.padding = "8px 15px";
         remove.style.alignSelf = "stretch";
@@ -29,7 +30,7 @@ class ListUI {
             this.list.removeElement(this.list.elements.indexOf(this.element));
         });
         this.elements.push(element);
-        this.onCreateElement.broadcast(content);
+        this.onAddElement.broadcast(content);
     }
 
     removeElement(index) {
@@ -37,5 +38,6 @@ class ListUI {
         element.innerHTML = "";
         element.remove();
         this.elements.splice(index, 1);
+        this.onRemoveElement.broadcast(index);
     }
 }
