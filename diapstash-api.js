@@ -13,9 +13,9 @@ const TOKEN_URL = "https://account.diapstash.com/oidc/token";
 const BASE_API_URL = "https://api.diapstash.com/api";
 const CHANGE_API_URL = `${BASE_API_URL}/v1/history/changes`;
 const ACCIDENT_API_URL = `${BASE_API_URL}/v1/history/accidents`;
-const TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types`;
-const CUSTOM_TYPES_API_URL = `${BASE_API_URL}/v0/diaper/types/custom`;
-const BRANDS_API_URL = `${BASE_API_URL}/v0/diaper/brands`;
+const TYPES_API_URL = `${BASE_API_URL}/v1/type/types`;
+const CUSTOM_TYPES_API_URL = `${BASE_API_URL}/v1/type/types/custom`;
+const BRANDS_API_URL = `${BASE_API_URL}/v1/brand/brands`;
 const SCOPE = "openid offline_access username cloud-sync.history cloud-sync.stock cloud-sync.types";
 
 let changeHistory = new Array();
@@ -66,8 +66,15 @@ async function fetchData() {
         await fetchAllBrands();
     }
 
-    await fetchChangeHistory();
-    await fetchAccidentHistory();
+    if (changeHistory.length == 0)
+        await fetchChangeHistory();
+    else
+        await fetchNewChangeHistory();
+
+    if (accidentHistory.length == 0)
+        await fetchAccidentHistory();
+    else
+        await fetchNewAccidentHistory();
 
     createdWidgets.forEach(function(value, key, map) {
         if (value.dashboardId != selectedDashboard.boardId)
@@ -91,8 +98,13 @@ async function fetchChangeHistory() {
         return;
 
     changeHistory = history.data;
-    for (let i = 0; i < changeHistory.length; i++) {
-        const change = changeHistory[i];
+    await modifyChangeHistory(changeHistory);
+    localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
+}
+
+async function modifyChangeHistory(history) {
+    for (let i = 0; i < history.length; i++) {
+        const change = history[i];
         if (change.startTime != null)
             change.startTime = new Date(change.startTime);
 
@@ -109,8 +121,7 @@ async function fetchChangeHistory() {
     }
 
     console.log("Modified change history:");
-    console.log(changeHistory);
-    localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
+    console.log(history);
 }
 
 async function fetchAccidentHistory() {
@@ -123,7 +134,73 @@ async function fetchAccidentHistory() {
         return;
 
     accidentHistory = history.data;
+    await modifyAccidentHistory(accidentHistory);
     localStorage.setItem("accidentHistory", JSON.stringify(accidentHistory));
+}
+
+async function modifyAccidentHistory(history) {
+    for (let i = 0; i < history.length; i++) {
+        const accident = history[i];
+        if (accident.when != null)
+            accident.when = new Date(accident.when);
+    }
+
+    console.log("Modified accident history:");
+    console.log(history);
+}
+
+async function fetchNewChangeHistory() {
+    const lastChange = changeHistory[changeHistory.length - 1];
+    let params = new URLSearchParams({
+        size: 0,
+        "endTime.gte": lastChange.startTime.toJSON()
+    });
+
+    let history = await fetchObjectFromAPI(CHANGE_API_URL, params, "new change history");
+    if (history == null || history.data == null || history.data.length == 0)
+        return;
+
+    await modifyChangeHistory(history.data);
+    for (let i = 0; i < history.data.length; i++) {
+        const change = history.data[i];
+        if (lastChange.id == change.id) {
+            changeHistory[changeHistory.length - 1] = change;
+            continue;
+        }
+
+        changeHistory.push(change);
+    }
+
+    localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
+    console.log("Change history after fetching new changes:");
+    console.log(changeHistory);
+}
+
+async function fetchNewAccidentHistory() {
+    const lastAccident = accidentHistory[accidentHistory.length - 1];
+    let params = new URLSearchParams({
+        size: 0,
+        "when.gte": lastAccident.when.toJSON()
+    });
+
+    let history = await fetchObjectFromAPI(ACCIDENT_API_URL, params, "new accident history");
+    if (history == null || history.data == null || history.data.length == 0)
+        return;
+
+    await modifyAccidentHistory(history.data);
+    for (let i = 0; i < history.data.length; i++) {
+        const accident = history.data[i];
+        if (lastAccident.id == accident.id) {
+            accidentHistory[accidentHistory.length - 1] = accident;
+            continue;
+        }
+
+        accidentHistory.push(accident);
+    }
+
+    localStorage.setItem("accidentHistory", JSON.stringify(accidentHistory));
+    console.log("Accident history after fetching new accidents:");
+    console.log(accidentHistory);
 }
 
 async function fetchAllTypes() {
@@ -139,13 +216,13 @@ async function fetchAllTypes() {
         types.set(temp.data[i].id, temp.data[i]);
     }
     
-    // let customTemp = await fetchObjectFromAPI(CUSTOM_TYPES_API_URL, params, "custom types");
-    // if (customTemp == null || customTemp.data == null)
-    //     return;
+    let customTemp = await fetchObjectFromAPI(CUSTOM_TYPES_API_URL, params, "custom types");
+    if (customTemp == null || customTemp.data == null)
+        return;
 
-    // for (let i = 0; i < customTemp.data.length; i++) {
-    //     brands.set(customTemp.data[i].id, customTemp.data[i]);
-    // }
+    for (let i = 0; i < customTemp.data.length; i++) {
+        types.set(customTemp.data[i].id, customTemp.data[i]);
+    }
 }
 
 async function fetchAllBrands() {
