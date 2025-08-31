@@ -10,7 +10,9 @@ function createElement(tag, parentElement, id) {
     if (id != null)
         element.id = id;
     
-    parentElement.appendChild(element);
+    if (parentElement != null)
+        parentElement.appendChild(element);
+    
     return element;
 }
 

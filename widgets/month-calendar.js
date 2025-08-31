@@ -1,6 +1,8 @@
 class MonthCalendar extends Widget {
+    static displayName = "Month Calendar";
+
     static {
-        possibleWidgets.push(new MonthCalendar());
+        possibleWidgets.push(this);
     }
 
     monthHeader = null;
@@ -16,6 +18,7 @@ class MonthCalendar extends Widget {
     datesTextBoxes = new Array();
     statusBars = new Array();
     statusBarSections = new Array();
+    tippyInstances = new Array();
     selectedMonth;
 
     days = new Map();
@@ -157,10 +160,14 @@ class MonthCalendar extends Widget {
         const monthStartDate = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth(), 1);
 
         for(let i = 0; i < this.statusBarSections.length; i++) {
-            this.statusBarSections[i].innerHTML = "";
             this.statusBarSections[i].remove();
         }
         this.statusBarSections = new Array();
+
+        for(let i = 0; i < this.tippyInstances.length; i++) {
+            this.tippyInstances[i].destroy();
+        }
+        this.tippyInstances = new Array();
         
         this.accumulatedPercentage = 0.0;
         let lastChange = this.changeBeforeMonth;
@@ -246,8 +253,11 @@ class MonthCalendar extends Widget {
         this.statusBarSections.push(section);
 
         if (!transparent && tooltip != null) {
-            const tooltipElement = createElement("span", section, "status-bar-section-tooltip");
-            tooltipElement.innerText = tooltip;
+            let tippyInstance = tippy(section, {
+                content: tooltip,
+                placement: "bottom"
+            });
+            this.tippyInstances.push(tippyInstance);
         }
 
         if (!done && percentage > maxPercentage && index < this.statusBars.length - 1) {

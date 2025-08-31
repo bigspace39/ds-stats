@@ -195,6 +195,6 @@ class DiaperCategoryUI {
         this.horizontal.style.height = "100%";
         this.categoryName = settingsDialog.createInputElement("text", this.horizontal);
         this.filter = new DiaperTypeFilter(this.horizontal);
-        this.colorPicker = new ColorPicker(this.horizontal);
+        this.colorPicker = new ColorPicker(this.horizontal, "horizontal-color-picker");
     }
 }

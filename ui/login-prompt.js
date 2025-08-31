@@ -7,7 +7,7 @@ class LoginPrompt {
         this.div = createElement("div", mainDiv, "login-box");
         this.p = createElement("p", this.div, "login-text");
         this.p.innerText = "You need to login!";
-        this.button = createElement("button", this.div, "login-button");
+        this.button = createElement("button", this.div, "accent-button");
         this.button.innerText = "Login";
         this.button.addEventListener("click", async function() {
             await login();

@@ -27,6 +27,10 @@ let isFetching = false;
 let onStartFetchAPIData = new Delegate();
 let onStopFetchAPIData = new Delegate();
 
+if (!crypto.subtle) {
+    console.error("Web Crypto API (subtle) is not available. PKCE is unavailable so we cannot fetch any API data");
+}
+
 async function handleAPI() {
     if (window.location.search) {
         await handleOAuthCallback();

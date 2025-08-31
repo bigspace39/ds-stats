@@ -6,13 +6,6 @@ createSavedDashboards();
 createSavedWidgets();
 await handleAPI();
 
-if (crypto.subtle) {
-    console.log("Web Crypto API (subtle) is available.");
-}
-else {
-    console.log("Web Crypto API (subtle) is not available.");
-}
-
 function createSavedDashboards() {
     if (localStorage.dashboards) {
         let tempDashboards = JSON.parse(localStorage.dashboards);

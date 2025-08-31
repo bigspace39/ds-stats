@@ -269,7 +269,6 @@ html, body {
     height: 600px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 }
 
 #dialog-header {
@@ -306,7 +305,7 @@ html, body {
 #dialog-content {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: visible;
     display: flex;
     flex-direction: column;
     padding-left: 15px;
@@ -460,12 +459,10 @@ html, body {
     color: black;
 }
 
-#color-picker-preview {
-    background-color: red;
-    height: auto;
-    width: auto;
-    aspect-ratio: 1;
-    cursor: pointer;
+#diaper-type-filter-edit {
+    background-color: white;
+    height: 400px;
+    width: 300px;
 }
 
 #form-inline-label {
@@ -513,4 +510,23 @@ html, body {
     100% {
         transform: rotate(220deg);
     }
-} 
+}
+
+#horizontal-color-picker {
+    height: 35px;
+    width: 35px;
+}
+
+#coloris-button {
+    width: 100%;
+}
+
+.coloris {
+    height: 100%;
+    width: 100%;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    color: transparent;
+    cursor: pointer;
+}

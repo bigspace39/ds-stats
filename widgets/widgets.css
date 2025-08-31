@@ -189,27 +189,6 @@
     transition-duration: var(--transition-duration);
 }
 
-#status-bar-section #status-bar-section-tooltip {
-    visibility: hidden;
-    width: auto;
-    background-color: black;
-    color: white;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 5px;
-    
-    position: absolute;
-    z-index: 1;
-
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%)
-}
-
-#status-bar-section:hover #status-bar-section-tooltip {
-    visibility: visible;
-}
-
 #status-bar-section-dummy {
     height: 100%;
 }

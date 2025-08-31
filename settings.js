@@ -33,6 +33,6 @@ function toCurrencyString(cost) {
     return "" + currency + cost;
 }
 
-function dateToTimeString() {
-    
+function dateToTimeString(date) {
+    // TODO: FINISH
 }

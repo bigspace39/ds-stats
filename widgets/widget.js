@@ -4,7 +4,8 @@ let createdStorageWidgets = new Map();
 let inEditMode = false;
 
 function createWidget(dashboardId, widgetClassIndex, widgetId = -1) {
-    let widget = Object.assign(Object.create(Object.getPrototypeOf(possibleWidgets[widgetClassIndex])), possibleWidgets[widgetClassIndex]);
+    let WidgetClass = possibleWidgets[widgetClassIndex];
+    let widget = new WidgetClass();
     widget.create(dashboards.get(dashboardId).board, widgetClassIndex, dashboardId, widgetId);
 }
 
