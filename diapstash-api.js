@@ -153,7 +153,7 @@ async function fetchNewChangeHistory() {
     const lastChange = changeHistory[changeHistory.length - 1];
     let params = new URLSearchParams({
         size: 0,
-        "endTime.gte": lastChange.startTime.toJSON()
+        "startTime.gte": lastChange.startTime.toJSON()
     });
 
     let history = await fetchObjectFromAPI(CHANGE_API_URL, params, "new change history");
