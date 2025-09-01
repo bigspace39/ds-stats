@@ -36,6 +36,9 @@ class SettingsDialog extends DialogBox {
     diaperCategoryConfigList;
     diaperCategoryElements = new Array();
 
+    // === Old Diaper Data ===
+    oldDiaperDataTextArea;
+
     constructor() {
         super();
         UIBuilder.setDefaultParent(this.content);
@@ -99,15 +102,15 @@ class SettingsDialog extends DialogBox {
             this.diaperCategoryElements.splice(index, 1);
         });
 
+        // === Old Diaper Data ===
+        UIBuilder.createHeading("Old Diaper Data");
+        this.oldDiaperDataTextArea = UIBuilder.createTextArea();
+
         UIBuilder.resetDefaultParent();
     }
 
     update() {
-        this.autoRefreshFrequencySegControl.updateBorderRadius();
-        this.weekStartsOnSegControl.updateBorderRadius();
-        this.weightUnitSegControl.updateBorderRadius();
-        this.currencyPrefixSegControl.updateBorderRadius();
-        this.hourClockFormatDropdown.updateBorderRadius();
+        
     }
 
     show() {

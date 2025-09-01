@@ -21,6 +21,16 @@ html, body {
     overflow: hidden;
 }
 
+h1, h2, p {
+    color: black;
+}
+
+textarea {
+    width: 100%;
+    height: 300px;
+    resize: vertical;
+}
+
 #main {
     flex-direction: column;
     display: flex;
@@ -331,6 +341,7 @@ html, body {
     padding: 8px;
     font-size: medium;
     cursor: pointer;
+    text-wrap: nowrap;
 }
 
 #accent-button:hover {
@@ -359,18 +370,8 @@ html, body {
     flex-direction: row;
     width: fit-content;
     height: fit-content;
-}
-
-#segmented-control {
-    border: none;
-    outline: 1px solid gray;
-    background-color: white;
-    color: black;
-    width: fit-content;
-    height: fit-content;
-    padding: 8px;
-    font-size: large;
-    cursor: pointer;
+    max-width: 100%;
+    flex-wrap: wrap;
 }
 
 #segmented-control, #selected-segmented-control {
@@ -381,8 +382,11 @@ html, body {
     width: fit-content;
     height: fit-content;
     padding: 8px 15px 8px 15px;
+    margin: 2px;
     font-size: medium;
     cursor: pointer;
+    text-wrap: nowrap;
+    border-radius: 10px;
 }
 
 #segmented-control:hover {
@@ -463,6 +467,8 @@ html, body {
     background-color: white;
     height: 400px;
     width: 300px;
+    padding: 10px;
+    overflow-y: auto;
 }
 
 #form-inline-label {

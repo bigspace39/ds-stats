@@ -1,12 +1,12 @@
 class UIBuilder {
-    static defaultParent = null;
+    static #defaultParent = null;
 
     static setDefaultParent(parent) {
-        this.defaultParent = parent;
+        this.#defaultParent = parent;
     }
 
     static resetDefaultParent() {
-        this.defaultParent = null;
+        this.#defaultParent = null;
     }
 
     static createHeading(text, parentElement = null) {
@@ -54,6 +54,16 @@ class UIBuilder {
         return input;
     }
 
+    static createTextArea(parentElement = null) {
+        parentElement = this.#getParentElement(parentElement);
+
+        let div = createElement("div", parentElement, null);
+        div.style.width = "100%";
+        div.style.height = "fit-content";
+        let element = createElement("textarea", div, null);
+        return element;
+    }
+
     static createDropdown(parentElement = null, ...options) {
         parentElement = this.#getParentElement(parentElement);
         let select = createElement("select", parentElement, null);
@@ -76,10 +86,10 @@ class UIBuilder {
     static #getParentElement(parentElement) {
         if (parentElement == null)
         {
-            if (this.defaultParent == null)
+            if (this.#defaultParent == null)
                 console.error("No default parent set!");
 
-            return this.defaultParent;
+            return this.#defaultParent;
         }
 
         return parentElement;
