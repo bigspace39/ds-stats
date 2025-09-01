@@ -34,67 +34,72 @@ class SettingsDialog extends DialogBox {
 
     // === Diaper Category Configs ===
     diaperCategoryConfigList;
-    diaperCategoryElements;
+    diaperCategoryElements = new Array();
 
     constructor() {
         super();
+        UIBuilder.setDefaultParent(this.content);
         this.setTitle("Settings");
         this.hide();
 
         this.footer = createElement("div", this.div, "dialog-footer");
-        this.applyButton = createElement("button", this.footer, "accent-button");
-        this.applyButton.innerText = "Apply";
-
-        this.revertButton = createElement("button", this.footer, "cancel-button");
-        this.revertButton.innerText = "Revert";
+        this.applyButton = UIBuilder.createButton("Apply", this.footer);
+        this.revertButton = UIBuilder.createButton("Revert", this.footer, ButtonStyle.Cancel);
         this.revertButton.style.marginRight = "10px";
 
         // === Account ===
-        this.createText("h2", "Account");
-        this.accountLoggedInText = this.createText("p", "Not currently logged in");
-        this.loginButton = this.createButton("Login");
+        UIBuilder.createHeading("Account");
+        this.accountLoggedInText = UIBuilder.createText("Not currently logged in");
+        this.loginButton = UIBuilder.createButton("Login");
 
         // === API Data ===
-        this.createText("h2", "API Data");
-        this.fetchNewHistory = this.createButton("Fetch New History");
-        this.changesText = this.createText("p", "Changes: 0");
-        this.fetchChangesButton = this.createButton("Refetch All Changes");
-        this.accidentsText = this.createText("p", "Accidents: 0");
-        this.fetchAccidentsButton = this.createButton("Refetch All Accidents");
-        this.typesText = this.createText("p", "Types: 0");
-        this.fetchTypesButton = this.createButton("Refetch All Types");
-        this.brandsText = this.createText("p", "Brands: 0");
-        this.fetchBrandsButton = this.createButton("Refetch All Brands");
+        UIBuilder.createHeading("API Data");
+        this.fetchNewHistory = UIBuilder.createButton("Fetch New History");
+        this.changesText = UIBuilder.createText("Changes: 0");
+        this.fetchChangesButton = UIBuilder.createButton("Refetch All Changes");
+        this.accidentsText = UIBuilder.createText("Accidents: 0");
+        this.fetchAccidentsButton = UIBuilder.createButton("Refetch All Accidents");
+        this.typesText = UIBuilder.createText("Types: 0");
+        this.fetchTypesButton = UIBuilder.createButton("Refetch All Types");
+        this.brandsText = UIBuilder.createText("Brands: 0");
+        this.fetchBrandsButton = UIBuilder.createButton("Refetch All Brands");
 
         // === Dashboard ===
-        this.createText("h2", "Dashboard");
-        this.createText("p", "Dashboard Name");
-        this.dashboardNameField = this.createInputElement("text");
-        this.createText("p", "Default Diaper Category Config");
-        this.defaultDiaperCatDropdown = this.createDropdown();
+        UIBuilder.createHeading("Dashboard");
+        UIBuilder.createText("Dashboard Name");
+        this.dashboardNameField = UIBuilder.createTextInput();
+        UIBuilder.createText("Default Diaper Category Config");
+        this.defaultDiaperCatDropdown = UIBuilder.createDropdown();
 
         // === Global ===
-        this.createText("h2", "Global");
-        this.createText("p", "Auto Refresh Frequency");
+        UIBuilder.createHeading("Global");
+        UIBuilder.createText("Auto Refresh Frequency");
         this.autoRefreshFrequencySegControl = new SegmentedControl(this.content, "Never", "1 minute", "5 minutes", "1 hour");
-        this.createText("p", "Week Starts On");
+        UIBuilder.createText("Week Starts On");
         this.weekStartsOnSegControl = new SegmentedControl(this.content, "Saturday", "Sunday", "Monday");
-        this.createText("p", "Weight Unit");
+        UIBuilder.createText("Weight Unit");
         this.weightUnitSegControl = new SegmentedControl(this.content, "g", "kg", "oz", "lb");
-        this.createText("p", "Currency Prefix/Suffix");
-        let horizontal = createElement("div", this.content, "horizontal-form");
-        this.currencyField = this.createInputElement("text", horizontal);
+        UIBuilder.createText("Currency Prefix/Suffix");
+        let horizontal = UIBuilder.createHorizontal();
+        this.currencyField = UIBuilder.createTextInput(horizontal);
         this.currencyPrefixSegControl = new SegmentedControl(horizontal, "Prefix", "Suffix");
-        this.createText("p", "Clock Format");
+        UIBuilder.createText("Clock Format");
         this.hourClockFormatDropdown = new SegmentedControl(this.content, "24h", "12h");
 
         // === Diaper Category Configs ===
-        this.createText("h2", "Diaper Category Configs");
+        UIBuilder.createHeading("Diaper Category Configs");
 
         this.diaperCategoryConfigList = new ListUI(this.content);
         this.diaperCategoryConfigList.onAddElement.addFunction(this, function(content) {
             let diaperCategoryConfig = new DiaperCategoryConfigUI(content);
+            this.diaperCategoryElements.push(diaperCategoryConfig);
         });
+
+        this.diaperCategoryConfigList.onRemoveElement.addFunction(this, function(index) {
+            this.diaperCategoryElements.splice(index, 1);
+        });
+
+        UIBuilder.resetDefaultParent();
     }
 
     update() {
@@ -109,56 +114,6 @@ class SettingsDialog extends DialogBox {
         super.show();
         this.update();
     }
-
-    createText(tag, text, parentElement = null, id = null) {
-        if (parentElement == null)
-            parentElement = this.content;
-
-        let element = createElement(tag, parentElement, id);
-        element.innerText = text;
-        if (tag == "p") {
-            element.style.marginTop = this.lastElementWasH2 ? "0px" : "18px";
-            element.style.marginBottom = "6px";
-        }
-        this.lastElementWasH2 = tag == "h2";
-        return element;
-    }
-
-    createButton(text, parentElement = null) {
-        if (parentElement == null)
-            parentElement = this.content;
-
-        let element = createElement("button", parentElement, "accent-button");
-        element.innerText = text;
-        this.lastElementWasH2 = false;
-        return element;
-    }
-
-    createInputElement(type, parentElement = null, id = null) {
-        if (parentElement == null)
-            parentElement = this.content;
-
-        let input = createElement("input", parentElement, id);
-        input.type = type;
-        this.lastElementWasH2 = false;
-        return input;
-    }
-
-    createDropdown(parentElement = null, id = null, ...options) {
-        if (parentElement == null)
-            parentElement = this.content;
-
-        let select = createElement("select", parentElement, id);
-
-        for (let i = 0; i < options.length; i++) {
-            let option = options[i];
-            let optionElement = createElement("option", select);
-            optionElement.innerText = option;
-            optionElement.value = option.toLowerCase();
-        }
-        this.lastElementWasH2 = false;
-        return select;
-    }
 }
 
 settingsDialog = new SettingsDialog();
@@ -168,17 +123,19 @@ class DiaperCategoryConfigUI {
     horizontal;
     configNameField;
     list;
+    listCategories = new Array();
 
     constructor(parentElement) {
         this.collapsible = new CollapsibleUI(parentElement, "Default");
-        this.horizontal = createElement("div", this.collapsible.collapsibleContent, "horizontal-form");
-        let label = createElement("p", this.horizontal, "form-inline-label");
-        label.innerText = "Config Name: ";
-        this.configName = settingsDialog.createInputElement("text", this.horizontal);
+        this.configName = UIBuilder.createTextInput(this.collapsible.collapsibleContent, "Config Name: ");
         this.list = new ListUI(this.collapsible.collapsibleContent);
         this.list.onAddElement.addFunction(this, function(content) {
             content.style.height = "auto";
             let diaperCategory = new DiaperCategoryUI(content);
+            this.listCategories.push(diaperCategory);
+        });
+        this.list.onRemoveElement.addFunction(this, function(index) {
+            this.listCategories.splice(index, 1);
         });
     }
 }
@@ -190,10 +147,10 @@ class DiaperCategoryUI {
     colorPicker;
 
     constructor(parentElement) {
-        this.horizontal = createElement("div", parentElement, "horizontal-form");
+        this.horizontal = UIBuilder.createHorizontal(parentElement);
         this.horizontal.style.width = "100%";
         this.horizontal.style.height = "100%";
-        this.categoryName = settingsDialog.createInputElement("text", this.horizontal);
+        this.categoryName = UIBuilder.createTextInput(this.horizontal);
         this.filter = new DiaperTypeFilter(this.horizontal);
         this.colorPicker = new ColorPicker(this.horizontal, "horizontal-color-picker");
     }

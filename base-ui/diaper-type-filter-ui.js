@@ -16,5 +16,7 @@ class DiaperTypeFilter {
             theme: "light",
             interactive: true
         });
+
+        
     }
 }
