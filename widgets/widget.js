@@ -1,12 +1,11 @@
 let possibleWidgets = [];
 let createdWidgets = new Map();
-let createdStorageWidgets = new Map();
 let inEditMode = false;
 
-function createWidget(dashboardId, widgetClassIndex, widgetId = -1) {
+function createWidget(dashboardId, widgetClassIndex, widgetId = -1, transform = null) {
     let WidgetClass = possibleWidgets[widgetClassIndex];
-    let widget = new WidgetClass();
-    widget.create(dashboards.get(dashboardId).board, widgetClassIndex, dashboardId, widgetId);
+    let widget = new WidgetClass(dashboards.get(dashboardId).board, widgetClassIndex, dashboardId, widgetId, transform);
+    return widget;
 }
 
 function destroyWidget(widgetId) {
@@ -46,7 +45,7 @@ class Widget {
     classIndex = -1;
     dashboardId = -1;
 
-    create(dashboardElement, classIndex, dashboardId, widgetId = -1) {
+    constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null) {
         this.mainDiv = createElement("div", dashboardElement, "widget");
         this.contentDiv = createElement("div", this.mainDiv, "widget-content");
         this.deleteButton = createElement("button", this.mainDiv, "widget-delete-button");
@@ -73,9 +72,10 @@ class Widget {
         }
 
         createdWidgets.set(this.widgetId, this);
-        createdStorageWidgets.set(this.widgetId, {class: this.classIndex, dashboard: this.dashboardId});
-        this.saveWidgets();
-        this.mainDiv.style.transform = localStorage.getItem(this.getCookieBaseName() + "-pos");
+        if (transform != null)
+            this.mainDiv.style.transform = transform;
+        
+        this.saveWidget();
         this.draggable = Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.savePosition, onDragEndParams: [this]})[0];
         this.exitEditMode();
     }
@@ -98,20 +98,20 @@ class Widget {
         this.mainDiv.innerHTML = "";
         this.mainDiv.remove();
         createdWidgets.delete(this.widgetId);
-        createdStorageWidgets.delete(this.widgetId);
-        this.saveWidgets();
+        deleteFromObjectStore(widgetStoreName, this.widgetId);
     }
 
-    getCookieBaseName() {
-        return this.mainDiv.id + this.widgetId;
-    }
-
-    saveWidgets() {
-        localStorage.widgets = JSON.stringify(Array.from(createdStorageWidgets.entries()));
+    saveWidget() {
+        let temp = new Object();
+        temp.id = this.widgetId;
+        temp.class = this.classIndex;
+        temp.dashboardId = this.dashboardId;
+        temp.transform = this.mainDiv.style.transform;
+        putInObjectStore(widgetStoreName, temp);
     }
 
     savePosition(widget) {
-        localStorage.setItem(widget.getCookieBaseName() + "-pos", widget.mainDiv.style.transform);
+        widget.saveWidget();
     }
 
     determineId() {

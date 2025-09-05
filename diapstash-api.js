@@ -99,7 +99,8 @@ async function fetchChangeHistory() {
 
     changeHistory = history.data;
     await modifyChangeHistory(changeHistory);
-    localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
+    await clearObjectStore(changeStoreName);
+    await addArrayToObjectStore(changeStoreName, changeHistory);
 }
 
 async function modifyChangeHistory(history) {
@@ -135,7 +136,8 @@ async function fetchAccidentHistory() {
 
     accidentHistory = history.data;
     await modifyAccidentHistory(accidentHistory);
-    localStorage.setItem("accidentHistory", JSON.stringify(accidentHistory));
+    await clearObjectStore(accidentStoreName);
+    await addArrayToObjectStore(accidentStoreName, accidentHistory);
 }
 
 async function modifyAccidentHistory(history) {
@@ -161,17 +163,8 @@ async function fetchNewChangeHistory() {
         return;
 
     await modifyChangeHistory(history.data);
-    for (let i = 0; i < history.data.length; i++) {
-        const change = history.data[i];
-        if (lastChange.id == change.id) {
-            changeHistory[changeHistory.length - 1] = change;
-            continue;
-        }
-
-        changeHistory.push(change);
-    }
-
-    localStorage.setItem("changeHistory", JSON.stringify(changeHistory));
+    await putArrayInObjectStore(changeStoreName, history.data);
+    changeHistory = await getAllFromObjectStore(changeStoreName, "startDate");
     console.log("Change history after fetching new changes:");
     console.log(changeHistory);
 }
@@ -188,17 +181,8 @@ async function fetchNewAccidentHistory() {
         return;
 
     await modifyAccidentHistory(history.data);
-    for (let i = 0; i < history.data.length; i++) {
-        const accident = history.data[i];
-        if (lastAccident.id == accident.id) {
-            accidentHistory[accidentHistory.length - 1] = accident;
-            continue;
-        }
-
-        accidentHistory.push(accident);
-    }
-
-    localStorage.setItem("accidentHistory", JSON.stringify(accidentHistory));
+    await putArrayInObjectStore(accidentStoreName, history.data);
+    accidentHistory = await getAllFromObjectStore(accidentStoreName, "when");
     console.log("Accident history after fetching new accidents:");
     console.log(accidentHistory);
 }
@@ -207,6 +191,9 @@ async function fetchAllTypes() {
     let params = new URLSearchParams({
         size: 0
     });
+
+    await clearObjectStore(typeStoreName);
+    types.clear();
 
     let temp = await fetchObjectFromAPI(TYPES_API_URL, params, "types");
     if (temp == null || temp.data == null)
@@ -223,12 +210,18 @@ async function fetchAllTypes() {
     for (let i = 0; i < customTemp.data.length; i++) {
         types.set(customTemp.data[i].id, customTemp.data[i]);
     }
+
+    await putArrayInObjectStore(typeStoreName, customTemp.data);
+    await putArrayInObjectStore(typeStoreName, temp.data);
 }
 
 async function fetchAllBrands() {
     let params = new URLSearchParams({
         size: 0
     });
+
+    await clearObjectStore(brandStoreName);
+    brands.clear();
 
     let temp = await fetchObjectFromAPI(BRANDS_API_URL, params, "brands");
     if (temp == null || temp.data == null)
@@ -237,6 +230,8 @@ async function fetchAllBrands() {
     for (let i = 0; i < temp.data.length; i++) {
         brands.set(temp.data[i].code, temp.data[i]);
     }
+
+    await addArrayToObjectStore(brandStoreName, temp.data);
 }
 
 async function getType(id) {
@@ -258,7 +253,7 @@ async function getType(id) {
 
     type = type.type;
     types.set(id, type);
-    localStorage.setItem("types", JSON.stringify(Array.from(types.entries())));
+    addToObjectStore(typeStoreName, type);
     return type;
 }
 
@@ -277,7 +272,7 @@ async function getBrand(code) {
 
     brand = brand.brand;
     brands.set(code, brand);
-    localStorage.setItem("brands", JSON.stringify(Array.from(brands.entries())));
+    addToObjectStore(brandStoreName, brand);
     return brand;
 }
 
@@ -343,35 +338,26 @@ async function fetchObjectFromAPI(url, params, debugString) {
     return obj;
 }
 
-function deserializeStoredAPIData() {
-    let temp = localStorage.getItem("changeHistory");
-    if (temp) {
-        changeHistory = JSON.parse(temp);
-        for (let i = 0; i < changeHistory.length; i++) {
-            let change = changeHistory[i];
-            if (change.startTime != null)
-                change.startTime = new Date(change.startTime);
+async function deserializeStoredAPIData() {
+    changeHistory = await getAllFromObjectStore(changeStoreName, "startDate");
+    for (let i = 0; i < changeHistory.length; i++) {
+        let change = changeHistory[i];
+        if (change.startTime != null)
+            change.startTime = new Date(change.startTime);
 
-            if (change.endTime != null)
-                change.endTime = new Date(change.endTime);
-        }
+        if (change.endTime != null)
+            change.endTime = new Date(change.endTime);
     }
 
-    temp = localStorage.getItem("accidentHistory");
-    if (temp) {
-        accidentHistory = JSON.parse(temp);
-        for (let i = 0; i < accidentHistory.length; i++) {
-            let accident = accidentHistory[i];
-            if (accident.when != null)
-                accident.when = new Date(accident.when);
-        }
+    accidentHistory = await getAllFromObjectStore(accidentStoreName, "when");
+    for (let i = 0; i < accidentHistory.length; i++) {
+        let accident = accidentHistory[i];
+        if (accident.when != null)
+            accident.when = new Date(accident.when);
     }
 
-    temp = localStorage.getItem("types");
-    if (temp) types = new Map(JSON.parse(temp));
-
-    temp = localStorage.getItem("brands");
-    if (temp) brands = new Map(JSON.parse(temp));
+    types = await getAllFromObjectStoreIntoMap(typeStoreName, "id");
+    brands = await getAllFromObjectStoreIntoMap(brandStoreName, "code");
 }
 
 async function login() {

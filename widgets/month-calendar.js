@@ -26,8 +26,8 @@ class MonthCalendar extends Widget {
     accumulatedPercentage = 0.0;
     price = 0;
 
-    create(dashboardElement, classIndex, dashboardId, widgetId = -1) {
-        super.create(dashboardElement, classIndex, dashboardId, widgetId);
+    constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null) {
+        super(dashboardElement, classIndex, dashboardId, widgetId, transform);
         
         this.contentDiv.style.display = "flex";
         this.contentDiv.style.flexDirection = "column";

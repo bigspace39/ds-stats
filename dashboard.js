@@ -24,19 +24,13 @@ function selectDashboard(dashboard) {
 
     dashboard.showDashboard();
     selectedDashboard = dashboard;
-}
 
-function saveDashboards() {
-    let temp = new Array();
-    let keys = Array.from(dashboards.keys());
-    for (let i = 0; i < keys.length; i++) {
-        const id = keys[i];
-        let current = new Object();
-        current.id = id;
-        current.label = dashboards.get(id).getLabel();
-        temp.push(current);
+    let widgets = Array.from(createdWidgets.values());
+    for (let i = widgets.length - 1; i >= 0; i--) {
+        let widget = widgets[i];
+        if (widget.dashboardId == dashboard.boardId)
+            widget.update();
     }
-    localStorage.dashboards = JSON.stringify(temp);
 }
 
 class Dashboard {
@@ -65,7 +59,7 @@ class Dashboard {
 
         this.boardId = boardId;
         dashboards.set(this.boardId, this);
-        saveDashboards();
+        this.saveDashboard();
 
         this.tabLabel.innerText = `Dashboard ${boardId + 1}`;
 
@@ -110,8 +104,22 @@ class Dashboard {
         this.board.remove();
         this.tab.remove();
         dashboards.delete(this.boardId);
-        saveDashboards();
+        deleteFromObjectStore(dashboardStoreName, this.boardId);
         this.exists = false;
+
+        let widgets = Array.from(createdWidgets.values());
+        for (let i = widgets.length - 1; i >= 0; i--) {
+            let widget = widgets[i];
+            if (widget.dashboardId == this.boardId)
+                widget.destroy();
+        }
+    }
+
+    saveDashboard() {
+        let current = new Object();
+        current.id = this.boardId;
+        current.label = this.getLabel();
+        putInObjectStore(dashboardStoreName, current);
     }
 
     showDashboard() {
@@ -130,6 +138,6 @@ class Dashboard {
 
     setLabel(text) {
         this.tabLabel.innerText = text;
-        saveDashboards();
+        this.saveDashboard();
     }
 }
