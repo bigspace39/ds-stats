@@ -9,12 +9,20 @@ class MultiSegmentedControl {
     onDeselectButton = new Delegate();
 
     constructor(parentElement, ...options) {
-        this.options = options;
         this.horizontalDiv = UIBuilder.createHorizontal(parentElement);
 
         for (let i = 0; i < options.length; i++) {
+            let option = options[i];
+            if (typeof option == "string") {
+                this.options.push(option);
+            }
+            else {
+                this.options.push(option.value);
+                option = option.displayLabel;
+            }
+
             let button = createElement("button", this.horizontalDiv, "segmented-control");
-            button.innerText = options[i];
+            button.innerText = option;
             button.segmentedControl = this;
             button.index = i;
             button.addEventListener("click", async function() {
@@ -36,8 +44,34 @@ class MultiSegmentedControl {
             button.id = "selected-segmented-control";
             this.selectedButtons.push(button);
             this.onSelectButton.broadcast(button, this.options[button.index]);
-        }
+        }  
 
         this.onClick.broadcast(button, this.selectedButtons);
+    }
+
+    hasAnySelectedOptions() {
+        return this.selectedButtons.length > 0;
+    }
+
+    getSelectedOptions() {
+        let selectedOptions = new Array();
+        for (let i = 0; i < this.selectedButtons.length; i++) {
+            let button = this.selectedButtons[i];
+            let option = this.options[button.index];
+            selectedOptions.push(option);
+        }
+
+        return selectedOptions;
+    }
+
+    setSelectedOptions(selectedOptions) {
+        for (let i = 0; i < this.buttons.length; i++) {
+            let button = this.buttons[i];
+            let option = this.options[i];
+            let currentlySelected = this.selectedButtons.includes(button);
+            let shouldBeSelected = selectedOptions.includes(option);
+            if (currentlySelected != shouldBeSelected)
+                this.click(button);
+        }
     }
 }

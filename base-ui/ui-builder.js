@@ -64,20 +64,6 @@ class UIBuilder {
         return element;
     }
 
-    static createDropdown(parentElement = null, ...options) {
-        parentElement = this.#getParentElement(parentElement);
-        let select = createElement("select", parentElement, null);
-
-        for (let i = 0; i < options.length; i++) {
-            let option = options[i];
-            let optionElement = createElement("option", select);
-            optionElement.innerText = option;
-            optionElement.value = option.toLowerCase();
-        }
-        
-        return select;
-    }
-
     static createHorizontal(parentElement = null) {
         parentElement = this.#getParentElement(parentElement);
         return createElement("div", parentElement, "horizontal-form");

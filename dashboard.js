@@ -39,6 +39,7 @@ class Dashboard {
     tabLabel;
     tabClose;
     boardId;
+    defaultDiaperCatConfig = 0;
     exists = false;
 
     constructor(boardId) {
@@ -119,6 +120,7 @@ class Dashboard {
         let current = new Object();
         current.id = this.boardId;
         current.label = this.getLabel();
+        current.defaultDiaperCatConfig = this.defaultDiaperCatConfig;
         putInObjectStore(dashboardStoreName, current);
     }
 
@@ -138,6 +140,17 @@ class Dashboard {
 
     setLabel(text) {
         this.tabLabel.innerText = text;
+        this.saveDashboard();
+    }
+
+    setDefaultDiaperCatConfig(index) {
+        this.defaultDiaperCatConfig = index;
+        this.saveDashboard();
+    }
+
+    setLabelAndDefaultDiaperCatConfig(labelText, diaperCatConfigIndex) {
+        this.tabLabel.innerText = labelText;
+        this.defaultDiaperCatConfig = diaperCatConfigIndex;
         this.saveDashboard();
     }
 }

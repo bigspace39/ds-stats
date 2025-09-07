@@ -447,15 +447,25 @@ function clearSearchParameters() {
 
 function saveToken(data) {
     const now = Date.now();
+    let jwt = decodeJwt(data.id_token);
     const tokenData = {
         access_token: data.access_token,
         refresh_token: data.refresh_token,
-        access_expires_at: now + (data.expires_in * 1000)
+        access_expires_at: now + (data.expires_in * 1000),
+        username: jwt.username
     };
     localStorage.setItem('auth_token', JSON.stringify(tokenData));
 }
 
 async function getValidToken() {
+    let tokenObject = await getValidTokenObject();
+    if (tokenObject == null)
+        return null;
+
+    return tokenObject.access_token;
+}
+
+async function getValidTokenObject() {
     const raw = localStorage.getItem('auth_token');
     if (!raw) {
         return null;
@@ -471,7 +481,7 @@ async function getValidToken() {
             let result = await fetchAccessTokenFromRefreshToken(tokenData);
             return result;
         }
-        return tokenData.access_token;
+        return tokenData;
     }
     catch (err) {
         console.error('Invalid token data:', err);
@@ -502,7 +512,7 @@ async function fetchAccessTokenFromRefreshToken(tokenData) {
         console.log(`Got token using refresh token for user: ${jwt.username}`);
         console.log(getTokenDebugObject());
 
-        return response.access_token;
+        return response;
     }
     catch(err) {
         console.error(`Failed to fetch access token using refresh token, error is: ${err}`);
@@ -552,9 +562,14 @@ async function generatePKCECodes() {
 
 function logout() {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem("fetchDataTime");
     changeHistory = new Array();
     accidentHistory = new Array();
     types = new Map();
     brands = new Map();
+    clearObjectStore(changeStoreName);
+    clearObjectStore(accidentStoreName);
+    clearObjectStore(typeStoreName);
+    clearObjectStore(brandStoreName);
     window.location.href = "/";
 }

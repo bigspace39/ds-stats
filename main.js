@@ -37,6 +37,9 @@ async function createSavedDashboards() {
         if (tempDashboards[i].label != "")
             current.setLabel(tempDashboards[i].label);
 
+        if (tempDashboards[i].defaultDiaperCatConfig)
+            current.setDefaultDiaperCatConfig(tempDashboards[i].defaultDiaperCatConfig);
+
         if (selectedDashboard == null)
             selectDashboard(current);
     }

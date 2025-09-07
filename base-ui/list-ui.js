@@ -3,9 +3,11 @@ class ListUI {
     onAddElement = new Delegate();
     onRemoveElement = new Delegate();
     elements = new Array();
+    listElementClassInstances = new Array();
     addButton = null;
+    listElementClass = null;
 
-    constructor(parentElement) {
+    constructor(parentElement, listElementClass = null) {
         this.listDiv = createElement("div", parentElement, "list-ui");
         this.addButton = createElement("button", parentElement, "accent-button");
         this.addButton.innerText = "+";
@@ -14,6 +16,8 @@ class ListUI {
         this.addButton.addEventListener("click", function() {
             this.list.addElement();
         });
+
+        this.listElementClass = listElementClass;
     }
 
     addElement() {
@@ -29,8 +33,17 @@ class ListUI {
         remove.addEventListener("click", function() {
             this.list.removeElement(this.list.elements.indexOf(this.element));
         });
+        
+        let returnValue = content;
+        if (this.listElementClass != null) {
+            let classInstance = new this.listElementClass(content);
+            this.listElementClassInstances.push(classInstance);
+            returnValue = classInstance;
+        }
+        
         this.elements.push(element);
         this.onAddElement.broadcast(content);
+        return returnValue;
     }
 
     removeElement(index) {
@@ -38,6 +51,32 @@ class ListUI {
         element.innerHTML = "";
         element.remove();
         this.elements.splice(index, 1);
+
+        if (this.listElementClass != null) {
+            this.listElementClassInstances.splice(index, 1);
+        }
+
         this.onRemoveElement.broadcast(index);
+    }
+
+    setLength(length) {
+        for (let i = 0; i < length; i++) {
+            if (i == this.getLength()) 
+                this.addElement();
+        }
+
+        if (this.getLength() == length)
+            return;
+
+        for (let i = this.getLength() - 1; i >= 0; i--) {
+            this.removeElement(i);
+
+            if (this.getLength() == length)
+                return;
+        }
+    }
+
+    getLength() {
+        return this.elements.length;
     }
 }

@@ -65,8 +65,8 @@ class MonthCalendar extends Widget {
         this.weekdays = createElement("div", this.contentDiv, "weekdays");
 
         for (let weekdayInt = 0; weekdayInt < 7; weekdayInt++) {
-            let weekdayDate = new Date(2025, 0, 5 + weekdayInt + firstDayOfTheWeek);
-            const weekday = weekdayDate.toLocaleString(dateLocale, { weekday: 'long' });
+            let weekdayDate = new Date(2025, 0, 5 + weekdayInt + settings.weekStartsOn);
+            const weekday = getWeekdayStrFromDate(weekdayDate);
 
             const button = createElement("button", this.weekdays, "weekday");
             button.innerText = weekday;
@@ -98,7 +98,7 @@ class MonthCalendar extends Widget {
     }
 
     update() {
-        let monthStr = this.selectedMonth.toLocaleString(dateLocale, { month: 'long' });
+        let monthStr = getMonthStrFromDate(this.selectedMonth);
         monthStr += ' ' + this.selectedMonth.getFullYear();
         this.monthLabel.innerText = monthStr;
 
@@ -115,7 +115,7 @@ class MonthCalendar extends Widget {
             let button = this.dates[i];
             let buttonTextBox = this.datesTextBoxes[i];
             if (!enable && !done) {
-                if (current.getDay() == (i + firstDayOfTheWeek) % 7) {
+                if (current.getDay() == (i + settings.weekStartsOn) % 7) {
                     enable = true;
                     this.firstDateIndex = i;
                 }

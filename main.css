@@ -452,6 +452,8 @@ textarea {
 
 #diaper-type-filter {
     flex: 1;
+    border: none;
+    outline: none;
     height: auto;
     justify-content: center;
     align-items: center;
