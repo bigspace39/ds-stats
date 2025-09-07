@@ -80,7 +80,7 @@ class Widget {
         this.exitEditMode();
     }
 
-    update() {}
+    async update() {}
 
     enterEditMode() {
         this.draggable.enable();

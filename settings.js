@@ -59,6 +59,75 @@ function getDiaperCategoryConfigNames(configs = null) {
     return names;
 }
 
+function getDefaultDiaperCategoryConfig() {
+    let index = selectedDashboard.defaultDiaperCatConfig;
+    let config = settings.diaperCategoryConfigs[index];
+    return config.categories;
+}
+
+async function getMainCategoryFromChange(change, diaperCategoryConfig = null) {
+    if (diaperCategoryConfig == null)
+        diaperCategoryConfig = getDefaultDiaperCategoryConfig();
+
+    if (change.diapers.length == 0)
+        return null;
+
+    for (let i = 0; i < change.diapers.length; i++) {
+        let id = change.diapers[i].typeId;
+        let type = await getType(id);
+        if (type != null && (type.category == "INSERT_BOOSTER" || type.category == "PAD"))
+            continue;
+        
+        let category = await getCategoryFromId(id, diaperCategoryConfig);
+        if (category == null)
+            continue;
+
+        return category;
+    }
+
+    return await getCategoryFromId(change.diapers[0].typeId, diaperCategoryConfig);
+}
+
+async function getCategoryFromId(id, diaperCategoryConfig = null) {
+    if (diaperCategoryConfig == null)
+        diaperCategoryConfig = getDefaultDiaperCategoryConfig();
+
+    let type = await getType(id);
+
+    for (let i = 0; i < diaperCategoryConfig.length; i++) {
+        let category = diaperCategoryConfig[i];
+        let filter = category.filter;
+        let satisfiesFilter = true;
+        for (let key in filter) {
+            let filterProperty = filter[key];
+            let property = type[key];
+            if (Array.isArray(property)) {
+                isIncluded = false;
+                for (let j = 0; j < property.length; j++) {
+                    if (filterProperty.includes(property[j])) {
+                        isIncluded = true;
+                        break;
+                    }
+                }
+
+                if (!isIncluded) {
+                    satisfiesFilter = false;
+                    break;
+                }
+            }
+            else if (!filterProperty.includes(property)) {
+                satisfiesFilter = false;
+                break;
+            }
+        }
+
+        if (satisfiesFilter)
+            return category;
+    }
+
+    return null;
+}
+
 function toCurrencyString(cost) {
     if (settings.currencyIsSuffix)
         return "" + cost + settings.currency;

@@ -97,7 +97,7 @@ class MonthCalendar extends Widget {
         this.today();
     }
 
-    update() {
+    async update() {
         let monthStr = getMonthStrFromDate(this.selectedMonth);
         monthStr += ' ' + this.selectedMonth.getFullYear();
         this.monthLabel.innerText = monthStr;
@@ -203,10 +203,8 @@ class MonthCalendar extends Widget {
                 this.addStatusBarSection(percentage, notWearingColor, notWearingLabel);
             }
 
-            // TODO: FIX COLOR
-            // let type = change.type;
-            // let data = typeData.get(type);
-            const color = "rgb(255, 0, 0)";
+            const category = await getMainCategoryFromChange(change);
+            const color = category == null ? "#0000002d" : category.color;
             let changeDurationInMins = ((change.endTime != null ? change.endTime : new Date()) - change.startTime) / 1000.0 / 60.0;
             let percentage = (changeDurationInMins / weekLengthInMinutes) * 100.0;
             if (i == 0) {
