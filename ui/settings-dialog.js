@@ -309,6 +309,8 @@ class SettingsDialog extends DialogBox {
         this.typesText.innerText = `Types: ${types.size}`;
         this.brandsText.innerText = `Brands: ${brands.size}`;
 
+        this.diaperCategoryConfigList.setConfigs(settings.diaperCategoryConfigs);
+
         this.dashboardNameField.value = selectedDashboard.getLabel();
         let names = getDiaperCategoryConfigNames(settings.diaperCategoryConfigs);
         this.defaultDiaperCatDropdown.setOptions(names);
@@ -320,8 +322,6 @@ class SettingsDialog extends DialogBox {
         this.currencyField.value = settings.currency;
         this.currencyPrefixSegControl.setSelectedOption(settings.currencyIsSuffix);
         this.clockFormatSegControl.setSelectedOption(settings.twentyFourHourClock);
-
-        this.diaperCategoryConfigList.setConfigs(settings.diaperCategoryConfigs);
 
         this.externalDiaperDataTextArea.value = settings.externalDiaperData;
     }
