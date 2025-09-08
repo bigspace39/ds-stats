@@ -210,28 +210,44 @@ class SettingsDialog extends DialogBox {
             fetchData();
         });
 
+        onStopFetchAPIData.addFunction(this, function() {
+            this.updateAPIDataCount();
+        });
+
         this.changesText = UIBuilder.createText("Changes: 0");
         this.fetchChangesButton = UIBuilder.createButton("Refetch All Changes");
-        this.fetchChangesButton.addEventListener("click", function() {
-            fetchChangeHistory();
+        this.fetchChangesButton.addEventListener("click", async function() {
+            settingsDialog.changesText.innerText = "Refetching Changes...";
+            await fetchChangeHistory();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
         });
 
         this.accidentsText = UIBuilder.createText("Accidents: 0");
         this.fetchAccidentsButton = UIBuilder.createButton("Refetch All Accidents");
-        this.fetchAccidentsButton.addEventListener("click", function() {
-            fetchAccidentHistory();
+        this.fetchAccidentsButton.addEventListener("click", async function() {
+            settingsDialog.accidentsText.innerText = "Refetching Accidents...";
+            await fetchAccidentHistory();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
         });
 
         this.typesText = UIBuilder.createText("Types: 0");
         this.fetchTypesButton = UIBuilder.createButton("Refetch All Types");
-        this.fetchTypesButton.addEventListener("click", function() {
-            fetchAllTypes();
+        this.fetchTypesButton.addEventListener("click", async function() {
+            settingsDialog.typesText.innerText = "Refetching Types...";
+            await fetchAllTypes();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
         });
 
         this.brandsText = UIBuilder.createText("Brands: 0");
         this.fetchBrandsButton = UIBuilder.createButton("Refetch All Brands");
-        this.fetchBrandsButton.addEventListener("click", function() {
-            fetchAllBrands();
+        this.fetchBrandsButton.addEventListener("click", async function() {
+            settingsDialog.brandsText.innerText = "Refetching Brands...";
+            await fetchAllBrands();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
         });
 
         // === Dashboard ===
@@ -304,10 +320,7 @@ class SettingsDialog extends DialogBox {
             this.loginButton.innerText = "Logout";
         }
 
-        this.changesText.innerText = `Changes: ${changeHistory.length}`;
-        this.accidentsText.innerText = `Accidents: ${accidentHistory.length}`;
-        this.typesText.innerText = `Types: ${types.size}`;
-        this.brandsText.innerText = `Brands: ${brands.size}`;
+        this.updateAPIDataCount();
 
         this.diaperCategoryConfigList.setConfigs(settings.diaperCategoryConfigs);
 
@@ -344,6 +357,13 @@ class SettingsDialog extends DialogBox {
         settings.externalDiaperData = this.externalDiaperDataTextArea.value;
         serializeSettings();
         window.location.href = REDIRECT_URI;
+    }
+
+    updateAPIDataCount() {
+        this.changesText.innerText = `Changes: ${changeHistory.length}`;
+        this.accidentsText.innerText = `Accidents: ${accidentHistory.length}`;
+        this.typesText.innerText = `Types: ${types.size}`;
+        this.brandsText.innerText = `Brands: ${brands.size}`;
     }
 
     show() {

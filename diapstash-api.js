@@ -76,12 +76,7 @@ async function fetchData() {
     else
         await fetchNewAccidentHistory();
 
-    createdWidgets.forEach(function(value, key, map) {
-        if (value.dashboardId != selectedDashboard.boardId)
-            return;
-
-        value.update();
-    });
+    updateWidgetsOnSelectedDashboard();
 
     localStorage.setItem("fetchDataTime", new Date().toUTCString());
     onStopFetchAPIData.broadcast();

@@ -17,6 +17,15 @@ function toggleInEditMode() {
     setInEditMode(!inEditMode);
 }
 
+function updateWidgetsOnSelectedDashboard() {
+    createdWidgets.forEach(function(value, key, map) {
+        if (value.dashboardId != selectedDashboard.boardId)
+            return;
+
+        value.update();
+    });
+}
+
 function setInEditMode(value) {
     inEditMode = value;
     if (inEditMode) {

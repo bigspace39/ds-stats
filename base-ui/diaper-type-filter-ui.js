@@ -93,7 +93,8 @@ class DiaperTypeFilter {
     getFilter() {
         let filter = new Object();
         this.segmentedControls.forEach((value, key, map) => {
-            filter[key] = value.getSelectedOptions();
+            if (value.hasAnySelectedOptions())
+                filter[key] = value.getSelectedOptions();
         });
 
         return filter;

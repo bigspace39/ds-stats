@@ -24,13 +24,7 @@ function selectDashboard(dashboard) {
 
     dashboard.showDashboard();
     selectedDashboard = dashboard;
-
-    let widgets = Array.from(createdWidgets.values());
-    for (let i = widgets.length - 1; i >= 0; i--) {
-        let widget = widgets[i];
-        if (widget.dashboardId == dashboard.boardId)
-            widget.update();
-    }
+    updateWidgetsOnSelectedDashboard();
 }
 
 class Dashboard {

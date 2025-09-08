@@ -32,7 +32,7 @@ class DropdownUI {
     }
 
     getSelectedIndex() {
-        return this.dropdownElement.value;
+        return parseInt(this.dropdownElement.value);
     }
 
     getSelectedText() {
