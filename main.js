@@ -54,6 +54,6 @@ async function createSavedWidgets() {
     let savedWidgets = await getAllFromObjectStore(widgetStoreName);
     
     savedWidgets.forEach(function(element) {
-        createWidget(element.dashboardId, element.class, element.id, element.transform);
+        createWidget(element.dashboardId, element.class, element.id, element.transform, element.settings);
     });
 }

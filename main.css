@@ -477,6 +477,22 @@ textarea {
     margin: 6px 6px;
 }
 
+#questionmark-tooltip {
+    background-color: var(--accent-color);
+    width: 25px;
+    height: 25px;
+    margin-left: 5px;
+    border-radius: 50px;
+    justify-content:center;
+    display: flex;
+    align-items: center;
+    color: white;
+    font-size: large;
+    user-select: none;
+    -webkit-user-select: none;
+    align-self: center;
+}
+
 #spinner, #inactive-spinner {
     --spinner-margin: 15px;
     width: calc(100% - var(--spinner-margin) * 2);

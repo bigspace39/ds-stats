@@ -25,8 +25,8 @@ class DonutChart extends Widget {
         }]
     };
 
-    constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null) {
-        super(dashboardElement, classIndex, dashboardId, widgetId, transform);
+    constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
+        super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
         this.label = createElement("h1", this.contentDiv, "donut-label");
         this.label.innerText = "Label";
         this.canvas = createElement("canvas", this.contentDiv, "donut-chart");

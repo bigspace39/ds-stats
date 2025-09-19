@@ -5,6 +5,14 @@ class MonthCalendar extends Widget {
         possibleWidgets.push(this);
     }
 
+    getSettingsDialogClass() {
+        return MonthCalendarSettingsDialog;
+    }
+
+    setSettingsDefaults(settings) {
+
+    }
+
     monthHeader = null;
     monthLabel = null;
     monthPrice = null;
@@ -26,8 +34,8 @@ class MonthCalendar extends Widget {
     accumulatedPercentage = 0.0;
     price = 0;
 
-    constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null) {
-        super(dashboardElement, classIndex, dashboardId, widgetId, transform);
+    constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
+        super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
         
         this.contentDiv.style.display = "flex";
         this.contentDiv.style.flexDirection = "column";
@@ -331,5 +339,19 @@ class MonthCalendar extends Widget {
             const date = change.startTime.getDate();
             this.days.get(date).push(current);
         }
+    }
+}
+
+class MonthCalendarSettingsDialog extends WidgetSettingsDialog {
+    constructor(widget) {
+        super(widget);
+    }
+
+    loadSettings() {
+
+    }
+
+    saveSettings() {
+
     }
 }

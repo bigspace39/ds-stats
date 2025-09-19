@@ -303,7 +303,9 @@ class SettingsDialog extends DialogBox {
         this.diaperCategoryConfigList = new DiaperCategoryConfigsListUI(this.content);
 
         // === External Diaper Data ===
-        UIBuilder.createHeading("External Diaper Data");
+        horizontal = UIBuilder.createHorizontal();
+        UIBuilder.createHeading("External Diaper Data", horizontal);
+        new QuestionmarkTooltip(horizontal, "Format:\nY[YEAR]\n[AmountOfDiapers]:[DiaperTypeID] [Optional Comment]\nExample:\nY2020\n10:26 ABU Space M\n21:9 Tena Slip Active Fit Ultima M");
         this.externalDiaperDataTextArea = UIBuilder.createTextArea();
 
         UIBuilder.resetDefaultParent();
