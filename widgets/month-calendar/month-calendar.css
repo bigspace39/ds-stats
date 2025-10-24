@@ -4,7 +4,6 @@
   --calendar-header-height: 60px;
 }
 
-/* Month Calendar stuff */
 #month-header {
     width: calc(var(--calendar-date-width) * 7);
     height: var(--calendar-header-height);
@@ -192,14 +191,3 @@
 #status-bar-section-dummy {
     height: 100%;
 }
-/* End Month Calendar stuff */
-
-/* Donut Chart stuff */
-#donut-label {
-    width: 100%;
-    margin-top: 10px;
-    margin-bottom: 5px;
-    font-size: x-large;
-    text-align: center;
-}
-/* End Donut Chart stuff */
