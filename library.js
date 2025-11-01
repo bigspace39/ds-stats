@@ -17,6 +17,8 @@ function createElement(tag, parentElement, id) {
 }
 
 class Delegate {
+    functions;
+
     constructor() {
         this.functions = new Set();
     }

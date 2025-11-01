@@ -28,4 +28,12 @@ class ToggleUI {
     isToggled() {
         return this.input.checked;
     }
+
+    show() {
+        this.label.style.display = "";
+    }
+
+    hide() {
+        this.label.style.display = "none";
+    }
 }

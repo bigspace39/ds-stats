@@ -74,4 +74,12 @@ class MultiSegmentedControlUI {
                 this.click(button);
         }
     }
+
+    show() {
+        this.horizontalDiv.style.display = "";
+    }
+
+    hide() {
+        this.horizontalDiv.style.display = "none";
+    }
 }

@@ -16,4 +16,12 @@ class QuestionmarkTooltipUI {
             interactive: true
         });
     }
+
+    show() {
+        this.div.style.display = "";
+    }
+
+    hide() {
+        this.div.style.display = "none";
+    }
 }

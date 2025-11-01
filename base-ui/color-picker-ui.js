@@ -35,4 +35,12 @@ class ColorPickerUI {
     getColor() {
         return this.inputElement.value;
     }
+
+    show() {
+        this.wrapperDiv.style.display = "";
+    }
+
+    hide() {
+        this.wrapperDiv.style.display = "none";
+    }
 }

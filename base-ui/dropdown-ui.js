@@ -1,6 +1,7 @@
 class DropdownUI {
     dropdownElement;
     optionElements = new Array();
+    onChange = new Delegate();
 
     constructor(parentElement, ...initialOptions) {
         this.dropdownElement = createElement("select", parentElement, null);
@@ -9,6 +10,11 @@ class DropdownUI {
             let option = initialOptions[i];
             this.#createOptionElement(option, i);
         }
+
+        this.dropdownElement.addEventListener("change", function() {
+            this.dropdown.onChange.broadcast(this.dropdown, this.dropdown.getSelectedIndex());
+        });
+        this.dropdownElement.dropdown = this;
     }
 
     setOptions(options) {
@@ -66,5 +72,13 @@ class DropdownUI {
         optionElement.innerText = text;
         optionElement.value = value;
         this.optionElements.push(optionElement);
+    }
+
+    show() {
+        this.dropdownElement.style.display = "";
+    }
+
+    hide() {
+        this.dropdownElement.style.display = "none";
     }
 }

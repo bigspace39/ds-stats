@@ -115,4 +115,12 @@ class DiaperTypeFilterUI {
 
         return filter;
     }
+
+    show() {
+        this.button.style.display = "";
+    }
+
+    hide() {
+        this.button.style.display = "none";
+    }
 }

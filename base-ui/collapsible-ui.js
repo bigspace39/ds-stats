@@ -28,4 +28,16 @@ class CollapsibleUI {
     setLabelText(labelText) {
         this.collapsibleButton.innerText = labelText;
     }
+
+    show() {
+        this.collapsibleButton.style.display = "";
+        if (!this.collapsed)
+            this.collapsibleContent.style.display = "";
+    }
+
+    hide() {
+        this.collapsibleButton.style.display = "none";
+        if (!this.collapsed)
+            this.collapsibleContent.style.display = "none";
+    }
 }

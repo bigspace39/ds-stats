@@ -79,4 +79,12 @@ class ListUI {
     getLength() {
         return this.elements.length;
     }
+
+    show() {
+        this.listDiv.style.display = "";
+    }
+
+    hide() {
+        this.listDiv.style.display = "none";
+    }
 }

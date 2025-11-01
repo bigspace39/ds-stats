@@ -72,4 +72,12 @@ class SegmentedControlUI {
 
         this.click(this.buttons[index]);
     }
+
+    show() {
+        this.horizontalDiv.style.display = "";
+    }
+
+    hide() {
+        this.horizontalDiv.style.display = "none";
+    }
 }
