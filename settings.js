@@ -30,19 +30,76 @@ settings.twentyFourHourClock = true;
 settings.diaperCategoryConfigs = JSON.parse(JSON.stringify(defaultDiaperCategoryConfigs));
 settings.externalDiaperData = "";
 
-deserializeSettings();
+let parsedExternalDiaperData = new Map();
 
 function serializeSettings() {
     localStorage.setItem("settings", JSON.stringify(settings));
 }
 
-function deserializeSettings() {
+async function deserializeSettings() {
     let tempSettings = localStorage.getItem("settings");
     if (!tempSettings)
         return;
 
     tempSettings = JSON.parse(tempSettings);
     Object.assign(settings, tempSettings);
+    await parseExternalDiaperData();
+}
+
+async function parseExternalDiaperData() {
+    parsedExternalDiaperData = new Map();
+    let lines = settings.externalDiaperData.split(/\r?\n|\r|\n/g);
+    let currentYear = null;
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        line = line.trim();
+        if (line.length == 0)
+            continue;
+
+        if (line.startsWith("Y")) {
+            line = line.slice(1);
+            if (currentYear != null && currentYear.diapers.size > 0) {
+                parsedExternalDiaperData.set(currentYear.year, currentYear.diapers);
+            }
+
+            currentYear = new Object();
+            currentYear.year = parseInt(line);
+            currentYear.diapers = new Map();
+            continue;
+        }
+
+        if (currentYear == null) {
+            console.error("Error when parsing external diaper data! Line was: \"" + line + "\", expected year declaration");
+            return;
+        }
+
+        line = line.split(" ")[0];
+        let parts = line.split(":");
+        if (parts.length != 2) {
+            console.error("Error when parsing external diaper data! Line was: \"" + line + "\", expected [AmountOfDiapers]:[DiaperTypeID]");
+            return;
+        }
+
+        let amount = parseInt(parts[0]);
+        let typeId = parseInt(parts[1]);
+
+        if (currentYear.diapers.has(typeId)) {
+            let temp = currentYear.diapers.get(typeId);
+            amount += temp.amount;
+        }
+
+        let temp = new Object();
+        temp.amount = amount;
+        temp.type = await getType(typeId);
+        currentYear.diapers.set(typeId, temp);
+    }
+
+    if (currentYear != null && currentYear.diapers.size > 0) {
+        parsedExternalDiaperData.set(currentYear.year, currentYear.diapers);
+    }
+
+    console.log("Successfully parsed external diaper data:");
+    console.log(parsedExternalDiaperData);
 }
 
 function getDiaperCategoryConfigNames(configs = null) {

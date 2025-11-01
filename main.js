@@ -27,6 +27,8 @@ openDBRequest.onsuccess = async function(event) {
     await createSavedDashboards();
     await createSavedWidgets();
     await handleAPI();
+    await deserializeSettings();
+    updateWidgetsOnSelectedDashboard();
 };
 
 async function createSavedDashboards() {
