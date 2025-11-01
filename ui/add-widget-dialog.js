@@ -1,4 +1,4 @@
-class AddWidgetDialog extends DialogBox {
+class AddWidgetDialog extends DialogBoxUI {
     widgetButtons = new Array();
 
     constructor() {

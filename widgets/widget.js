@@ -173,7 +173,7 @@ class Widget {
     }
 }
 
-class WidgetSettingsDialog extends DialogBox
+class WidgetSettingsDialog extends DialogBoxUI
 {
     widget;
     footer;

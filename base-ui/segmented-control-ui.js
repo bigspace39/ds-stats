@@ -1,4 +1,4 @@
-class SegmentedControlOption {
+class SegmentedControlUIOption {
     displayLabel;
     value;
 
@@ -8,7 +8,7 @@ class SegmentedControlOption {
     }
 }
 
-class SegmentedControl {
+class SegmentedControlUI {
     horizontalDiv = null;
     options = new Array();
     buttons = new Array();

@@ -1,4 +1,4 @@
-class DiaperTypeFilterSectionData {
+class DiaperTypeFilterUISectionData {
     displayName;
     propertyName;
 
@@ -8,7 +8,7 @@ class DiaperTypeFilterSectionData {
     }
 }
 
-class DiaperTypeFilter {
+class DiaperTypeFilterUI {
     button;
     tippy;
     tooltipParentDiv;
@@ -28,49 +28,49 @@ class DiaperTypeFilter {
             interactive: true
         });
 
-        this.createSection(new DiaperTypeFilterSectionData("Usage", "usage"), 
-            new SegmentedControlOption("Disposable", "DISPOSABLE"), 
-            new SegmentedControlOption("Reusable", "REUSABLE")
+        this.createSection(new DiaperTypeFilterUISectionData("Usage", "usage"), 
+            new SegmentedControlUIOption("Disposable", "DISPOSABLE"), 
+            new SegmentedControlUIOption("Reusable", "REUSABLE")
         );
-        this.createSection(new DiaperTypeFilterSectionData("Category", "category"), 
-            new SegmentedControlOption("Diaper (Tabs)", "DIAPER"), 
-            new SegmentedControlOption("Pull Up", "PULL_UP"),
-            new SegmentedControlOption("Pad (Anatomical)", "PAD"),
-            new SegmentedControlOption("Insert / Booster", "INSERT_BOOSTER"),
-            new SegmentedControlOption("Cover", "COVER"),
-            new SegmentedControlOption("All in One", "ALL_IN_ONE"),
-            new SegmentedControlOption("Mesh Pants", "MESH_PANTS"),
-            new SegmentedControlOption("Flat / Prefold", "FLAT_PREFOLD"),
-            new SegmentedControlOption("Fitted", "FITTED")
+        this.createSection(new DiaperTypeFilterUISectionData("Category", "category"), 
+            new SegmentedControlUIOption("Diaper (Tabs)", "DIAPER"), 
+            new SegmentedControlUIOption("Pull Up", "PULL_UP"),
+            new SegmentedControlUIOption("Pad (Anatomical)", "PAD"),
+            new SegmentedControlUIOption("Insert / Booster", "INSERT_BOOSTER"),
+            new SegmentedControlUIOption("Cover", "COVER"),
+            new SegmentedControlUIOption("All in One", "ALL_IN_ONE"),
+            new SegmentedControlUIOption("Mesh Pants", "MESH_PANTS"),
+            new SegmentedControlUIOption("Flat / Prefold", "FLAT_PREFOLD"),
+            new SegmentedControlUIOption("Fitted", "FITTED")
         );
-        this.createSection(new DiaperTypeFilterSectionData("Target", "target"), 
-            new SegmentedControlOption("Abdl", "ABDL"),
-            new SegmentedControlOption("Medical", "MEDICAL"),
-            new SegmentedControlOption("Youth", "YOUTH")
+        this.createSection(new DiaperTypeFilterUISectionData("Target", "target"), 
+            new SegmentedControlUIOption("Abdl", "ABDL"),
+            new SegmentedControlUIOption("Medical", "MEDICAL"),
+            new SegmentedControlUIOption("Youth", "YOUTH")
         );
-        this.createSection(new DiaperTypeFilterSectionData("Fasteners", "fasteners"), 
-            new SegmentedControlOption("Snap", "SNAP"), 
-            new SegmentedControlOption("Hook & Loop (Velcro)", "VELCRO"),
-            new SegmentedControlOption("Elastic", "ELASTIC"),
-            new SegmentedControlOption("Drawstring", "DRAWSTRING"),
-            new SegmentedControlOption("Pin", "PIN"),
-            new SegmentedControlOption("Adhesive Tab", "ADHESIVE_TAB")
+        this.createSection(new DiaperTypeFilterUISectionData("Fasteners", "fasteners"), 
+            new SegmentedControlUIOption("Snap", "SNAP"), 
+            new SegmentedControlUIOption("Hook & Loop (Velcro)", "VELCRO"),
+            new SegmentedControlUIOption("Elastic", "ELASTIC"),
+            new SegmentedControlUIOption("Drawstring", "DRAWSTRING"),
+            new SegmentedControlUIOption("Pin", "PIN"),
+            new SegmentedControlUIOption("Adhesive Tab", "ADHESIVE_TAB")
         );
-        this.createSection(new DiaperTypeFilterSectionData("Backing Material", "backingMaterial"), 
-            new SegmentedControlOption("Cloth", "CLOTH"), 
-            new SegmentedControlOption("Plastic", "PLASTIC")
+        this.createSection(new DiaperTypeFilterUISectionData("Backing Material", "backingMaterial"), 
+            new SegmentedControlUIOption("Cloth", "CLOTH"), 
+            new SegmentedControlUIOption("Plastic", "PLASTIC")
         );
-        this.createSection(new DiaperTypeFilterSectionData("Wetness Indicator", "wetnessIndicator"), 
-            new SegmentedControlOption("Yes", "true"), 
-            new SegmentedControlOption("No", "false")
+        this.createSection(new DiaperTypeFilterUISectionData("Wetness Indicator", "wetnessIndicator"), 
+            new SegmentedControlUIOption("Yes", "true"), 
+            new SegmentedControlUIOption("No", "false")
         );
-        this.createSection(new DiaperTypeFilterSectionData("Landing Zone", "landingZone"), 
-            new SegmentedControlOption("Yes", "true"), 
-            new SegmentedControlOption("No", "false")
+        this.createSection(new DiaperTypeFilterUISectionData("Landing Zone", "landingZone"), 
+            new SegmentedControlUIOption("Yes", "true"), 
+            new SegmentedControlUIOption("No", "false")
         );
-        this.createSection(new DiaperTypeFilterSectionData("Tabs Per Side", "tabsPerSide"), 
-            new SegmentedControlOption("2", "2"), 
-            new SegmentedControlOption("4", "4")
+        this.createSection(new DiaperTypeFilterUISectionData("Tabs Per Side", "tabsPerSide"), 
+            new SegmentedControlUIOption("2", "2"), 
+            new SegmentedControlUIOption("4", "4")
         );
 
         this.segmentedControls.forEach((value, key, map) => {
@@ -91,7 +91,7 @@ class DiaperTypeFilter {
 
     createSection(sectionData, ...options) {
         UIBuilder.createHeading(sectionData.displayName, this.tooltipParentDiv);
-        let segmentedControl = new MultiSegmentedControl(this.tooltipParentDiv, ...options);
+        let segmentedControl = new MultiSegmentedControlUI(this.tooltipParentDiv, ...options);
         this.segmentedControls.set(sectionData.propertyName, segmentedControl);
     }
 

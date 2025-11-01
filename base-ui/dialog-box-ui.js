@@ -1,4 +1,4 @@
-class DialogBox {
+class DialogBoxUI {
     background;
     div;
     header;

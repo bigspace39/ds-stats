@@ -1,4 +1,4 @@
-class QuestionmarkTooltip {
+class QuestionmarkTooltipUI {
     div;
     tippy;
     tooltipDiv;

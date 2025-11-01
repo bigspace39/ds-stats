@@ -368,6 +368,7 @@ textarea {
 #horizontal-form {
     display: flex;
     flex-direction: row;
+    align-items: center;
     width: fit-content;
     height: fit-content;
     max-width: 100%;
@@ -493,7 +494,7 @@ textarea {
     align-self: center;
 }
 
-#spinner, #inactive-spinner {
+#refresh, #inactive-refresh {
     --spinner-margin: 15px;
     width: calc(100% - var(--spinner-margin) * 2);
     height: calc(100% - var(--spinner-margin) * 2);
@@ -508,7 +509,7 @@ textarea {
     transform: rotate(-140deg);
 }
 
-#spinner::after, #inactive-spinner::after {
+#refresh::after, #inactive-refresh::after {
   content: '';
   position: absolute;
   box-sizing: border-box;
@@ -519,20 +520,41 @@ textarea {
   transform: rotate(-40deg);
 }
 
-#spinner {
-    animation: rotation 1s linear infinite;
+#refresh {
+    animation: refresh-rotation 1s linear infinite;
 }
 
-#inactive-spinner {
+#inactive-refresh {
     animation: none;
 }
 
-@keyframes rotation {
+@keyframes refresh-rotation {
     0% {
         transform: rotate(-140deg);
     }
     100% {
         transform: rotate(220deg);
+    }
+}
+
+#spinner {
+    width: 28px;
+    height: 28px;
+    margin: 7px;
+    border: 4px solid #000;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: spinner-rotation 1s linear infinite;
+}
+
+    @keyframes spinner-rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
     }
 }
 

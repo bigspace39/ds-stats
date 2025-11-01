@@ -22,7 +22,7 @@ class Toolbar {
             await fetchData();
         });
         
-        this.refreshButtonSpinner = createElement("span", this.refreshButton, "spinner");
+        this.refreshButtonSpinner = createElement("span", this.refreshButton, "refresh");
         this.deactivateSpinner();
         
         onStartFetchAPIData.addFunction(this, function() {
@@ -51,11 +51,11 @@ class Toolbar {
     }
 
     deactivateSpinner() {
-        this.refreshButtonSpinner.id = "inactive-spinner";
+        this.refreshButtonSpinner.id = "inactive-refresh";
     }
 
     activateSpinner() {
-        this.refreshButtonSpinner.id = "spinner";
+        this.refreshButtonSpinner.id = "refresh";
     }
 }
 

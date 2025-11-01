@@ -1,5 +1,5 @@
 // Segmented control UI but where you can select none or multiple options
-class MultiSegmentedControl {
+class MultiSegmentedControlUI {
     horizontalDiv = null;
     options = new Array();
     buttons = new Array();

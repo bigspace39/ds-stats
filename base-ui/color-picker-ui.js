@@ -5,7 +5,7 @@ Coloris({
     wrap: true
 });
 
-class ColorPicker {
+class ColorPickerUI {
     wrapperDiv;
     inputElement;
     previewButton;

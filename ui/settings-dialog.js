@@ -110,8 +110,8 @@ class DiaperCategoryUI {
         this.horizontal.style.width = "100%";
         this.horizontal.style.height = "100%";
         this.categoryName = UIBuilder.createTextInput(this.horizontal);
-        this.filter = new DiaperTypeFilter(this.horizontal);
-        this.colorPicker = new ColorPicker(this.horizontal, "horizontal-color-picker");
+        this.filter = new DiaperTypeFilterUI(this.horizontal);
+        this.colorPicker = new ColorPickerUI(this.horizontal, "horizontal-color-picker");
     }
 
     setCategory(category) {
@@ -129,7 +129,7 @@ class DiaperCategoryUI {
     }
 }
 
-class SettingsDialog extends DialogBox {
+class SettingsDialog extends DialogBoxUI {
     footer;
     applyButton;
     revertButton;
@@ -143,12 +143,16 @@ class SettingsDialog extends DialogBox {
     fetchNewHistory;
     changesText;
     fetchChangesButton;
+    fetchChangesSpinner;
     accidentsText;
     fetchAccidentsButton;
+    fetchAccidentsSpinner;
     typesText;
     fetchTypesButton;
+    fetchTypesSpinner;
     brandsText;
     fetchBrandsButton;
+    fetchBrandsSpinner;
 
     // === Dashboard ===
     dashboardNameField;
@@ -203,53 +207,6 @@ class SettingsDialog extends DialogBox {
                 logout();
         });
 
-        // === API Data ===
-        UIBuilder.createHeading("API Data");
-        this.fetchNewHistory = UIBuilder.createButton("Fetch New History");
-        this.fetchNewHistory.addEventListener("click", function() {
-            fetchData();
-        });
-
-        onStopFetchAPIData.addFunction(this, function() {
-            this.updateAPIDataCount();
-        });
-
-        this.changesText = UIBuilder.createText("Changes: 0");
-        this.fetchChangesButton = UIBuilder.createButton("Refetch All Changes");
-        this.fetchChangesButton.addEventListener("click", async function() {
-            settingsDialog.changesText.innerText = "Refetching Changes...";
-            await fetchChangeHistory();
-            updateWidgetsOnSelectedDashboard();
-            settingsDialog.updateAPIDataCount();
-        });
-
-        this.accidentsText = UIBuilder.createText("Accidents: 0");
-        this.fetchAccidentsButton = UIBuilder.createButton("Refetch All Accidents");
-        this.fetchAccidentsButton.addEventListener("click", async function() {
-            settingsDialog.accidentsText.innerText = "Refetching Accidents...";
-            await fetchAccidentHistory();
-            updateWidgetsOnSelectedDashboard();
-            settingsDialog.updateAPIDataCount();
-        });
-
-        this.typesText = UIBuilder.createText("Types: 0");
-        this.fetchTypesButton = UIBuilder.createButton("Refetch All Types");
-        this.fetchTypesButton.addEventListener("click", async function() {
-            settingsDialog.typesText.innerText = "Refetching Types...";
-            await fetchAllTypes();
-            updateWidgetsOnSelectedDashboard();
-            settingsDialog.updateAPIDataCount();
-        });
-
-        this.brandsText = UIBuilder.createText("Brands: 0");
-        this.fetchBrandsButton = UIBuilder.createButton("Refetch All Brands");
-        this.fetchBrandsButton.addEventListener("click", async function() {
-            settingsDialog.brandsText.innerText = "Refetching Brands...";
-            await fetchAllBrands();
-            updateWidgetsOnSelectedDashboard();
-            settingsDialog.updateAPIDataCount();
-        });
-
         // === Dashboard ===
         UIBuilder.createHeading("Dashboard");
         UIBuilder.createText("Dashboard Name");
@@ -260,20 +217,20 @@ class SettingsDialog extends DialogBox {
         // === Global ===
         UIBuilder.createHeading("Global");
         UIBuilder.createText("Auto Refresh Frequency");
-        this.autoRefreshFrequencySegControl = new SegmentedControl(this.content, 
-            new SegmentedControlOption("Never", -1),
-            new SegmentedControlOption("1 minute", 60),
-            new SegmentedControlOption("5 minutes", 60 * 5),
-            new SegmentedControlOption("1 hour", 60 * 60)
+        this.autoRefreshFrequencySegControl = new SegmentedControlUI(this.content, 
+            new SegmentedControlUIOption("Never", -1),
+            new SegmentedControlUIOption("1 minute", 60),
+            new SegmentedControlUIOption("5 minutes", 60 * 5),
+            new SegmentedControlUIOption("1 hour", 60 * 60)
         );
         UIBuilder.createText("Week Starts On");
-        this.weekStartsOnSegControl = new SegmentedControl(this.content, 
-            new SegmentedControlOption("Saturday", 6),
-            new SegmentedControlOption("Sunday", 0),
-            new SegmentedControlOption("Monday", 1)
+        this.weekStartsOnSegControl = new SegmentedControlUI(this.content, 
+            new SegmentedControlUIOption("Saturday", 6),
+            new SegmentedControlUIOption("Sunday", 0),
+            new SegmentedControlUIOption("Monday", 1)
         );
         UIBuilder.createText("Weight Unit");
-        this.weightUnitSegControl = new SegmentedControl(this.content, 
+        this.weightUnitSegControl = new SegmentedControlUI(this.content, 
             "g", 
             "kg", 
             "oz", 
@@ -282,14 +239,14 @@ class SettingsDialog extends DialogBox {
         UIBuilder.createText("Currency Prefix/Suffix");
         let horizontal = UIBuilder.createHorizontal();
         this.currencyField = UIBuilder.createTextInput(horizontal);
-        this.currencyPrefixSegControl = new SegmentedControl(horizontal, 
-            new SegmentedControlOption("Prefix", false),
-            new SegmentedControlOption("Suffix", true)
+        this.currencyPrefixSegControl = new SegmentedControlUI(horizontal, 
+            new SegmentedControlUIOption("Prefix", false),
+            new SegmentedControlUIOption("Suffix", true)
         );
         UIBuilder.createText("Clock Format");
-        this.clockFormatSegControl = new SegmentedControl(this.content, 
-            new SegmentedControlOption("24h", true),
-            new SegmentedControlOption("12h", false)
+        this.clockFormatSegControl = new SegmentedControlUI(this.content, 
+            new SegmentedControlUIOption("24h", true),
+            new SegmentedControlUIOption("12h", false)
         );
 
         // === Diaper Category Configs ===
@@ -305,8 +262,67 @@ class SettingsDialog extends DialogBox {
         // === External Diaper Data ===
         horizontal = UIBuilder.createHorizontal();
         UIBuilder.createHeading("External Diaper Data", horizontal);
-        new QuestionmarkTooltip(horizontal, "Format:\nY[YEAR]\n[AmountOfDiapers]:[DiaperTypeID] [Optional Comment]\nExample:\nY2020\n10:26 ABU Space M\n21:9 Tena Slip Active Fit Ultima M");
+        new QuestionmarkTooltipUI(horizontal, "Format:\nY[YEAR]\n[AmountOfDiapers]:[DiaperTypeID] [Optional Comment]\nExample:\nY2020\n10:26 ABU Space M\n21:9 Tena Slip Active Fit Ultima M");
         this.externalDiaperDataTextArea = UIBuilder.createTextArea();
+
+        // === API Data ===
+        UIBuilder.createHeading("API Data");
+        this.fetchNewHistory = UIBuilder.createButton("Fetch New History");
+        this.fetchNewHistory.addEventListener("click", function() {
+            fetchData();
+        });
+
+        onStopFetchAPIData.addFunction(this, function() {
+            this.updateAPIDataCount();
+        });
+
+        this.changesText = UIBuilder.createText("Changes: 0");
+        horizontal = UIBuilder.createHorizontal();
+        this.fetchChangesButton = UIBuilder.createButton("Refetch All Changes", horizontal);
+        this.fetchChangesSpinner = new SpinnerUI(horizontal, true);
+        this.fetchChangesButton.addEventListener("click", async function() {
+            settingsDialog.fetchChangesSpinner.show();
+            await fetchChangeHistory();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
+            settingsDialog.fetchChangesSpinner.hide();
+        });
+
+        this.accidentsText = UIBuilder.createText("Accidents: 0");
+        horizontal = UIBuilder.createHorizontal();
+        this.fetchAccidentsButton = UIBuilder.createButton("Refetch All Accidents", horizontal);
+        this.fetchAccidentsSpinner = new SpinnerUI(horizontal, true);
+        this.fetchAccidentsButton.addEventListener("click", async function() {
+            settingsDialog.fetchAccidentsSpinner.show();
+            await fetchAccidentHistory();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
+            settingsDialog.fetchAccidentsSpinner.hide();
+        });
+
+        this.typesText = UIBuilder.createText("Types: 0");
+        horizontal = UIBuilder.createHorizontal();
+        this.fetchTypesButton = UIBuilder.createButton("Refetch All Types", horizontal);
+        this.fetchTypesSpinner = new SpinnerUI(horizontal, true);
+        this.fetchTypesButton.addEventListener("click", async function() {
+            settingsDialog.fetchTypesSpinner.show();
+            await fetchAllTypes();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
+            settingsDialog.fetchTypesSpinner.hide();
+        });
+
+        this.brandsText = UIBuilder.createText("Brands: 0");
+        horizontal = UIBuilder.createHorizontal();
+        this.fetchBrandsButton = UIBuilder.createButton("Refetch All Brands", horizontal);
+        this.fetchBrandsSpinner = new SpinnerUI(horizontal, true);
+        this.fetchBrandsButton.addEventListener("click", async function() {
+            settingsDialog.fetchBrandsSpinner.show();
+            await fetchAllBrands();
+            updateWidgetsOnSelectedDashboard();
+            settingsDialog.updateAPIDataCount();
+            settingsDialog.fetchBrandsSpinner.hide();
+        });
 
         UIBuilder.resetDefaultParent();
     }
