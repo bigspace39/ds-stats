@@ -184,7 +184,8 @@ async function fetchNewAccidentHistory() {
 
 async function fetchAllTypes() {
     let params = new URLSearchParams({
-        size: 0
+        size: 0,
+        detailed: true
     });
 
     await clearObjectStore(typeStoreName);

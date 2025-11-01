@@ -56,6 +56,22 @@ class DiaperTypeFilter {
             new SegmentedControlOption("Pin", "PIN"),
             new SegmentedControlOption("Adhesive Tab", "ADHESIVE_TAB")
         );
+        this.createSection(new DiaperTypeFilterSectionData("Backing Material", "backingMaterial"), 
+            new SegmentedControlOption("Cloth", "CLOTH"), 
+            new SegmentedControlOption("Plastic", "PLASTIC")
+        );
+        this.createSection(new DiaperTypeFilterSectionData("Wetness Indicator", "wetnessIndicator"), 
+            new SegmentedControlOption("Yes", "true"), 
+            new SegmentedControlOption("No", "false")
+        );
+        this.createSection(new DiaperTypeFilterSectionData("Landing Zone", "landingZone"), 
+            new SegmentedControlOption("Yes", "true"), 
+            new SegmentedControlOption("No", "false")
+        );
+        this.createSection(new DiaperTypeFilterSectionData("Tabs Per Side", "tabsPerSide"), 
+            new SegmentedControlOption("2", "2"), 
+            new SegmentedControlOption("4", "4")
+        );
 
         this.segmentedControls.forEach((value, key, map) => {
             value.onClick.addFunction(this, this.updateLabel);
