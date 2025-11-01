@@ -32,26 +32,25 @@ settings.externalDiaperData = "";
 
 let parsedExternalDiaperData = new Map();
 
+deserializeSettings();
+
 function serializeSettings() {
     localStorage.setItem("settings", JSON.stringify(settings));
 }
 
-async function deserializeSettings() {
+function deserializeSettings() {
     let tempSettings = localStorage.getItem("settings");
     if (!tempSettings)
         return;
 
     tempSettings = JSON.parse(tempSettings);
     Object.assign(settings, tempSettings);
-    await parseExternalDiaperData();
-
-    if (settings.autoRefreshFrequency > 0) {
-        setInterval(function() { fetchData(true); }, settings.autoRefreshFrequency * 1000);
-        console.log("Set to auto refresh every " + settings.autoRefreshFrequency + " seconds");
-    }
 }
 
 async function parseExternalDiaperData() {
+    if (await getValidToken() == null)
+        return;
+
     parsedExternalDiaperData = new Map();
     let lines = settings.externalDiaperData.split(/\r?\n|\r|\n/g);
     let currentYear = null;
