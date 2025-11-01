@@ -43,10 +43,10 @@ async function handleAPI() {
     }
 }
 
-async function fetchData() {
+async function fetchData(bypassTimeCheck = false) {
     let fetchTime = localStorage.getItem("fetchDataTime");
     
-    if (fetchTime) {
+    if (!bypassTimeCheck && fetchTime) {
         fetchTime = new Date(fetchTime);
         let now = new Date();
         if ((now - fetchTime) / 1000 < 60) {

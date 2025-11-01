@@ -44,6 +44,11 @@ async function deserializeSettings() {
     tempSettings = JSON.parse(tempSettings);
     Object.assign(settings, tempSettings);
     await parseExternalDiaperData();
+
+    if (settings.autoRefreshFrequency > 0) {
+        setInterval(function() { fetchData(true); }, settings.autoRefreshFrequency * 1000);
+        console.log("Set to auto refresh every " + settings.autoRefreshFrequency + " seconds");
+    }
 }
 
 async function parseExternalDiaperData() {
