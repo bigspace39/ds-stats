@@ -139,21 +139,6 @@ class SettingsDialog extends DialogBoxUI {
     accountLoggedInText;
     loginButton;
 
-    // === API Data ===
-    fetchNewHistory;
-    changesText;
-    fetchChangesButton;
-    fetchChangesSpinner;
-    accidentsText;
-    fetchAccidentsButton;
-    fetchAccidentsSpinner;
-    typesText;
-    fetchTypesButton;
-    fetchTypesSpinner;
-    brandsText;
-    fetchBrandsButton;
-    fetchBrandsSpinner;
-
     // === Dashboard ===
     dashboardNameField;
     defaultDiaperCatDropdown;
@@ -170,8 +155,27 @@ class SettingsDialog extends DialogBoxUI {
     diaperCategoryResetToDefaultsButton;
     diaperCategoryConfigList;
 
+    // === Export/Import ===
+    exportButton;
+    importButton;
+
     // === External Diaper Data ===
     externalDiaperDataTextArea;
+
+    // === API Data ===
+    fetchNewHistory;
+    changesText;
+    fetchChangesButton;
+    fetchChangesSpinner;
+    accidentsText;
+    fetchAccidentsButton;
+    fetchAccidentsSpinner;
+    typesText;
+    fetchTypesButton;
+    fetchTypesSpinner;
+    brandsText;
+    fetchBrandsButton;
+    fetchBrandsSpinner;
 
     constructor() {
         super();
@@ -258,6 +262,22 @@ class SettingsDialog extends DialogBoxUI {
             this.settingsDialog.diaperCategoryConfigList.setConfigs(defaultDiaperCategoryConfigs);
         });
         this.diaperCategoryConfigList = new DiaperCategoryConfigsListUI(this.content);
+
+        // === Export/Import ===
+        horizontal = UIBuilder.createHorizontal();
+        UIBuilder.createHeading("Export/Import", horizontal);
+        new QuestionmarkTooltipUI(horizontal, "Export/Import dashboards, widgets, and settings in JSON format");
+        horizontal = UIBuilder.createHorizontal();
+        this.exportButton = UIBuilder.createButton("Export", horizontal);
+        this.exportButton.addEventListener("click", async function() {
+            saveJsonFile(getExportFileName(), await getExportData());
+        });
+
+        this.exportButton.style.marginRight = "10px";
+        this.importButton = new FileImportButtonUI(horizontal, "Import");
+        this.importButton.onImportText.addFunction(this, function(text) {
+            importData(text);
+        });
 
         // === External Diaper Data ===
         horizontal = UIBuilder.createHorizontal();

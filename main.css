@@ -494,6 +494,13 @@ textarea {
     align-self: center;
 }
 
+input[type="file"] {
+    background: none;
+    border: none;
+    font-size: 1em;
+    color: blue;
+}
+
 #refresh, #inactive-refresh {
     --spinner-margin: 15px;
     width: calc(100% - var(--spinner-margin) * 2);
