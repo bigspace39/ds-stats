@@ -45,12 +45,11 @@ function deserializeSettings() {
 
     tempSettings = JSON.parse(tempSettings);
     Object.assign(settings, tempSettings);
+
+    parseExternalDiaperData();
 }
 
-async function parseExternalDiaperData() {
-    if (await getValidToken() == null)
-        return;
-
+function parseExternalDiaperData() {
     parsedExternalDiaperData = new Map();
     let lines = settings.externalDiaperData.split(/\r?\n|\r|\n/g);
     let currentYear = null;
@@ -92,10 +91,7 @@ async function parseExternalDiaperData() {
             amount += temp.amount;
         }
 
-        let temp = new Object();
-        temp.amount = amount;
-        temp.type = await getType(typeId);
-        currentYear.diapers.set(typeId, temp);
+        currentYear.diapers.set(typeId, amount);
     }
 
     if (currentYear != null && currentYear.diapers.size > 0) {

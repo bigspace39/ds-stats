@@ -43,7 +43,7 @@ class DonutChart extends Widget {
         );
     }
 
-    async update() {
+    async update_implementation() {
         this.data.datasets[0].data[0]++;
         this.chart.data = this.data;
         this.chart.update();

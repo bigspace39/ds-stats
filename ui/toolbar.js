@@ -19,7 +19,8 @@ class Toolbar {
             if (isFetching)
                 return;
 
-            await fetchData();
+            if (!await fetchData())
+                updateWidgetsOnSelectedDashboard();
         });
         
         this.refreshButtonSpinner = createElement("span", this.refreshButton, "refresh");

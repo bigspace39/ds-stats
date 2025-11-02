@@ -105,7 +105,7 @@ class MonthCalendar extends Widget {
         this.today();
     }
 
-    async update() {
+    async update_implementation() {
         let monthStr = getMonthStrFromDate(this.selectedMonth);
         monthStr += ' ' + this.selectedMonth.getFullYear();
         this.monthLabel.innerText = monthStr;

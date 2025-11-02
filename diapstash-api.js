@@ -51,7 +51,7 @@ async function fetchData(bypassTimeCheck = false) {
         let now = new Date();
         if ((now - fetchTime) / 1000 < 60) {
             console.log(`Tried to fetch data but it's been ${(now - fetchTime) / 1000} seconds since last fetch`);
-            return;
+            return false;
         }
     }
 
@@ -81,6 +81,7 @@ async function fetchData(bypassTimeCheck = false) {
     localStorage.setItem("fetchDataTime", new Date().toUTCString());
     onStopFetchAPIData.broadcast();
     isFetching = false;
+    return true;
 }
 
 async function fetchChangeHistory() {

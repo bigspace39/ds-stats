@@ -56,6 +56,8 @@ class Widget {
     widgetId = -1;
     classIndex = -1;
     dashboardId = -1;
+    isUpdating = false;
+    additionalUpdateQueued = false;
 
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         this.mainDiv = createElement("div", dashboardElement, "widget");
@@ -107,7 +109,25 @@ class Widget {
         this.exitEditMode();
     }
 
-    async update() {}
+    // Since update is async, there is a possibility for undefined behavior if it's being called while it's already running
+    // So instead delay additional updates until the current update has already finished.
+    async update() {
+        if (this.isUpdating) {
+            this.additionalUpdateQueued = true;
+            return;
+        }
+
+        this.isUpdating = true;
+        await this.update_implementation();
+        this.isUpdating = false;
+
+        if (this.additionalUpdateQueued) {
+            this.additionalUpdateQueued = false;
+            this.update();
+        }
+    }
+
+    async update_implementation() {}
 
     getSettingsDialogClass() {
         return null;

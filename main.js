@@ -27,13 +27,11 @@ openDBRequest.onsuccess = async function(event) {
     await createSavedDashboards();
     await createSavedWidgets();
     await handleAPI();
-    await parseExternalDiaperData();
 
     if (settings.autoRefreshFrequency > 0) {
         setInterval(function() { fetchData(true); }, settings.autoRefreshFrequency * 1000);
         console.log("Set to auto refresh every " + settings.autoRefreshFrequency + " seconds");
     }
-    updateWidgetsOnSelectedDashboard();
 };
 
 async function createSavedDashboards() {
