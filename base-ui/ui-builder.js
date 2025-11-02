@@ -19,12 +19,14 @@ class UIBuilder {
 
     static createText(text, parentElement = null) {
         parentElement = this.#getParentElement(parentElement);
-
         const lastChildIsH2 = parentElement.lastChild != null && parentElement.lastChild.tagName == "H2";
         let element = createElement("p", parentElement, null);
         element.innerText = text;
-        element.style.marginTop = lastChildIsH2 ? "0px" : "18px";
-        element.style.marginBottom = "6px";
+
+        if (parentElement.id != "horizontal-form") {
+            element.style.marginTop = lastChildIsH2 ? "0px" : "18px";
+            element.style.marginBottom = "6px";
+        }
         return element;
     }
 

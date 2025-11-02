@@ -237,12 +237,12 @@ textarea {
     cursor: pointer;
 }
 
-#widget-delete-button:hover, #widget-settings-button:hover {
+#widget-delete-button:hover, #widget-settings-button:hover, #widget-select-button:hover {
     background-color: var(--white-hover);
     transition-duration: var(--transition-duration);
 }
 
-#widget-delete-button:active, #widget-settings-button:active {
+#widget-delete-button:active, #widget-settings-button:active, #widget-select-button:active {
     background-color: var(--white-press);
     transition-duration: var(--transition-duration);
 }
@@ -257,6 +257,25 @@ textarea {
     left: -10px;
     top: -10px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+#widget-select-button {
+    border: none;
+    outline: none;
+    background-color: white;
+    color: black;
+    width: fit-content;
+    height: 25px;
+    font-size: small;
+    cursor: pointer;
+    text-wrap: nowrap;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    border-radius: 12.5px;
+    padding: 0px 10px;
+    transition-duration: var(--transition-duration);
+    transform: translate(-50%, 0);
 }
 
 #dialog-background {

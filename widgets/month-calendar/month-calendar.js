@@ -1,4 +1,4 @@
-class MonthCalendar extends Widget {
+class MonthCalendarWidget extends Widget {
     static displayName = "Month Calendar";
 
     static {
@@ -6,13 +6,14 @@ class MonthCalendar extends Widget {
     }
 
     getSettingsDialogClass() {
-        return MonthCalendarSettingsDialog;
+        return MonthCalendarWidgetSettingsDialog;
     }
 
     setSettingsDefaults(settings) {
 
     }
 
+    selectWidgetButton;
     monthHeader = null;
     monthLabel = null;
     monthPrice = null;
@@ -37,6 +38,9 @@ class MonthCalendar extends Widget {
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
         
+        this.selectWidgetButton = createElement("button", this.mainDiv, "widget-select-button");
+        this.selectWidgetButton.style.display = "none";
+        this.selectWidgetButton.innerText = "Month Calendar (1)"
         this.contentDiv.style.display = "flex";
         this.contentDiv.style.flexDirection = "column";
 
@@ -342,7 +346,7 @@ class MonthCalendar extends Widget {
     }
 }
 
-class MonthCalendarSettingsDialog extends WidgetSettingsDialog {
+class MonthCalendarWidgetSettingsDialog extends WidgetSettingsDialog {
     constructor(widget) {
         super(widget);
     }

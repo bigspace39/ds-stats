@@ -45,6 +45,11 @@ function setInEditMode(value) {
     }
 }
 
+function widgetIsOfClass(widget, WidgetClass) {
+    let widgetClass = possibleWidgets[widget.classIndex];
+    return widgetClass.name == WidgetClass;
+}
+
 class Widget {
     mainDiv = null;
     contentDiv = null;
@@ -109,8 +114,8 @@ class Widget {
         this.exitEditMode();
     }
 
-    // Since update is async, there is a possibility for undefined behavior if it's being called while it's already running
-    // So instead delay additional updates until the current update has already finished.
+    // Since update is async, there is a possibility for undefined behavior if it's being called while it's already running.
+    // To fix this, we should delay additional updates until the current update has finished.
     async update() {
         if (this.isUpdating) {
             this.additionalUpdateQueued = true;
@@ -203,6 +208,7 @@ class WidgetSettingsDialog extends DialogBoxUI
     constructor(widget) {
         super();
         this.widget = widget;
+        let WidgetClass = possibleWidgets[widget.classIndex];
         this.setTitle(`${WidgetClass.displayName || WidgetClass.name} Settings`);
 
         this.footer = createElement("div", this.div, "dialog-footer");
@@ -210,14 +216,17 @@ class WidgetSettingsDialog extends DialogBoxUI
         this.applyButton.settingsDialog = this;
         this.applyButton.addEventListener("click", function() {
             this.settingsDialog.saveSettings(this.settingsDialog.widget.settings);
+            this.settingsDialog.widget.saveWidget();
+            this.settingsDialog.widget.update();
         });
 
         this.revertButton = UIBuilder.createButton("Revert", this.footer, ButtonStyle.Cancel);
         this.revertButton.settingsDialog = this;
         this.revertButton.addEventListener("click", function() {
             this.settingsDialog.loadSettings(this.settingsDialog.widget.settings);
-            this.settingsDialog.widget.saveWidget();
         });
+
+        this.revertButton.style.marginRight = "10px";
     }
 
     loadSettings(settings) {
@@ -230,6 +239,6 @@ class WidgetSettingsDialog extends DialogBoxUI
 
     show() {
         super.show();
-        loadSettings();
+        this.loadSettings(this.widget.settings);
     }
 }
