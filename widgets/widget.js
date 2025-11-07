@@ -63,6 +63,7 @@ class Widget {
     dashboardId = -1;
     isUpdating = false;
     additionalUpdateQueued = false;
+    selectWidgetButton = null;
 
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         this.mainDiv = createElement("div", dashboardElement, "widget");
@@ -108,6 +109,11 @@ class Widget {
             Object.assign(this.settings, widgetSettings);
             this.onPostDeserializeSettings();
         }
+
+        this.selectWidgetButton = createElement("button", this.mainDiv, "widget-select-button");
+        this.selectWidgetButton.style.display = "none";
+        let WidgetClass = possibleWidgets[this.classIndex];
+        this.selectWidgetButton.innerText = `${WidgetClass.displayName || WidgetClass.name} (${this.widgetId})`;
         
         this.saveWidget();
         this.draggable = Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.savePosition, onDragEndParams: [this]})[0];

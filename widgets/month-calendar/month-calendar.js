@@ -13,7 +13,6 @@ class MonthCalendarWidget extends Widget {
 
     }
 
-    selectWidgetButton;
     monthHeader = null;
     monthLabel = null;
     monthPrice = null;
@@ -38,9 +37,6 @@ class MonthCalendarWidget extends Widget {
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
         
-        this.selectWidgetButton = createElement("button", this.mainDiv, "widget-select-button");
-        this.selectWidgetButton.style.display = "none";
-        this.selectWidgetButton.innerText = "Month Calendar (1)"
         this.contentDiv.style.display = "flex";
         this.contentDiv.style.flexDirection = "column";
 
