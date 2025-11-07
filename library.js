@@ -79,3 +79,69 @@ class Delegate {
         this.functions.clear();
     }
 }
+
+class Enum {
+    static getNames() {
+        let names = Object.getOwnPropertyNames(this);
+        names = names.slice(1, -2);
+        return names;
+    }
+
+    // 0: prototype, last: length, name
+    static getValues() {
+        let names = this.getNames();
+        let values = new Array();
+
+        for (let i = 0; i < names.length; i++) {
+            values.push(this[names[i]]);
+        }
+
+        return values;
+    }
+
+    static getCount() {
+        this.getNames().length;
+    }
+
+    static nameFromIndex(index) {
+        let names = getNames();
+        if (index < 0 || index >= values.length) {
+            console.error("Tried to get enum name from index with invalid index");
+            return;
+        }
+
+        return names[index];
+    }
+
+    static valueFromIndex(index) {
+        let values = this.getValues();
+        if (index < 0 || index >= values.length) {
+            console.error("Tried to get enum value from index with invalid index");
+            return;
+        }
+
+        return values[index];
+    }
+
+    static indexFromValue(value) {
+        let values = this.getValues();
+
+        for (let i = 0; i < values.length; i++) {
+            if (values[i] == value)
+                return i;
+        }
+
+        return -1;
+    }
+
+    static indexFromName(name) {
+        let names = this.getNames();
+
+        for (let i = 0; i < names.length; i++) {
+            if (names[i] == name)
+                return i;
+        }
+
+        return -1;
+    }
+}

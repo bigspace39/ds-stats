@@ -1,3 +1,10 @@
+class DonutChartWidgetMode extends Enum {
+    static DiapersPerType = "Diapers Per Type";
+    static DiapersPerCategoryConfig = "Diapers Per Category Config";
+    static AccidentsPerLocation = "Accidents Per Location";
+    static AccidentsPerPosition = "Accidents Per Position";
+}
+
 class DonutChartWidget extends Widget {
     static displayName = "Donut Chart";
 
@@ -59,13 +66,17 @@ class DonutChartWidget extends Widget {
 
 class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
     selectMonthGraphButton;
-    connectedMonthGraphText;
+    widgetModeDropdown;
     
     constructor(widget) {
         super(widget);
         UIBuilder.setDefaultParent(this.content);
 
+        UIBuilder.createHeading("Time Period");
         this.selectMonthGraphButton = new SelectConnectedWidgetButtonUI(this.content, this.widget, "MonthCalendarWidget");
+        UIBuilder.createHeading("Stat Type");
+        this.widgetModeDropdown = new DropdownUI(this.content);
+        this.widgetModeDropdown.setOptions(DonutChartWidgetMode.getValues());
     }
 
     setSettingsDefaults(settings) {

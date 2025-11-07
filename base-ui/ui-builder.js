@@ -84,7 +84,7 @@ class UIBuilder {
     }
 }
 
-class ButtonStyle {
+class ButtonStyle extends Enum {
     static Accent = "Accent";
     static Cancel = "Cancel";
 }
