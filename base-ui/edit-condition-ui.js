@@ -1,10 +1,20 @@
-// This is not actually a UI element, this class allows you to specify a function that will determine if the input element is hidden or not.
 class EditConditionUI {
-    element;
+    elements;
     fn;
 
-    constructor(elementToHide, updateDelegate, conditionThis, conditionFunction) {
-        this.element = elementToHide;
+    /**
+     * Will show/hide the given elements based on a function.
+     * @param {*} elementsToHide Either a single element or an array of elements
+     * @param {*} updateDelegate The delegate that will update this edit condition
+     * @param {*} conditionThis this object within the function
+     * @param {*} conditionFunction The function that is run every time the delegate is broadcast, if it returns true the elements will be visible
+     */
+    constructor(elementsToHide, updateDelegate, conditionThis, conditionFunction) {
+        if (Array.isArray(elementsToHide))
+            this.elements = elementsToHide;
+        else
+            this.elements = [elementsToHide];
+
         this.fn = conditionThis != null ? conditionFunction.bind(conditionThis) : conditionFunction;
 
         if (updateDelegate != null) {
@@ -18,21 +28,25 @@ class EditConditionUI {
 
     update() {
         let result = this.fn();
-        if (this.element.show != null && this.element.hide != null) {
-            if (result)
-                this.element.show();
-            else
-                this.element.hide();
 
-            return;
+        for (let i = 0; i < this.elements.length; i++) {
+            let element = this.elements[i];
+            if (element.show != null && element.hide != null) {
+                if (result)
+                    element.show();
+                else
+                    element.hide();
+    
+                continue;
+            }
+    
+            if (element.style == null) {
+                console.error("EditCondition not supported on the following element:");
+                console.error(element);
+                continue;
+            }
+            
+            element.style.display = result ? "" : "none";
         }
-
-        if (this.element.style == null) {
-            console.error("EditCondition not supported on the following element:");
-            console.error(this.element);
-            return;
-        }
-        
-        this.element.style.display = result ? "" : "none";
     }
 }

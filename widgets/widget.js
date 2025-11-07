@@ -83,22 +83,6 @@ class Widget {
         });
         this.deleteButton.widget = this;
 
-        let dialogClass = this.getSettingsDialogClass();
-        if (dialogClass != null) {
-            this.settingsButton = createElement("button", this.mainDiv, "widget-settings-button");
-            this.settingsButton.innerText = "⚙";
-            this.settingsButton.addEventListener("click", function() {
-                if (this.widget.settingsDialog == null) {
-                    this.widget.settingsDialog = new this.dialogClass(this.widget);
-                }
-                else {
-                    this.widget.settingsDialog.show();
-                }
-            });
-            this.settingsButton.widget = this;
-            this.settingsButton.dialogClass = dialogClass;
-        }
-
         this.classIndex = classIndex;
         this.dashboardId = dashboardId;
         if (widgetId >= 0) {
@@ -108,13 +92,26 @@ class Widget {
             this.determineId();
         }
 
+        let dialogClass = this.getSettingsDialogClass();
+        if (dialogClass != null) {
+            this.settingsButton = createElement("button", this.mainDiv, "widget-settings-button");
+            this.settingsButton.innerText = "⚙";
+            this.settingsDialog = new dialogClass(this);
+            this.settingsDialog.hide();
+            this.settingsButton.widget = this;
+
+            this.settingsButton.addEventListener("click", function() {
+                this.widget.settingsDialog.show();
+            });
+        }
+
         createdWidgets.set(this.widgetId, this);
         if (transform != null)
             this.mainDiv.style.transform = transform;
 
         this.setSettingsDefaults(this.settings);
         if (this.settingsDialog) {
-            this.setSettingsDefaults(this.settings);
+            this.settingsDialog.setSettingsDefaults(this.settings);
         }
 
         if (widgetSettings) {

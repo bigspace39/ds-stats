@@ -81,13 +81,38 @@ class Delegate {
 }
 
 class Enum {
+    // Assign default indices to each member if value is undefined
+    static init() {
+        let names = this.getNames();
+        for (let i = 0; i < names.length; i++) {
+            let name = names[i];
+            let value = this[name];
+            if (value === undefined)
+                this[name] = i;
+        }
+
+        Object.freeze(this);
+    }
+
+    static getDisplayNames() {
+        let names = this.getNames();
+        let displayNames = new Array();
+        for (let i = 0; i < names.length; i++) {
+            let name = names[i];
+            let displayName = name.replace(/([A-Z])/g, " $1");
+            let finalDisplayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+            displayNames.push(finalDisplayName);
+        }
+
+        return displayNames;
+    }
+
     static getNames() {
         let names = Object.getOwnPropertyNames(this);
         names = names.slice(1, -2);
         return names;
     }
 
-    // 0: prototype, last: length, name
     static getValues() {
         let names = this.getNames();
         let values = new Array();

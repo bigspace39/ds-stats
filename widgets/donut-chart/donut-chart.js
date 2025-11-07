@@ -1,8 +1,12 @@
-class DonutChartWidgetMode extends Enum {
-    static DiapersPerType = "Diapers Per Type";
-    static DiapersPerCategoryConfig = "Diapers Per Category Config";
-    static AccidentsPerLocation = "Accidents Per Location";
-    static AccidentsPerPosition = "Accidents Per Position";
+class DonutChartStatType extends Enum {
+    static DiapersPerCategoryConfig;
+    static DiapersPerType;
+    static AccidentsPerLocation;
+    static AccidentsPerPosition;
+
+    static {
+        super.init();
+    }
 }
 
 class DonutChartWidget extends Widget {
@@ -66,28 +70,42 @@ class DonutChartWidget extends Widget {
 
 class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
     selectMonthGraphButton;
-    widgetModeDropdown;
+    statTypeDropdown;
+    accidentTypeSegmentedControl;
     
     constructor(widget) {
         super(widget);
         UIBuilder.setDefaultParent(this.content);
 
+        // === Time Period ===
         UIBuilder.createHeading("Time Period");
         this.selectMonthGraphButton = new SelectConnectedWidgetButtonUI(this.content, this.widget, "MonthCalendarWidget");
+
+        // === Stat Type ===
         UIBuilder.createHeading("Stat Type");
-        this.widgetModeDropdown = new DropdownUI(this.content);
-        this.widgetModeDropdown.setOptions(DonutChartWidgetMode.getValues());
+        this.statTypeDropdown = new DropdownUI(this.content, ...DonutChartStatType.getDisplayNames());
+        this.accidentTypeSegmentedControl = new MultiSegmentedControlUI(this.content, 
+            new SegmentedControlUIOption("Wetting", 0),
+            new SegmentedControlUIOption("Messing", 1)
+        );
+        new EditConditionUI(this.accidentTypeSegmentedControl, this.statTypeDropdown.onChange, this, function() {
+            return this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerLocation || 
+                this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerPosition;
+        });
     }
 
     setSettingsDefaults(settings) {
         settings.connectedMonthCalendarId = -1;
+        settings.statType = DonutChartStatType.DiapersPerCategoryConfig;
     }
 
     loadSettings(settings) {
         this.selectMonthGraphButton.setConnectedWidgetId(settings.connectedMonthCalendarId);
+        this.statTypeDropdown.setSelectedIndex(settings.statType);
     }
 
     saveSettings(settings) {
         settings.connectedMonthCalendarId = this.selectMonthGraphButton.getConnectedWidgetId();
+        settings.statType = this.statTypeDropdown.getSelectedIndex();
     }
 }
