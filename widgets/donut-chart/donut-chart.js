@@ -9,10 +9,6 @@ class DonutChartWidget extends Widget {
         return DonutChartWidgetSettingsDialog;
     }
 
-    setSettingsDefaults(settings) {
-        settings.connectedMonthCalendarId = -1;
-    }
-
     canvas;
     label;
     chart;
@@ -36,7 +32,7 @@ class DonutChartWidget extends Widget {
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
         this.label = createElement("h1", this.contentDiv, "donut-label");
-        this.label.innerText = "Label";
+        this.setLabelText("Label");
         this.canvas = createElement("canvas", this.contentDiv, "donut-chart");
         this.contentDiv.style.width = "200px";
         this.contentDiv.style.height = "260px";
@@ -55,6 +51,10 @@ class DonutChartWidget extends Widget {
         this.chart.data = this.data;
         this.chart.update();
     }
+
+    setLabelText(text) {
+        this.label.innerText = text;
+    }
 }
 
 class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
@@ -65,33 +65,18 @@ class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
         super(widget);
         UIBuilder.setDefaultParent(this.content);
 
-        UIBuilder.createText("Connected Month Graph");
-        let horizontal = UIBuilder.createHorizontal();
-        this.selectMonthGraphButton = new SelectConnectedWidgetButtonUI(horizontal, "Select", this.widget, "MonthCalendarWidget");
-        this.selectMonthGraphButton.onSelectConnectedWidget.addFunction(this, function(monthCalendar) {
-            this.widget.settings.connectedMonthCalendarId = monthCalendar.widgetId;
-            this.widget.saveWidget();
-            this.updateConnectedMonthCalendarText();
-        });
-        this.connectedMonthGraphText = UIBuilder.createText("None", horizontal);
-        this.connectedMonthGraphText.style.marginLeft = "6px";
+        this.selectMonthGraphButton = new SelectConnectedWidgetButtonUI(this.content, this.widget, "MonthCalendarWidget");
     }
 
-    loadSettings() {
-        this.updateConnectedMonthCalendarText();
+    setSettingsDefaults(settings) {
+        settings.connectedMonthCalendarId = -1;
     }
 
-    saveSettings() {
-
+    loadSettings(settings) {
+        this.selectMonthGraphButton.setConnectedWidgetId(settings.connectedMonthCalendarId);
     }
 
-    updateConnectedMonthCalendarText() {
-        let monthWidget = createdWidgets.get(this.widget.settings.connectedMonthCalendarId);
-        if (!monthWidget || !widgetIsOfClass(monthWidget, "MonthCalendarWidget")) {
-            this.connectedMonthGraphText.innerText = "None";
-            return;
-        }
-        let WidgetClass = possibleWidgets[monthWidget.classIndex];
-        this.connectedMonthGraphText.innerText = WidgetClass.displayName + " (" + monthWidget.widgetId + ")";
+    saveSettings(settings) {
+        settings.connectedMonthCalendarId = this.selectMonthGraphButton.getConnectedWidgetId();
     }
 }

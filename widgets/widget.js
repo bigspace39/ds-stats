@@ -45,9 +45,17 @@ function setInEditMode(value) {
     }
 }
 
-function widgetIsOfClass(widget, WidgetClass) {
+function widgetIsOfClass(widget, className) {
     let widgetClass = possibleWidgets[widget.classIndex];
-    return widgetClass.name == WidgetClass;
+    return widgetClass.name == className;
+}
+
+function getWidgetClassFromClassName(className) {
+    for (let i = 0; i < possibleWidgets.length; i++) {
+        let widgetClass = possibleWidgets[i];
+        if (widgetClass.name == className)
+            return widgetClass;
+    }
 }
 
 class Widget {
@@ -105,6 +113,10 @@ class Widget {
             this.mainDiv.style.transform = transform;
 
         this.setSettingsDefaults(this.settings);
+        if (this.settingsDialog) {
+            this.setSettingsDefaults(this.settings);
+        }
+
         if (widgetSettings) {
             Object.assign(this.settings, widgetSettings);
             this.onPostDeserializeSettings();
@@ -233,6 +245,10 @@ class WidgetSettingsDialog extends DialogBoxUI
         });
 
         this.revertButton.style.marginRight = "10px";
+    }
+
+    setSettingsDefaults(settings) {
+
     }
 
     loadSettings(settings) {

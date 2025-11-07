@@ -9,10 +9,6 @@ class MonthCalendarWidget extends Widget {
         return MonthCalendarWidgetSettingsDialog;
     }
 
-    setSettingsDefaults(settings) {
-
-    }
-
     monthHeader = null;
     monthLabel = null;
     monthPrice = null;
@@ -347,11 +343,15 @@ class MonthCalendarWidgetSettingsDialog extends WidgetSettingsDialog {
         super(widget);
     }
 
-    loadSettings() {
+    setSettingsDefaults(settings) {
 
     }
 
-    saveSettings() {
+    loadSettings(settings) {
+
+    }
+
+    saveSettings(settings) {
 
     }
 }
