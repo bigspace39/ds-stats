@@ -2,8 +2,9 @@ import { Statics } from "../library/statics.js";
 import { API } from "../diapstash-api.js";
 import { WidgetStatics } from "../library/widget-statics.js";
 import { UIBuilder } from "../base-ui/ui-builder.js";
+import { ElementStatics } from "../library/element-statics.js";
 
-class Toolbar {
+export class Toolbar {
     static {
         Statics.toolbar = new Toolbar();
     }
@@ -19,12 +20,12 @@ class Toolbar {
     constructor() {
         this.div = UIBuilder.createElement("div", Statics.mainDiv, "toolbar");
         this.createWidgetButton = this.createToolbarButton("+");
-        this.createWidgetButton.addEventListener("click", function() {
+        ElementStatics.bindOnClick(this.createWidgetButton, this, function() {
             Statics.addWidgetDialog.show();
         });
 
         this.refreshButton = this.createToolbarButton("");
-        this.refreshButton.addEventListener("click", async function() {
+        ElementStatics.bindOnClick(this.refreshButton, this, async function() {
             if (API.isFetching)
                 return;
 
@@ -44,12 +45,12 @@ class Toolbar {
         });
 
         this.settingsButton = this.createToolbarButton("⚙");
-        this.settingsButton.addEventListener("click", function() {
+        ElementStatics.bindOnClick(this.settingsButton, this, function() {
             Statics.settingsDialog.show();
         });
 
         this.editButton = this.createToolbarButton("✎");
-        this.editButton.addEventListener("click", function() {
+        ElementStatics.bindOnClick(this.editButton, this, function() {
             WidgetStatics.toggleInEditMode();
         });
     }

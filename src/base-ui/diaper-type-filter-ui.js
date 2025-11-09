@@ -1,5 +1,4 @@
 /// <reference types="tippy.js" />
-import { Statics } from "../library/statics.js";
 import { UIBuilder } from "./ui-builder.js";
 import { SegmentedControlUIOption } from "./segmented-control-ui.js";
 import { MultiSegmentedControlUI } from "./multi-segmented-control-ui.js";
@@ -15,11 +14,19 @@ export class DiaperTypeFilterUISectionData {
 }
 
 export class DiaperTypeFilterUI {
+    /** @type {HTMLButtonElement} */
     button;
+    /** @type {Tippy.Tippy} */
     tippy;
+    /** @type {HTMLDivElement} */
     tooltipParentDiv;
+    /** @type {Map<string, MultiSegmentedControlUI>} */
     segmentedControls = new Map();
 
+    /**
+     * Will create a diaper type filter UI where the user can select various options to filter between diaper types.
+     * @param {HTMLElement} parentElement The parent element.
+     */
     constructor(parentElement) {
         this.button = UIBuilder.createElement("button", parentElement, "diaper-type-filter");
         this.button.role = "button";
@@ -34,11 +41,11 @@ export class DiaperTypeFilterUI {
             interactive: true
         });
 
-        this.createSection(new DiaperTypeFilterUISectionData("Usage", "usage"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Usage", "usage"), 
             new SegmentedControlUIOption("Disposable", "DISPOSABLE"), 
             new SegmentedControlUIOption("Reusable", "REUSABLE")
         );
-        this.createSection(new DiaperTypeFilterUISectionData("Category", "category"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Category", "category"), 
             new SegmentedControlUIOption("Diaper (Tabs)", "DIAPER"), 
             new SegmentedControlUIOption("Pull Up", "PULL_UP"),
             new SegmentedControlUIOption("Pad (Anatomical)", "PAD"),
@@ -49,12 +56,12 @@ export class DiaperTypeFilterUI {
             new SegmentedControlUIOption("Flat / Prefold", "FLAT_PREFOLD"),
             new SegmentedControlUIOption("Fitted", "FITTED")
         );
-        this.createSection(new DiaperTypeFilterUISectionData("Target", "target"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Target", "target"), 
             new SegmentedControlUIOption("Abdl", "ABDL"),
             new SegmentedControlUIOption("Medical", "MEDICAL"),
             new SegmentedControlUIOption("Youth", "YOUTH")
         );
-        this.createSection(new DiaperTypeFilterUISectionData("Fasteners", "fasteners"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Fasteners", "fasteners"), 
             new SegmentedControlUIOption("Snap", "SNAP"), 
             new SegmentedControlUIOption("Hook & Loop (Velcro)", "VELCRO"),
             new SegmentedControlUIOption("Elastic", "ELASTIC"),
@@ -62,29 +69,29 @@ export class DiaperTypeFilterUI {
             new SegmentedControlUIOption("Pin", "PIN"),
             new SegmentedControlUIOption("Adhesive Tab", "ADHESIVE_TAB")
         );
-        this.createSection(new DiaperTypeFilterUISectionData("Backing Material", "backingMaterial"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Backing Material", "backingMaterial"), 
             new SegmentedControlUIOption("Cloth", "CLOTH"), 
             new SegmentedControlUIOption("Plastic", "PLASTIC")
         );
-        this.createSection(new DiaperTypeFilterUISectionData("Wetness Indicator", "wetnessIndicator"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Wetness Indicator", "wetnessIndicator"), 
             new SegmentedControlUIOption("Yes", "true"), 
             new SegmentedControlUIOption("No", "false")
         );
-        this.createSection(new DiaperTypeFilterUISectionData("Landing Zone", "landingZone"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Landing Zone", "landingZone"), 
             new SegmentedControlUIOption("Yes", "true"), 
             new SegmentedControlUIOption("No", "false")
         );
-        this.createSection(new DiaperTypeFilterUISectionData("Tabs Per Side", "tabsPerSide"), 
+        this.#createSection(new DiaperTypeFilterUISectionData("Tabs Per Side", "tabsPerSide"), 
             new SegmentedControlUIOption("2", "2"), 
             new SegmentedControlUIOption("4", "4")
         );
 
         this.segmentedControls.forEach((value, key, map) => {
-            value.onClick.addFunction(this, this.updateLabel);
+            value.onClick.addFunction(this, this.#updateLabel);
         });
     }
 
-    updateLabel() {
+    #updateLabel() {
         let filterCount = 0;
         
         this.segmentedControls.forEach((value, key, map) => {
@@ -95,7 +102,7 @@ export class DiaperTypeFilterUI {
         this.button.innerText = `${filterCount} filter${filterCount != 1 ? "s" : ""} active`;
     }
 
-    createSection(sectionData, ...options) {
+    #createSection(sectionData, ...options) {
         UIBuilder.createHeading(sectionData.displayName, this.tooltipParentDiv);
         let segmentedControl = new MultiSegmentedControlUI(this.tooltipParentDiv, ...options);
         this.segmentedControls.set(sectionData.propertyName, segmentedControl);

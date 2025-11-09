@@ -9,10 +9,16 @@ Coloris({
 });
 
 export class ColorPickerUI {
+    /** @type {HTMLDivElement} */
     wrapperDiv;
+    /** @type {HTMLInputElement} */
     inputElement;
-    previewButton;
 
+    /**
+     * Will create a color picker UI with a preview that when pressed opens up a color picker UI.
+     * @param {HTMLElement} parentElement The parent element.
+     * @param {string} id The id of the main wrapper div of this color picker.
+     */
     constructor(parentElement, id = null) {
         this.inputElement = UIBuilder.createElement("input", parentElement, null);
         this.inputElement.type = "text";
@@ -30,11 +36,19 @@ export class ColorPickerUI {
         this.wrapperDiv.appendChild(this.inputElement);
     }
 
+    /**
+     * Sets the selected color of the color picker.
+     * @param {string} hexColor The hex color.
+     */
     setColor(hexColor) {
         this.inputElement.value = hexColor;
         this.wrapperDiv.style.color = this.inputElement.value;
     }
 
+    /**
+     * 
+     * @returns {string} The selected hex color of the color picker.
+     */
     getColor() {
         return this.inputElement.value;
     }

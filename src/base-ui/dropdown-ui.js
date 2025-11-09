@@ -1,11 +1,19 @@
 import { Delegate } from "../library/delegate.js";
+import { ElementStatics } from "../library/element-statics.js";
 import { UIBuilder } from "./ui-builder.js";
 
 export class DropdownUI {
+    /** @type {HTMLSelectElement} */
     dropdownElement;
+    /** @type {HTMLOptionElement[]} */
     optionElements = new Array();
     onChange = new Delegate();
 
+    /**
+     * Creates a dropdown UI.
+     * @param {HTMLElement} parentElement The parent element.
+     * @param  {...string} initialOptions Initial dropdown options.
+     */
     constructor(parentElement, ...initialOptions) {
         this.dropdownElement = UIBuilder.createElement("select", parentElement, null);
 
@@ -14,12 +22,16 @@ export class DropdownUI {
             this.#createOptionElement(option, i);
         }
 
-        this.dropdownElement.addEventListener("change", function() {
-            this.dropdown.onChange.broadcast(this.dropdown, this.dropdown.getSelectedIndex());
+        ElementStatics.bindOnChange(this.dropdownElement, this, function(element) {
+            this.onChange.broadcast(this, this.getSelectedIndex());
         });
-        this.dropdownElement.dropdown = this;
     }
 
+    /**
+     * Sets the dropdown options.
+     * @param {string[]} options New options to replace the old ones with.
+     * @returns {void}
+     */
     setOptions(options) {
         for (let i = 0; i < options.length; i++) {
             let option = options[i];
@@ -40,35 +52,21 @@ export class DropdownUI {
         }
     }
 
+    /**
+     * Gets the current selected index.
+     * @returns {number}
+     */
     getSelectedIndex() {
         return parseInt(this.dropdownElement.value);
     }
 
-    getSelectedText() {
-        return this.dropdownElement.text;
-    }
-
+    /**
+     * Sets the selected option at the given index.
+     * @param {number} index The index to select.
+     */
     setSelectedIndex(index) {
-        this.dropdownElement.value = index;
+        this.dropdownElement.value = String(index);
         this.onChange.broadcast(this, this.getSelectedIndex());
-    }
-
-    setSelectedText(text) {
-        let index = -1;
-        for (let i = 0; i < this.optionElements.length; i++) {
-            let optionElement = this.optionElements[i];
-            if (optionElement.innerText == text) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index == -1) {
-            console.error(`Tried to set selected text with text ${text} but that text doesn't exist in the dropdown`);
-            return;
-        }
-
-        this.setSelectedIndex(index);
     }
 
     #createOptionElement(text, value) {

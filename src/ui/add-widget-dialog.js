@@ -1,10 +1,11 @@
 import { DialogBoxUI } from "../base-ui/dialog-box-ui.js";
 import { UIBuilder } from "../base-ui/ui-builder.js";
 import { DashboardStatics } from "../library/dashboard-statics.js";
+import { ElementStatics } from "../library/element-statics.js";
 import { Statics } from "../library/statics.js";
 import { WidgetStatics } from "../library/widget-statics.js";
 
-class AddWidgetDialog extends DialogBoxUI {
+export class AddWidgetDialog extends DialogBoxUI {
     static {
         Statics.addWidgetDialog = new AddWidgetDialog();
     }
@@ -19,13 +20,13 @@ class AddWidgetDialog extends DialogBoxUI {
             let WidgetClass = WidgetStatics.possibleWidgets[i];
             let button = UIBuilder.createElement("button", this.content, "widget-add-button");
             button.innerText = WidgetClass.displayName || WidgetClass.name;
-            button.addEventListener("click", async function() {
-                await WidgetStatics.createWidget(DashboardStatics.selectedDashboard.boardId, this.widgetIndex);
-                this.dialog.hide();
+
+            ElementStatics.bindOnClick(button, this, async function(button, widgetIndex) {
+                await WidgetStatics.createWidget(DashboardStatics.selectedDashboard.boardId, widgetIndex);
+                this.hide();
                 WidgetStatics.setInEditMode(true);
-            });
-            button.widgetIndex = i;
-            button.dialog = this;
+            }, i);
+            
             this.widgetButtons.push(button);
         }
 

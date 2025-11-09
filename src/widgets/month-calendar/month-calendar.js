@@ -5,6 +5,7 @@ import { API } from "../../diapstash-api.js";
 import { Settings } from "../../settings.js";
 import { WidgetStatics } from "../../library/widget-statics.js";
 import { UIBuilder } from "../../base-ui/ui-builder.js";
+import { ElementStatics } from "../../library/element-statics.js";
 
 export class MonthCalendarWidget extends Widget {
     static displayName = "Month Calendar";
@@ -54,24 +55,21 @@ export class MonthCalendarWidget extends Widget {
         this.prevButton = UIBuilder.createElement("button", this.navigationDiv, "month-navigation-button");
         this.prevButton.innerText = "<";
         this.prevButton.style.padding = "2px 20px";
-        this.prevButton.calendar = this;
-        this.prevButton.addEventListener("click", function() {
-            this.calendar.prev();
+        ElementStatics.bindOnClick(this.prevButton, this, function() {
+            this.prev();
         });
 
         this.todayButton = UIBuilder.createElement("button", this.navigationDiv, "month-navigation-button");
         this.todayButton.innerText = "Today";
-        this.todayButton.calendar = this;
-        this.todayButton.addEventListener("click", function() {
-            this.calendar.today();
+        ElementStatics.bindOnClick(this.todayButton, this, function() {
+            this.today();
         });
 
         this.nextButton = UIBuilder.createElement("button", this.navigationDiv, "month-navigation-button");
         this.nextButton.innerText = ">";
         this.nextButton.style.padding = "2px 20px";
-        this.nextButton.calendar = this;
-        this.nextButton.addEventListener("click", function() {
-            this.calendar.next();
+        ElementStatics.bindOnClick(this.nextButton, this, function() {
+            this.next();
         });
 
         this.weekdays = UIBuilder.createElement("div", this.contentDiv, "weekdays");
@@ -95,11 +93,9 @@ export class MonthCalendarWidget extends Widget {
                 this.datesTextBoxes.push(buttonTextBox);
 
                 let index = this.dates.length - 1;
-                button.calendar = this;
-                button.index = index;
-                button.addEventListener('click', function() {
-                    this.calendar.onClickMonthGraphDate(this.index);
-                });
+                ElementStatics.bindOnClick(button, this, function(button, index) {
+                    this.onClickMonthGraphDate(index);
+                }, index);
             }
 
             const statusBar = UIBuilder.createElement("div", week, "status-bar");

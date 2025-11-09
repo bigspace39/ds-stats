@@ -1,8 +1,9 @@
 import { UIBuilder } from "../base-ui/ui-builder.js";
 import { API } from "../diapstash-api.js";
+import { ElementStatics } from "../library/element-statics.js";
 import { Statics } from "../library/statics.js";
 
-class LoginPrompt {
+export class LoginPrompt {
     static {
         Statics.loginPrompt = new LoginPrompt();
     }
@@ -17,7 +18,7 @@ class LoginPrompt {
         this.p.innerText = "You need to login!";
         this.button = UIBuilder.createElement("button", this.div, "accent-button");
         this.button.innerText = "Login";
-        this.button.addEventListener("click", async function() {
+        ElementStatics.bindOnClick(this.button, this, async function() {
             await API.login();
         });
 

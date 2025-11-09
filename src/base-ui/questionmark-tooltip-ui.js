@@ -2,10 +2,18 @@
 import { UIBuilder } from "./ui-builder.js";
 
 export class QuestionmarkTooltipUI {
+    /** @type {HTMLDivElement} */
     div;
+    /** @type {Tippy.Tippy} */
     tippy;
+    /** @type {HTMLDivElement} */
     tooltipDiv;
 
+    /**
+     * Creates a question mark icon that when hovered will show the specified text in a tooltip.
+     * @param {HTMLElement} parentElement The parent element.
+     * @param {string} tooltipText The tooltip text.
+     */
     constructor(parentElement, tooltipText) {
         this.div = UIBuilder.createElement("div", parentElement, "questionmark-tooltip");
         this.div.innerText = "?";

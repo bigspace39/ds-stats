@@ -36,10 +36,17 @@ export class Settings {
 
     static parsedExternalDiaperData = new Map();
     
+    /**
+     * Saves settings to localStorage.
+     */
     static serializeSettings() {
         localStorage.setItem("settings", JSON.stringify(Settings.data));
     }
     
+    /**
+     * Loads settings from localStorage.
+     * @returns {void}
+     */
     static deserializeSettings() {
         let tempSettings = localStorage.getItem("settings");
         if (!tempSettings)
@@ -48,10 +55,10 @@ export class Settings {
         tempSettings = JSON.parse(tempSettings);
         Object.assign(Settings.data, tempSettings);
     
-        Settings.parseExternalDiaperData();
+        this.#parseExternalDiaperData();
     }
     
-    static parseExternalDiaperData() {
+    static #parseExternalDiaperData() {
         Settings.parsedExternalDiaperData = new Map();
         let lines = Settings.data.externalDiaperData.split(/\r?\n|\r|\n/g);
         let currentYear = null;
@@ -105,6 +112,11 @@ export class Settings {
         console.log(Settings.parsedExternalDiaperData);
     }
     
+    /**
+     * Gets the names of all the diaper category configs.
+     * @param {*} configs Optional diaper category configs, otherwise will pick the one in settings.
+     * @returns {string[]} Names
+     */
     static getDiaperCategoryConfigNames(configs = null) {
         if (configs == null)
             configs = Settings.data.diaperCategoryConfigs;

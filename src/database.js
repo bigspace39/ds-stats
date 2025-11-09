@@ -15,6 +15,13 @@ export class Database {
      */
     static db;
     
+    /**
+     * Gets an array of all objects in the given database store.
+     * @param {string} storeName The object store.
+     * @param {string} sortParameter The parameter to sort by.
+     * @param {boolean} ascending Sort ascending/descending.
+     * @returns {Promise<any[]>}
+     */
     static getAllFromObjectStore(storeName, sortParameter = null, ascending = true) {
         return new Promise((resolve, reject) => {
             const transaction = Database.db.transaction([storeName], "readonly");
@@ -43,6 +50,12 @@ export class Database {
         });
     }
     
+    /**
+     * Gets a map of all objects in the given database store using a specified parameter as a key.
+     * @param {string} storeName The object store.
+     * @param {string} key The parameter to use as the key for the map.
+     * @returns {Promise<Map<any, any>>}
+     */
     static getAllFromObjectStoreIntoMap(storeName, key) {
         return new Promise((resolve, reject) => {
             const transaction = Database.db.transaction([storeName], "readonly");
@@ -64,6 +77,11 @@ export class Database {
         });
     }
     
+    /**
+     * Clears the given object store
+     * @param {string} storeName The object store.
+     * @returns {Promise<Error> | Promise}
+     */
     static clearObjectStore(storeName) {
         return new Promise((resolve, reject) => {
             const transaction = Database.db.transaction([storeName], "readwrite");
@@ -80,6 +98,12 @@ export class Database {
         });
     }
     
+    /**
+     * Deletes the object with the specified key from the object store.
+     * @param {string} storeName The object store.
+     * @param {*} key 
+     * @returns {Promise<Error> | Promise}
+     */
     static deleteFromObjectStore(storeName, key) {
         return new Promise((resolve, reject) => {
             const transaction = Database.db.transaction([storeName], "readwrite");
@@ -96,6 +120,12 @@ export class Database {
         });
     }
     
+    /**
+     * Puts an object into the object store (put replaces, whereas add will throw an error if the key already exists).
+     * @param {string} storeName The object store.
+     * @param {Object} object The object to store.
+     * @returns {Promise<Error> | Promise}
+     */
     static putInObjectStore(storeName, object) {
         return new Promise((resolve, reject) => {
             const transaction = Database.db.transaction([storeName], "readwrite");
@@ -112,6 +142,13 @@ export class Database {
         });
     }
     
+    /**
+     * Puts a full array into the object store (put replaces, whereas add will throw an error if the key already exists).
+     * @param {string} storeName The object store.
+     * @param {Object[]} objectsArray The array of objects to store.
+     * @param {number} chunkSize How many objects to process at one time.
+     * @returns {Promise<Error> | Promise}
+     */
     static putArrayInObjectStore(storeName, objectsArray, chunkSize = 100) {
         return new Promise((resolve, reject) => {
             const totalChunks = Math.ceil(objectsArray.length / chunkSize);
@@ -138,6 +175,12 @@ export class Database {
         });
     }
     
+    /**
+     * Adds an object to the object store (add will throw an error if the key already exists in the database).
+     * @param {string} storeName The object store.
+     * @param {Object} object The object to store.
+     * @returns {Promise<Error> | Promise}
+     */
     static addToObjectStore(storeName, object) {
         return new Promise((resolve, reject) => {
             const transaction = Database.db.transaction([storeName], "readwrite");
@@ -154,6 +197,13 @@ export class Database {
         });
     }
     
+    /**
+     * 
+     * @param {string} storeName The object store.
+     * @param {Object[]} objectsArray The array of objects to store.
+     * @param {number} chunkSize How many objects to process at one time.
+     * @returns {Promise<Error> | Promise}
+     */
     static addArrayToObjectStore(storeName, objectsArray, chunkSize = 100) {
         return new Promise((resolve, reject) => {
             const totalChunks = Math.ceil(objectsArray.length / chunkSize);
@@ -180,6 +230,12 @@ export class Database {
         });
     }
     
+    /**
+     * Counts how many objects exists in the object store (can be queried).
+     * @param {string} storeName The object store.
+     * @param {string} query Query.
+     * @returns {Promise<Error> | Promise}
+     */
     static getCountInObjectStore(storeName, query = null) {
         return new Promise((resolve, reject) => {
             const transaction = Database.db.transaction([storeName], "readonly");

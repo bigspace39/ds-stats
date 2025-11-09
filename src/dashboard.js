@@ -1,18 +1,27 @@
 import { UIBuilder } from "./base-ui/ui-builder.js";
 import { Database, DatabaseStore } from "./database.js";
 import { DashboardStatics } from "./library/dashboard-statics.js";
+import { ElementStatics } from "./library/element-statics.js";
 import { Statics } from "./library/statics.js";
 import { WidgetStatics } from "./library/widget-statics.js";
 
 export class Dashboard {
+    /** @type {HTMLDivElement} */
     board;
+    /** @type {HTMLDivElement} */
     tab;
+    /** @type {HTMLParagraphElement} */
     tabLabel;
+    /** @type {HTMLButtonElement} */
     tabClose;
-    boardId;
+    boardId = -1;
     defaultDiaperCatConfig = 0;
     exists = false;
 
+    /**
+     * Creates a new dashboard with the given boardId.
+     * @param {number} boardId boardId to assign to this dashboard.
+     */
     constructor(boardId = -1) {
         this.board = UIBuilder.createElement("div", Statics.mainDiv, "dashboard");
         this.tab = UIBuilder.createElement("div", Statics.headerDiv, "dashboard-tab-inactive");
@@ -35,23 +44,25 @@ export class Dashboard {
 
         this.tabLabel.innerText = `Dashboard ${boardId + 1}`;
 
-        this.tabClose.addEventListener("click", function() {
-            this.dashboard.destroy();
+        ElementStatics.bindOnClick(this.tabClose, this, function(element) {
+            this.destroy();
         });
 
-        this.tab.addEventListener("click", function () {
-            if (!this.dashboard.exists) {
+        ElementStatics.bindOnClick(this.tab, this, function(element) {
+            if (!this.exists) {
                 return;
             }
 
-            DashboardStatics.selectDashboard(this.dashboard);
+            DashboardStatics.selectDashboard(this);
         });
 
-        this.tabClose.dashboard = this;
-        this.tab.dashboard = this;
         this.exists = true;
     }
 
+    /**
+     * Destroys the dashboard.
+     * @returns {void}
+     */
     destroy() {
         if (DashboardStatics.dashboards.size == 1)
             return;
@@ -87,6 +98,9 @@ export class Dashboard {
         }
     }
 
+    /**
+     * Saves the dashbord to the database.
+     */
     saveDashboard() {
         let current = {
             id: this.boardId,
@@ -96,30 +110,53 @@ export class Dashboard {
         Database.putInObjectStore(DatabaseStore.Dashboards, current);
     }
 
+    /**
+     * Shows the dashboard.
+     */
     showDashboard() {
         this.tab.id = "dashboard-tab-active";
         this.board.style.display = "";
     }
 
+    /**
+     * Hides the dashboard.
+     */
     hideDashboard() {
         this.tab.id = "dashboard-tab-inactive";
         this.board.style.display = "none";
     }
 
+    /**
+     * Gets the dashboard label.
+     * @returns {string} Dashboard label.
+     */
     getLabel() {
         return this.tabLabel.innerText;
     }
 
-    setLabel(text) {
-        this.tabLabel.innerText = text;
+    /**
+     * Sets the dashboard label.
+     * @param {string} label New dashboard label.
+     */
+    setLabel(label) {
+        this.tabLabel.innerText = label;
         this.saveDashboard();
     }
 
+    /**
+     * Sets the default diaper category config index for this board.
+     * @param {number} index Diaper category config index.
+     */
     setDefaultDiaperCatConfig(index) {
         this.defaultDiaperCatConfig = index;
         this.saveDashboard();
     }
 
+    /**
+     * Sets the label and the default diaper category config for the dashboard.
+     * @param {string} labelText Dashboard label.
+     * @param {number} diaperCatConfigIndex Diaper category config index.
+     */
     setLabelAndDefaultDiaperCatConfig(labelText, diaperCatConfigIndex) {
         this.tabLabel.innerText = labelText;
         this.defaultDiaperCatConfig = diaperCatConfigIndex;

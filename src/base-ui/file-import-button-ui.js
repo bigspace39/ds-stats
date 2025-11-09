@@ -1,11 +1,19 @@
 import { Delegate } from "../library/delegate.js";
+import { ElementStatics } from "../library/element-statics.js";
 import { UIBuilder } from "./ui-builder.js";
 
 export class FileImportButtonUI {
+    /** @type {HTMLButtonElement} */
     button;
+    /** @type {HTMLInputElement} */
     input;
     onImportText = new Delegate();
 
+    /**
+     * Will create a button that can import a previously exported JSON file.
+     * @param {HTMLElement} parentElement The parent element.
+     * @param {string} text The text on the import button.
+     */
     constructor(parentElement, text) {
         this.button = UIBuilder.createElement("button", parentElement, "accent-button");
         this.button.innerText = text;
@@ -14,12 +22,12 @@ export class FileImportButtonUI {
         this.input.accept = ".json";
         this.input.style.display = "none";
 
-        this.button.addEventListener("click", function() {
-            this.inputElement.click();
+        ElementStatics.bindOnClick(this.button, this, function(element) {
+            this.input.click();
         });
-        this.button.inputElement = this.input;
-        this.input.addEventListener("change", function() {
-            let file = this.files[0];
+        ElementStatics.bindOnChange(this.input, this, function(element) {
+            // @ts-ignore
+            let file = element.files[0];
             console.log("Uploaded file:");
             console.log(file);
             
@@ -27,11 +35,10 @@ export class FileImportButtonUI {
             reader.addEventListener("load", (event) => {
                 console.log("File content:");
                 console.log(event.target.result);
-                this.importUI.onImportText.broadcast(event.target.result);
+                this.onImportText.broadcast(event.target.result);
             });
             reader.readAsText(file);
         });
-        this.input.importUI = this;
     }
 
     show() {

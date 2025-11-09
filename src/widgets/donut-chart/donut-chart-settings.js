@@ -28,7 +28,7 @@ export class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
             new SegmentedControlUIOption("Wetting", 0),
             new SegmentedControlUIOption("Messing", 1)
         );
-        new EditConditionUI(this.accidentTypeSegmentedControl, this.statTypeDropdown.onChange, this, function() {
+        new EditConditionUI([this.accidentTypeSegmentedControl], this.statTypeDropdown.onChange, this, function() {
             return this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerLocation || 
                 this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerPosition;
         });

@@ -1,13 +1,22 @@
 import { UIBuilder } from "../base-ui/ui-builder.js";
 import { Database, DatabaseStore } from "../database.js";
+import { ElementStatics } from "../library/element-statics.js";
 import { WidgetStatics } from "../library/widget-statics.js";
 
 export class Widget {
+    /** @type {string} */
+    static displayName = undefined;
+
+    /** @type {HTMLDivElement} */
     mainDiv = null;
+    /** @type {HTMLDivElement} */
     contentDiv = null;
+    /** @type {HTMLButtonElement} */
     deleteButton = null;
+    /** @type {HTMLButtonElement} */
     settingsButton = null;
     draggable = null;
+    /** @type {import("./widget-settings.js").WidgetSettingsDialog} */
     settingsDialog = null;
     settings = new Object();
     widgetId = -1;
@@ -15,17 +24,26 @@ export class Widget {
     dashboardId = -1;
     isUpdating = false;
     additionalUpdateQueued = false;
+    /** @type {HTMLButtonElement} */
     selectWidgetButton = null;
 
+    /**
+     * Creates a new widget.
+     * @param {HTMLDivElement} dashboardElement The dashboard div element.
+     * @param {number} classIndex The class index for the widget.
+     * @param {number} dashboardId The dashboardId of the parent dashbaord.
+     * @param {number} widgetId The widgetId to assign to this widget.
+     * @param {string} transform The transform style to apply to this widget.
+     * @param {Object} widgetSettings The widget settings.
+     */
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         this.mainDiv = UIBuilder.createElement("div", dashboardElement, "widget");
         this.contentDiv = UIBuilder.createElement("div", this.mainDiv, "widget-content");
         this.deleteButton = UIBuilder.createElement("button", this.mainDiv, "widget-delete-button");
         this.deleteButton.innerText = "✕";
-        this.deleteButton.addEventListener("click", function() {
-            this.widget.destroy();
+        ElementStatics.bindOnClick(this.deleteButton, this, function() {
+            this.destroy();
         });
-        this.deleteButton.widget = this;
 
         this.classIndex = classIndex;
         this.dashboardId = dashboardId;
@@ -33,7 +51,7 @@ export class Widget {
             this.widgetId = widgetId;
         }
         else {
-            this.determineId();
+            this.#determineId();
         }
 
         let dialogClass = this.getSettingsDialogClass();
@@ -42,10 +60,9 @@ export class Widget {
             this.settingsButton.innerText = "⚙";
             this.settingsDialog = new dialogClass(this);
             this.settingsDialog.hide();
-            this.settingsButton.widget = this;
 
-            this.settingsButton.addEventListener("click", function() {
-                this.widget.settingsDialog.show();
+            ElementStatics.bindOnClick(this.settingsButton, this, function() {
+                this.settingsDialog.show();
             });
         }
 
@@ -65,17 +82,17 @@ export class Widget {
 
         this.selectWidgetButton = UIBuilder.createElement("button", this.mainDiv, "widget-select-button");
         this.selectWidgetButton.style.display = "none";
-        let WidgetClass = WidgetStatics.possibleWidgets[this.classIndex];
-        this.selectWidgetButton.innerText = `${WidgetClass.displayName || WidgetClass.name} (${this.widgetId})`;
+        this.selectWidgetButton.innerText = `${this.getWidgetName()} (${this.widgetId})`;
         
         this.saveWidget();
         // @ts-ignore
-        this.draggable = Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.savePosition, onDragEndParams: [this]})[0];
+        this.draggable = Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.#savePosition, onDragEndParams: [this]})[0];
         this.exitEditMode();
     }
 
-    // Since update is async, there is a possibility for undefined behavior if it's being called while it's already running.
-    // To fix this, we should delay additional updates until the current update has finished.
+    /**
+     * This update function should never be implemented in subclasses, only called.
+     */
     async update() {
         if (this.isUpdating) {
             this.additionalUpdateQueued = true;
@@ -92,24 +109,58 @@ export class Widget {
         }
     }
 
+    /**
+     * The main update function
+     * @abstract
+     * @protected
+     */
     async update_implementation() {}
 
+    /**
+     * Get the widget settings dialog class.
+     * @returns {typeof import("./widget-settings.js").WidgetSettingsDialog}
+     * @abstract
+     */
     getSettingsDialogClass() {
         return null;
     }
 
+    /**
+     * Set the settings default, either do it here or in the settings dialog class, or both.
+     * @param {Object} settings The settings object to modify.
+     * @abstract
+     */
     setSettingsDefaults(settings) {
 
     }
 
+    /**
+     * Shouldn't need to be implemented in most cases, but if settings include maps or other stuff that can't be cleanly converted from JSON and back.
+     * Then you can convert it back to their actual types here!
+     * @abstract
+     */
     onPostDeserializeSettings() {
 
     }
 
+    /**
+     * Shouldn't need to be implemented in most cases, but if settings include maps or other stuff that can't be cleanly converted from JSON and back.
+     * Then you can convert it to a simpler format here just before it is serialized.
+     * @returns {Object} settings object to save.
+     */
     getSerializableSettings() {
         return this.settings;
     }
 
+    getWidgetName() {
+        let WidgetClass = WidgetStatics.possibleWidgets[this.classIndex];
+        // @ts-ignore
+        return WidgetClass.displayName || WidgetClass.name;
+    }
+
+    /**
+     * Enters edit mode (which means you can drag/delete/config widgets)
+     */
     enterEditMode() {
         this.draggable.enable();
         this.deleteButton.style.display = "";
@@ -118,6 +169,9 @@ export class Widget {
             this.settingsButton.style.display = "";
     }
 
+    /**
+     * Exits edit mode (which means you can no longer drag/delete/config widgets)
+     */
     exitEditMode() {
         this.draggable.disable();
         this.deleteButton.style.display = "none";
@@ -126,6 +180,9 @@ export class Widget {
             this.settingsButton.style.display = "none";
     }
 
+    /**
+     * Destroys the widget and deletes it from the database.
+     */
     destroy() {
         this.mainDiv.innerHTML = "";
         this.mainDiv.remove();
@@ -133,6 +190,9 @@ export class Widget {
         Database.deleteFromObjectStore(DatabaseStore.Widgets, this.widgetId);
     }
 
+    /**
+     * Saves the widget and it's settings to the database.
+     */
     saveWidget() {
         let temp = {
             id: this.widgetId,
@@ -144,11 +204,11 @@ export class Widget {
         Database.putInObjectStore(DatabaseStore.Widgets, temp);
     }
 
-    savePosition(widget) {
+    #savePosition(widget) {
         widget.saveWidget();
     }
 
-    determineId() {
+    #determineId() {
         for (let i = 0; i <= WidgetStatics.createdWidgets.size; i++) {
             if (WidgetStatics.createdWidgets.has(i))
                 continue;
