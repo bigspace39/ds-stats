@@ -1,4 +1,4 @@
-import { Library } from "./library.js";
+import { Statics } from "./statics.js";
 
 export class WidgetStatics {
     static possibleWidgets = [];
@@ -35,10 +35,10 @@ export class WidgetStatics {
     static setInEditMode(value) {
         WidgetStatics.inEditMode = value;
         if (WidgetStatics.inEditMode) {
-            Library.toolbar.editButton.innerText = "✓";
+            Statics.toolbar.editButton.innerText = "✓";
         }
         else {
-            Library.toolbar.editButton.innerText = "✎";
+            Statics.toolbar.editButton.innerText = "✎";
         }
 
         let tempWidgets = Array.from(WidgetStatics.createdWidgets.values());

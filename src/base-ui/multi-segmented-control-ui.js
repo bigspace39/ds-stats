@@ -1,5 +1,5 @@
 import { Delegate } from "../library/delegate.js";
-import { Library } from "../library/library.js";
+import { Statics } from "../library/statics.js";
 import { UIBuilder } from "./ui-builder.js";
 
 // Segmented control UI but where you can select none or multiple options
@@ -25,7 +25,7 @@ export class MultiSegmentedControlUI {
                 option = option.displayLabel;
             }
 
-            let button = Library.createElement("button", this.horizontalDiv, "segmented-control");
+            let button = UIBuilder.createElement("button", this.horizontalDiv, "segmented-control");
             button.innerText = option;
             button.segmentedControl = this;
             button.index = i;

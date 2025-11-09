@@ -1,4 +1,4 @@
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 // @ts-ignore
 Coloris({
@@ -14,7 +14,7 @@ export class ColorPickerUI {
     previewButton;
 
     constructor(parentElement, id = null) {
-        this.inputElement = Library.createElement("input", parentElement, null);
+        this.inputElement = UIBuilder.createElement("input", parentElement, null);
         this.inputElement.type = "text";
         this.inputElement.className = "coloris";
         this.inputElement.value = "#000000";

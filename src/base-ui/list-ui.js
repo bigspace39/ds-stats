@@ -1,5 +1,5 @@
 import { Delegate } from "../library/delegate.js";
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class ListUI {
     listDiv = null;
@@ -11,8 +11,8 @@ export class ListUI {
     listElementClass = null;
 
     constructor(parentElement, listElementClass = null) {
-        this.listDiv = Library.createElement("div", parentElement, "list-ui");
-        this.addButton = Library.createElement("button", parentElement, "accent-button");
+        this.listDiv = UIBuilder.createElement("div", parentElement, "list-ui");
+        this.addButton = UIBuilder.createElement("button", parentElement, "accent-button");
         this.addButton.innerText = "+";
         this.addButton.style.padding = "8px 15px";
         this.addButton.list = this;
@@ -24,9 +24,9 @@ export class ListUI {
     }
 
     addElement() {
-        let element = Library.createElement("div", this.listDiv, "list-ui-element");
-        let content = Library.createElement("div", element, "list-ui-element-content");
-        let remove = Library.createElement("button", element, "cancel-button");
+        let element = UIBuilder.createElement("div", this.listDiv, "list-ui-element");
+        let content = UIBuilder.createElement("div", element, "list-ui-element-content");
+        let remove = UIBuilder.createElement("button", element, "cancel-button");
         remove.innerText = "-";
         remove.style.padding = "8px 15px";
         remove.style.alignSelf = "stretch";

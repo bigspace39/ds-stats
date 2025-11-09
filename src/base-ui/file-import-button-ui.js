@@ -1,5 +1,5 @@
 import { Delegate } from "../library/delegate.js";
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class FileImportButtonUI {
     button;
@@ -7,9 +7,9 @@ export class FileImportButtonUI {
     onImportText = new Delegate();
 
     constructor(parentElement, text) {
-        this.button = Library.createElement("button", parentElement, "accent-button");
+        this.button = UIBuilder.createElement("button", parentElement, "accent-button");
         this.button.innerText = text;
-        this.input = Library.createElement("input", parentElement);
+        this.input = UIBuilder.createElement("input", parentElement);
         this.input.type = "file";
         this.input.accept = ".json";
         this.input.style.display = "none";

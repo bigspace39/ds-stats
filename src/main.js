@@ -1,7 +1,6 @@
 import "../libraries/Coloris-0.25.0/dist/coloris.min.js";
 import "./settings.js";
 import "./database.js";
-import "./library/library-imports.js";
 import "./diapstash-api.js";
 import "./ui/ui-imports.js";
 import "./dashboard.js";

@@ -1,6 +1,7 @@
+import { UIBuilder } from "./base-ui/ui-builder.js";
 import { Database, DatabaseStore } from "./database.js";
 import { DashboardStatics } from "./library/dashboard-statics.js";
-import { Library } from "./library/library.js";
+import { Statics } from "./library/statics.js";
 import { WidgetStatics } from "./library/widget-statics.js";
 
 export class Dashboard {
@@ -13,10 +14,10 @@ export class Dashboard {
     exists = false;
 
     constructor(boardId = -1) {
-        this.board = Library.createElement("div", Library.mainDiv, "dashboard");
-        this.tab = Library.createElement("div", Library.headerDiv, "dashboard-tab-inactive");
-        this.tabLabel = Library.createElement("p", this.tab, "dashboard-tab-label");
-        this.tabClose = Library.createElement("button", this.tab, "dashboard-tab-close");
+        this.board = UIBuilder.createElement("div", Statics.mainDiv, "dashboard");
+        this.tab = UIBuilder.createElement("div", Statics.headerDiv, "dashboard-tab-inactive");
+        this.tabLabel = UIBuilder.createElement("p", this.tab, "dashboard-tab-label");
+        this.tabClose = UIBuilder.createElement("button", this.tab, "dashboard-tab-close");
         this.tabClose.innerText = "✕";
         if (boardId < 0) {
             for (let i = 0; i <= DashboardStatics.dashboards.size; i++) {

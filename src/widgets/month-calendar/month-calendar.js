@@ -2,9 +2,9 @@
 import { Widget } from "../widget.js";
 import { MonthCalendarWidgetSettingsDialog } from "./month-calendar-settings.js";
 import { API } from "../../diapstash-api.js";
-import { Library } from "../../library/library.js";
 import { Settings } from "../../settings.js";
 import { WidgetStatics } from "../../library/widget-statics.js";
+import { UIBuilder } from "../../base-ui/ui-builder.js";
 
 export class MonthCalendarWidget extends Widget {
     static displayName = "Month Calendar";
@@ -44,14 +44,14 @@ export class MonthCalendarWidget extends Widget {
         this.contentDiv.style.display = "flex";
         this.contentDiv.style.flexDirection = "column";
 
-        this.monthHeader = Library.createElement("div", this.contentDiv, "month-header");
-        this.monthLabel = Library.createElement("p", this.monthHeader, "month-label");
+        this.monthHeader = UIBuilder.createElement("div", this.contentDiv, "month-header");
+        this.monthLabel = UIBuilder.createElement("p", this.monthHeader, "month-label");
         this.monthLabel.innerText = "January 2025";
-        this.monthPrice = Library.createElement("p", this.monthHeader, "month-price");
+        this.monthPrice = UIBuilder.createElement("p", this.monthHeader, "month-price");
         this.monthPrice.innerText = "100 kr";
-        this.navigationDiv = Library.createElement("div", this.monthHeader, "month-navigation");
+        this.navigationDiv = UIBuilder.createElement("div", this.monthHeader, "month-navigation");
 
-        this.prevButton = Library.createElement("button", this.navigationDiv, "month-navigation-button");
+        this.prevButton = UIBuilder.createElement("button", this.navigationDiv, "month-navigation-button");
         this.prevButton.innerText = "<";
         this.prevButton.style.padding = "2px 20px";
         this.prevButton.calendar = this;
@@ -59,14 +59,14 @@ export class MonthCalendarWidget extends Widget {
             this.calendar.prev();
         });
 
-        this.todayButton = Library.createElement("button", this.navigationDiv, "month-navigation-button");
+        this.todayButton = UIBuilder.createElement("button", this.navigationDiv, "month-navigation-button");
         this.todayButton.innerText = "Today";
         this.todayButton.calendar = this;
         this.todayButton.addEventListener("click", function() {
             this.calendar.today();
         });
 
-        this.nextButton = Library.createElement("button", this.navigationDiv, "month-navigation-button");
+        this.nextButton = UIBuilder.createElement("button", this.navigationDiv, "month-navigation-button");
         this.nextButton.innerText = ">";
         this.nextButton.style.padding = "2px 20px";
         this.nextButton.calendar = this;
@@ -74,23 +74,23 @@ export class MonthCalendarWidget extends Widget {
             this.calendar.next();
         });
 
-        this.weekdays = Library.createElement("div", this.contentDiv, "weekdays");
+        this.weekdays = UIBuilder.createElement("div", this.contentDiv, "weekdays");
 
         for (let weekdayInt = 0; weekdayInt < 7; weekdayInt++) {
             let weekdayDate = new Date(2025, 0, 5 + weekdayInt + Settings.data.weekStartsOn);
             const weekday = Settings.getWeekdayStrFromDate(weekdayDate);
 
-            const button = Library.createElement("button", this.weekdays, "weekday");
+            const button = UIBuilder.createElement("button", this.weekdays, "weekday");
             button.innerText = weekday;
             button.inert = true;
         }
 
         for (let row = 0; row < 6; row++) {
-            const week = Library.createElement("div", this.contentDiv, "week");
+            const week = UIBuilder.createElement("div", this.contentDiv, "week");
             for (let weekdayInt = 0; weekdayInt < 7; weekdayInt++) {
-                const buttonParent = Library.createElement("div", week, "date-parent");
-                const button = Library.createElement("button", buttonParent, "date");
-                const buttonTextBox = Library.createElement("p", buttonParent, "date-content");
+                const buttonParent = UIBuilder.createElement("div", week, "date-parent");
+                const button = UIBuilder.createElement("button", buttonParent, "date");
+                const buttonTextBox = UIBuilder.createElement("p", buttonParent, "date-content");
                 this.dates.push(button);
                 this.datesTextBoxes.push(buttonTextBox);
 
@@ -102,7 +102,7 @@ export class MonthCalendarWidget extends Widget {
                 });
             }
 
-            const statusBar = Library.createElement("div", week, "status-bar");
+            const statusBar = UIBuilder.createElement("div", week, "status-bar");
             this.statusBars.push(statusBar);
         }
 
@@ -257,7 +257,7 @@ export class MonthCalendarWidget extends Widget {
         }
 
         const transparent = color == "transparent";
-        const section = Library.createElement("div", statusBar, transparent ? "status-bar-section-dummy" : "status-bar-section");
+        const section = UIBuilder.createElement("div", statusBar, transparent ? "status-bar-section-dummy" : "status-bar-section");
         section.style.backgroundColor = color;
         section.style.width = currentPercentage + '%';
         this.statusBarSections.push(section);

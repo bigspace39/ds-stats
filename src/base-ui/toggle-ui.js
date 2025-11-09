@@ -1,5 +1,5 @@
 import { Delegate } from "../library/delegate.js";
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class ToggleUI {
     label;
@@ -8,10 +8,10 @@ export class ToggleUI {
     onToggle = new Delegate();
 
     constructor(parentElement, toggled = false) {
-        this.label = Library.createElement("label", parentElement, "toggle");
-        this.input = Library.createElement("input", this.label);
+        this.label = UIBuilder.createElement("label", parentElement, "toggle");
+        this.input = UIBuilder.createElement("input", this.label);
         this.input.type = "checkbox";
-        this.span = Library.createElement("span", this.label, "toggle-slider");
+        this.span = UIBuilder.createElement("span", this.label, "toggle-slider");
         this.setToggled(toggled);
 
         this.input.addEventListener("click", function() {

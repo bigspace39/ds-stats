@@ -1,5 +1,5 @@
+import { UIBuilder } from "../../base-ui/ui-builder.js";
 import { Enum } from "../../library/enum.js";
-import { Library } from "../../library/library.js";
 import { WidgetStatics } from "../../library/widget-statics.js";
 import { Widget } from "../widget.js";
 import { DonutChartWidgetSettingsDialog } from "./donut-chart-settings.js";
@@ -48,9 +48,9 @@ export class DonutChartWidget extends Widget {
 
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
-        this.label = Library.createElement("h1", this.contentDiv, "donut-label");
+        this.label = UIBuilder.createElement("h1", this.contentDiv, "donut-label");
         this.setLabelText("Label");
-        this.canvas = Library.createElement("canvas", this.contentDiv, "donut-chart");
+        this.canvas = UIBuilder.createElement("canvas", this.contentDiv, "donut-chart");
         this.contentDiv.style.width = "200px";
         this.contentDiv.style.height = "260px";
         const config = {

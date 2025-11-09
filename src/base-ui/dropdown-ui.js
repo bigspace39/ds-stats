@@ -1,5 +1,5 @@
 import { Delegate } from "../library/delegate.js";
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class DropdownUI {
     dropdownElement;
@@ -7,7 +7,7 @@ export class DropdownUI {
     onChange = new Delegate();
 
     constructor(parentElement, ...initialOptions) {
-        this.dropdownElement = Library.createElement("select", parentElement, null);
+        this.dropdownElement = UIBuilder.createElement("select", parentElement, null);
 
         for (let i = 0; i < initialOptions.length; i++) {
             let option = initialOptions[i];
@@ -50,6 +50,7 @@ export class DropdownUI {
 
     setSelectedIndex(index) {
         this.dropdownElement.value = index;
+        this.onChange.broadcast(this, this.getSelectedIndex());
     }
 
     setSelectedText(text) {
@@ -71,7 +72,7 @@ export class DropdownUI {
     }
 
     #createOptionElement(text, value) {
-        let optionElement = Library.createElement("option", this.dropdownElement);
+        let optionElement = UIBuilder.createElement("option", this.dropdownElement);
         optionElement.innerText = text;
         optionElement.value = value;
         this.optionElements.push(optionElement);

@@ -12,7 +12,8 @@ import { ButtonStyle, UIBuilder } from "../base-ui/ui-builder.js";
 import { Database, DatabaseStore } from "../database.js";
 import { API } from "../diapstash-api.js";
 import { DashboardStatics } from "../library/dashboard-statics.js";
-import { Library } from "../library/library.js";
+import { FileStatics } from "../library/file-statics.js";
+import { Statics } from "../library/statics.js";
 import { WidgetStatics } from "../library/widget-statics.js";
 import { Settings } from "../settings.js";
 
@@ -23,10 +24,10 @@ class DiaperCategoryConfigsListUI {
     constructor(parentElement) {
         this.list = new ListUI(parentElement, DiaperCategoryConfigUI);
         this.list.onAddElement.addFunction(this, function() {
-            Library.settingsDialog.updateDefaultDiaperCatDropdown();
+            Statics.settingsDialog.updateDefaultDiaperCatDropdown();
         });
         this.list.onRemoveElement.addFunction(this, function() {
-            Library.settingsDialog.updateDefaultDiaperCatDropdown();
+            Statics.settingsDialog.updateDefaultDiaperCatDropdown();
         });
     }
 
@@ -63,7 +64,7 @@ class DiaperCategoryConfigUI {
         this.configNameField.config = this;
         this.configNameField.addEventListener("input", function() {
             this.config.collapsible.setLabelText(this.value);
-            Library.settingsDialog.updateDefaultDiaperCatDropdown();
+            Statics.settingsDialog.updateDefaultDiaperCatDropdown();
         });
         this.configNameField.value = name;
         this.list = new ListUI(this.collapsible.collapsibleContent, DiaperCategoryUI);
@@ -104,9 +105,9 @@ class DiaperCategoryConfigUI {
     }
 
     generateUniqueConfigName() {
-        let configs = Library.settingsDialog.diaperCategoryConfigList.getConfigs();
+        let configs = Statics.settingsDialog.diaperCategoryConfigList.getConfigs();
         let names = Settings.getDiaperCategoryConfigNames(configs);
-        let length = Library.settingsDialog.diaperCategoryConfigList.list.getLength();
+        let length = Statics.settingsDialog.diaperCategoryConfigList.list.getLength();
 
         let name = "";
         for (let i = 0; i < length + 1; i++) {
@@ -153,7 +154,7 @@ class DiaperCategoryUI {
 
 class SettingsDialog extends DialogBoxUI {
     static {
-        Library.settingsDialog = new SettingsDialog();
+        Statics.settingsDialog = new SettingsDialog();
     }
 
     footer;
@@ -212,7 +213,7 @@ class SettingsDialog extends DialogBoxUI {
         this.setTitle("Settings");
         this.hide();
 
-        this.footer = Library.createElement("div", this.div, "dialog-footer");
+        this.footer = UIBuilder.createElement("div", this.div, "dialog-footer");
         this.applyButton = UIBuilder.createButton("Apply", this.footer);
         this.applyButton.settingsDialog = this;
         this.applyButton.addEventListener("click", function() {
@@ -299,13 +300,13 @@ class SettingsDialog extends DialogBoxUI {
         horizontal = UIBuilder.createHorizontal();
         this.exportButton = UIBuilder.createButton("Export", horizontal);
         this.exportButton.addEventListener("click", async function() {
-            Library.saveJsonFile(Library.getExportFileName(), await Library.getExportData());
+            FileStatics.saveJsonFile(FileStatics.getExportFileName(), await FileStatics.getExportData());
         });
 
         this.exportButton.style.marginRight = "10px";
         this.importButton = new FileImportButtonUI(horizontal, "Import");
         this.importButton.onImportText.addFunction(this, function(text) {
-            Library.importData(text);
+            FileStatics.importData(text);
         });
 
         // === External Diaper Data ===
@@ -330,11 +331,11 @@ class SettingsDialog extends DialogBoxUI {
         this.fetchChangesButton = UIBuilder.createButton("Refetch All Changes", horizontal);
         this.fetchChangesSpinner = new SpinnerUI(horizontal, true);
         this.fetchChangesButton.addEventListener("click", async function() {
-            Library.settingsDialog.fetchChangesSpinner.show();
+            Statics.settingsDialog.fetchChangesSpinner.show();
             await API.fetchChangeHistory();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
-            Library.settingsDialog.updateAPIDataCount();
-            Library.settingsDialog.fetchChangesSpinner.hide();
+            Statics.settingsDialog.updateAPIDataCount();
+            Statics.settingsDialog.fetchChangesSpinner.hide();
         });
 
         this.accidentsText = UIBuilder.createText("Accidents: 0");
@@ -342,11 +343,11 @@ class SettingsDialog extends DialogBoxUI {
         this.fetchAccidentsButton = UIBuilder.createButton("Refetch All Accidents", horizontal);
         this.fetchAccidentsSpinner = new SpinnerUI(horizontal, true);
         this.fetchAccidentsButton.addEventListener("click", async function() {
-            Library.settingsDialog.fetchAccidentsSpinner.show();
+            Statics.settingsDialog.fetchAccidentsSpinner.show();
             await API.fetchAccidentHistory();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
-            Library.settingsDialog.updateAPIDataCount();
-            Library.settingsDialog.fetchAccidentsSpinner.hide();
+            Statics.settingsDialog.updateAPIDataCount();
+            Statics.settingsDialog.fetchAccidentsSpinner.hide();
         });
 
         this.typesText = UIBuilder.createText("Types: 0");
@@ -354,11 +355,11 @@ class SettingsDialog extends DialogBoxUI {
         this.fetchTypesButton = UIBuilder.createButton("Refetch All Types", horizontal);
         this.fetchTypesSpinner = new SpinnerUI(horizontal, true);
         this.fetchTypesButton.addEventListener("click", async function() {
-            Library.settingsDialog.fetchTypesSpinner.show();
+            Statics.settingsDialog.fetchTypesSpinner.show();
             await API.fetchAllTypes();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
-            Library.settingsDialog.updateAPIDataCount();
-            Library.settingsDialog.fetchTypesSpinner.hide();
+            Statics.settingsDialog.updateAPIDataCount();
+            Statics.settingsDialog.fetchTypesSpinner.hide();
         });
 
         this.brandsText = UIBuilder.createText("Brands: 0");
@@ -366,11 +367,11 @@ class SettingsDialog extends DialogBoxUI {
         this.fetchBrandsButton = UIBuilder.createButton("Refetch All Brands", horizontal);
         this.fetchBrandsSpinner = new SpinnerUI(horizontal, true);
         this.fetchBrandsButton.addEventListener("click", async function() {
-            Library.settingsDialog.fetchBrandsSpinner.show();
+            Statics.settingsDialog.fetchBrandsSpinner.show();
             await API.fetchAllBrands();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
-            Library.settingsDialog.updateAPIDataCount();
-            Library.settingsDialog.fetchBrandsSpinner.hide();
+            Statics.settingsDialog.updateAPIDataCount();
+            Statics.settingsDialog.fetchBrandsSpinner.hide();
         });
 
         // === Reset ===
@@ -434,7 +435,7 @@ class SettingsDialog extends DialogBoxUI {
 
         Settings.data.externalDiaperData = this.externalDiaperDataTextArea.value;
         Settings.serializeSettings();
-        window.location.href = Library.REDIRECT_URI;
+        window.location.href = Statics.REDIRECT_URI;
     }
 
     updateAPIDataCount() {

@@ -1,10 +1,11 @@
-import { Library } from "../library/library.js";
+import { Statics } from "../library/statics.js";
 import { API } from "../diapstash-api.js";
 import { WidgetStatics } from "../library/widget-statics.js";
+import { UIBuilder } from "../base-ui/ui-builder.js";
 
 class Toolbar {
     static {
-        Library.toolbar = new Toolbar();
+        Statics.toolbar = new Toolbar();
     }
 
     div;
@@ -16,10 +17,10 @@ class Toolbar {
     refreshButtonSpinner;
 
     constructor() {
-        this.div = Library.createElement("div", Library.mainDiv, "toolbar");
+        this.div = UIBuilder.createElement("div", Statics.mainDiv, "toolbar");
         this.createWidgetButton = this.createToolbarButton("+");
         this.createWidgetButton.addEventListener("click", function() {
-            Library.addWidgetDialog.show();
+            Statics.addWidgetDialog.show();
         });
 
         this.refreshButton = this.createToolbarButton("");
@@ -31,7 +32,7 @@ class Toolbar {
                 await WidgetStatics.updateWidgetsOnSelectedDashboard();
         });
         
-        this.refreshButtonSpinner = Library.createElement("span", this.refreshButton, "refresh");
+        this.refreshButtonSpinner = UIBuilder.createElement("span", this.refreshButton, "refresh");
         this.deactivateSpinner();
         
         API.onStartFetchAPIData.addFunction(this, function() {
@@ -44,7 +45,7 @@ class Toolbar {
 
         this.settingsButton = this.createToolbarButton("⚙");
         this.settingsButton.addEventListener("click", function() {
-            Library.settingsDialog.show();
+            Statics.settingsDialog.show();
         });
 
         this.editButton = this.createToolbarButton("✎");
@@ -54,7 +55,7 @@ class Toolbar {
     }
 
     createToolbarButton(text) {
-        let temp = Library.createElement("button", this.div, "toolbar-button");
+        let temp = UIBuilder.createElement("button", this.div, "toolbar-button");
         temp.innerText = text;
         return temp;
     }

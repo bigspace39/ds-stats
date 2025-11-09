@@ -1,11 +1,12 @@
 import { DialogBoxUI } from "../base-ui/dialog-box-ui.js";
+import { UIBuilder } from "../base-ui/ui-builder.js";
 import { DashboardStatics } from "../library/dashboard-statics.js";
-import { Library } from "../library/library.js";
+import { Statics } from "../library/statics.js";
 import { WidgetStatics } from "../library/widget-statics.js";
 
 class AddWidgetDialog extends DialogBoxUI {
     static {
-        Library.addWidgetDialog = new AddWidgetDialog();
+        Statics.addWidgetDialog = new AddWidgetDialog();
     }
 
     widgetButtons = new Array();
@@ -16,7 +17,7 @@ class AddWidgetDialog extends DialogBoxUI {
 
         for (let i = 0; i < WidgetStatics.possibleWidgets.length; i++) {
             let WidgetClass = WidgetStatics.possibleWidgets[i];
-            let button = Library.createElement("button", this.content, "widget-add-button");
+            let button = UIBuilder.createElement("button", this.content, "widget-add-button");
             button.innerText = WidgetClass.displayName || WidgetClass.name;
             button.addEventListener("click", async function() {
                 await WidgetStatics.createWidget(DashboardStatics.selectedDashboard.boardId, this.widgetIndex);

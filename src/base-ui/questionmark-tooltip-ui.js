@@ -1,5 +1,5 @@
 /// <reference types="tippy.js" />
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class QuestionmarkTooltipUI {
     div;
@@ -7,9 +7,9 @@ export class QuestionmarkTooltipUI {
     tooltipDiv;
 
     constructor(parentElement, tooltipText) {
-        this.div = Library.createElement("div", parentElement, "questionmark-tooltip");
+        this.div = UIBuilder.createElement("div", parentElement, "questionmark-tooltip");
         this.div.innerText = "?";
-        this.tooltipDiv = Library.createElement("div", null, null);
+        this.tooltipDiv = UIBuilder.createElement("div", null, null);
         this.tooltipDiv.innerText = tooltipText;
         this.tippy = tippy(this.div, {
             content: this.tooltipDiv,

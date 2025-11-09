@@ -1,5 +1,5 @@
+import { UIBuilder } from "../base-ui/ui-builder.js";
 import { Database, DatabaseStore } from "../database.js";
-import { Library } from "../library/library.js";
 import { WidgetStatics } from "../library/widget-statics.js";
 
 export class Widget {
@@ -18,9 +18,9 @@ export class Widget {
     selectWidgetButton = null;
 
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
-        this.mainDiv = Library.createElement("div", dashboardElement, "widget");
-        this.contentDiv = Library.createElement("div", this.mainDiv, "widget-content");
-        this.deleteButton = Library.createElement("button", this.mainDiv, "widget-delete-button");
+        this.mainDiv = UIBuilder.createElement("div", dashboardElement, "widget");
+        this.contentDiv = UIBuilder.createElement("div", this.mainDiv, "widget-content");
+        this.deleteButton = UIBuilder.createElement("button", this.mainDiv, "widget-delete-button");
         this.deleteButton.innerText = "✕";
         this.deleteButton.addEventListener("click", function() {
             this.widget.destroy();
@@ -38,7 +38,7 @@ export class Widget {
 
         let dialogClass = this.getSettingsDialogClass();
         if (dialogClass != null) {
-            this.settingsButton = Library.createElement("button", this.mainDiv, "widget-settings-button");
+            this.settingsButton = UIBuilder.createElement("button", this.mainDiv, "widget-settings-button");
             this.settingsButton.innerText = "⚙";
             this.settingsDialog = new dialogClass(this);
             this.settingsDialog.hide();
@@ -63,7 +63,7 @@ export class Widget {
             this.onPostDeserializeSettings();
         }
 
-        this.selectWidgetButton = Library.createElement("button", this.mainDiv, "widget-select-button");
+        this.selectWidgetButton = UIBuilder.createElement("button", this.mainDiv, "widget-select-button");
         this.selectWidgetButton.style.display = "none";
         let WidgetClass = WidgetStatics.possibleWidgets[this.classIndex];
         this.selectWidgetButton.innerText = `${WidgetClass.displayName || WidgetClass.name} (${this.widgetId})`;

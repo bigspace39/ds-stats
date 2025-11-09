@@ -1,10 +1,10 @@
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class SpinnerUI {
     span;
 
     constructor(parentElement, startHidden = true) {
-        this.span = Library.createElement("span", parentElement, "spinner");
+        this.span = UIBuilder.createElement("span", parentElement, "spinner");
         if (startHidden)
             this.hide();
     }

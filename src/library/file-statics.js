@@ -1,28 +1,8 @@
 import { Database, DatabaseStore } from "../database.js";
 import { Settings } from "../settings.js";
+import { Statics } from "./statics.js";
 
-export class Library {
-    static REDIRECT_URI = window.location.protocol == "https:" ? "https://bigspace39.github.io/ds-stats/" : "http://localhost:8080/";
-    static mainDiv = document.getElementById("main");
-    static headerDiv = document.getElementById("header");
-
-    static addWidgetDialog;
-    static dashboardAddButton;
-    static loginPrompt;
-    static settingsDialog;
-    static toolbar;
-
-    static createElement(tag, parentElement, id) {
-        let element = document.createElement(tag);
-        if (id != null)
-            element.id = id;
-        
-        if (parentElement != null)
-            parentElement.appendChild(element);
-        
-        return element;
-    }
-
+export class FileStatics {
     static async getExportData() {
         let data = {
             settings: Settings.data,
@@ -42,7 +22,7 @@ export class Library {
 
         await Database.clearObjectStore(DatabaseStore.Dashboards);
         await Database.addArrayToObjectStore(DatabaseStore.Dashboards, data.dashboards);
-        window.location.href = Library.REDIRECT_URI;
+        window.location.href = Statics.REDIRECT_URI;
     }
 
     static getExportFileName() {

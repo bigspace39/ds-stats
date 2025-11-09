@@ -1,4 +1,4 @@
-import { Library } from "./library/library.js";
+import { Statics } from "./library/statics.js";
 import { Database, DatabaseStore } from "./database.js";
 import { Delegate } from "./library/delegate.js";
 import { WidgetStatics } from "./library/widget-statics.js";
@@ -36,7 +36,7 @@ export class API {
             await API.handleOAuthCallback();
         }
         else if (await API.getValidToken() == null) {
-            Library.loginPrompt.show();
+            Statics.loginPrompt.show();
         }
         else {
             await API.fetchData();
@@ -307,7 +307,7 @@ export class API {
         const token = await API.getValidToken();
         if (token == null) {
             console.warn("No valid token, login required!");
-            Library.loginPrompt.show();
+            Statics.loginPrompt.show();
             return null;
         }
     
@@ -369,7 +369,7 @@ export class API {
         const params = new URLSearchParams({
             response_type: "code",
             client_id: API.CLIENT_ID,
-            redirect_uri: Library.REDIRECT_URI,
+            redirect_uri: Statics.REDIRECT_URI,
             scope: API.SCOPE,
             code_challenge: code_challenge,
             code_challenge_method: "S256",
@@ -411,7 +411,7 @@ export class API {
             code,
             client_id: API.CLIENT_ID,
             code_verifier: code_verifier,
-            redirect_uri: Library.REDIRECT_URI,
+            redirect_uri: Statics.REDIRECT_URI,
             prompt: "consent"
         });
     
@@ -437,7 +437,7 @@ export class API {
     }
     
     static clearSearchParameters() {
-        window.history.replaceState({ additionalInformation: 'Cleared OAuth callback parameters' }, '', Library.REDIRECT_URI);
+        window.history.replaceState({ additionalInformation: 'Cleared OAuth callback parameters' }, '', Statics.REDIRECT_URI);
         sessionStorage.removeItem("pkce_code_verifier");
         sessionStorage.removeItem("oauth_state");
     }
@@ -492,7 +492,7 @@ export class API {
             grant_type: "refresh_token",
             client_id: API.CLIENT_ID,
             refresh_token: tokenData.refresh_token,
-            redirect_uri: Library.REDIRECT_URI,
+            redirect_uri: Statics.REDIRECT_URI,
             prompt: "consent"
         });
     

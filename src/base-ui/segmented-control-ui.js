@@ -1,5 +1,5 @@
 import { Delegate } from "../library/delegate.js";
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class SegmentedControlUIOption {
     displayLabel;
@@ -19,7 +19,7 @@ export class SegmentedControlUI {
     onClick = new Delegate();
 
     constructor(parentElement, ...options) {
-        this.horizontalDiv = Library.createElement("div", parentElement, "horizontal-form");
+        this.horizontalDiv = UIBuilder.createElement("div", parentElement, "horizontal-form");
 
         for (let i = 0; i < options.length; i++) {
             let option = options[i];
@@ -31,7 +31,7 @@ export class SegmentedControlUI {
                 option = option.displayLabel;
             }
 
-            let button = Library.createElement("button", this.horizontalDiv, "segmented-control");
+            let button = UIBuilder.createElement("button", this.horizontalDiv, "segmented-control");
             button.innerText = option;
             button.segmentedControl = this;
             button.index = i;

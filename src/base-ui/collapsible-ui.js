@@ -1,4 +1,4 @@
-import { Library } from "../library/library.js";
+import { UIBuilder } from "./ui-builder.js";
 
 export class CollapsibleUI {
     collapsibleButton;
@@ -6,8 +6,8 @@ export class CollapsibleUI {
     collapsed = true;
 
     constructor(parentElement, labelText, startCollapsed = true) {
-        this.collapsibleButton = Library.createElement("button", parentElement, "collapsible-button");
-        this.collapsibleContent = Library.createElement("div", parentElement, "collapsible-content");
+        this.collapsibleButton = UIBuilder.createElement("button", parentElement, "collapsible-button");
+        this.collapsibleContent = UIBuilder.createElement("div", parentElement, "collapsible-content");
         this.setLabelText(labelText);
 
         if (!startCollapsed)

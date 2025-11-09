@@ -1,5 +1,4 @@
 import { Enum } from "../library/enum.js";
-import { Library } from "../library/library.js";
 
 export class UIBuilder {
     static #defaultParent = null;
@@ -12,10 +11,21 @@ export class UIBuilder {
         this.#defaultParent = null;
     }
 
+    static createElement(tag, parentElement, id) {
+        let element = document.createElement(tag);
+        if (id != null)
+            element.id = id;
+        
+        if (parentElement != null)
+            parentElement.appendChild(element);
+        
+        return element;
+    }
+
     static createHeading(text, parentElement = null) {
         parentElement = this.#getParentElement(parentElement);
 
-        let element = Library.createElement("h2", parentElement, null);
+        let element = UIBuilder.createElement("h2", parentElement, null);
         element.innerText = text;
         return element;
     }
@@ -23,7 +33,7 @@ export class UIBuilder {
     static createText(text, parentElement = null) {
         parentElement = this.#getParentElement(parentElement);
         const lastChildIsH2 = parentElement.lastChild != null && parentElement.lastChild.tagName == "H2";
-        let element = Library.createElement("p", parentElement, null);
+        let element = UIBuilder.createElement("p", parentElement, null);
         element.innerText = text;
 
         if (parentElement.id != "horizontal-form") {
@@ -40,7 +50,7 @@ export class UIBuilder {
         if (buttonStyle == ButtonStyle.Cancel)
             id = "cancel-button";
 
-        let element = Library.createElement("button", parentElement, id);
+        let element = UIBuilder.createElement("button", parentElement, id);
         element.innerText = text;
         return element;
     }
@@ -50,11 +60,11 @@ export class UIBuilder {
 
         if (inlineLabel != null) {
             parentElement = UIBuilder.createHorizontal(parentElement);
-            let label = Library.createElement("p", parentElement, "form-inline-label");
+            let label = UIBuilder.createElement("p", parentElement, "form-inline-label");
             label.innerText = inlineLabel;
         }
 
-        let input = Library.createElement("input", parentElement, null);
+        let input = UIBuilder.createElement("input", parentElement, null);
         input.type = "text";
         return input;
     }
@@ -62,16 +72,16 @@ export class UIBuilder {
     static createTextArea(parentElement = null) {
         parentElement = this.#getParentElement(parentElement);
 
-        let div = Library.createElement("div", parentElement, null);
+        let div = UIBuilder.createElement("div", parentElement, null);
         div.style.width = "100%";
         div.style.height = "fit-content";
-        let element = Library.createElement("textarea", div, null);
+        let element = UIBuilder.createElement("textarea", div, null);
         return element;
     }
 
     static createHorizontal(parentElement = null) {
         parentElement = this.#getParentElement(parentElement);
-        return Library.createElement("div", parentElement, "horizontal-form");
+        return UIBuilder.createElement("div", parentElement, "horizontal-form");
     }
 
     static #getParentElement(parentElement) {

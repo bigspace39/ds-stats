@@ -1,9 +1,10 @@
+import { UIBuilder } from "../base-ui/ui-builder.js";
 import { API } from "../diapstash-api.js";
-import { Library } from "../library/library.js";
+import { Statics } from "../library/statics.js";
 
 class LoginPrompt {
     static {
-        Library.loginPrompt = new LoginPrompt();
+        Statics.loginPrompt = new LoginPrompt();
     }
 
     div;
@@ -11,10 +12,10 @@ class LoginPrompt {
     button;
 
     constructor() {
-        this.div = Library.createElement("div", Library.mainDiv, "login-box");
-        this.p = Library.createElement("p", this.div, "login-text");
+        this.div = UIBuilder.createElement("div", Statics.mainDiv, "login-box");
+        this.p = UIBuilder.createElement("p", this.div, "login-text");
         this.p.innerText = "You need to login!";
-        this.button = Library.createElement("button", this.div, "accent-button");
+        this.button = UIBuilder.createElement("button", this.div, "accent-button");
         this.button.innerText = "Login";
         this.button.addEventListener("click", async function() {
             await API.login();

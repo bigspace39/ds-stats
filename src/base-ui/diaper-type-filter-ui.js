@@ -1,5 +1,5 @@
 /// <reference types="tippy.js" />
-import { Library } from "../library/library.js";
+import { Statics } from "../library/statics.js";
 import { UIBuilder } from "./ui-builder.js";
 import { SegmentedControlUIOption } from "./segmented-control-ui.js";
 import { MultiSegmentedControlUI } from "./multi-segmented-control-ui.js";
@@ -21,11 +21,11 @@ export class DiaperTypeFilterUI {
     segmentedControls = new Map();
 
     constructor(parentElement) {
-        this.button = Library.createElement("button", parentElement, "diaper-type-filter");
+        this.button = UIBuilder.createElement("button", parentElement, "diaper-type-filter");
         this.button.role = "button";
         this.button.innerText = "0 filters active";
 
-        this.tooltipParentDiv = Library.createElement("div", null, "diaper-type-filter-edit");
+        this.tooltipParentDiv = UIBuilder.createElement("div", null, "diaper-type-filter-edit");
         this.tippy = tippy(this.button, {
             content: this.tooltipParentDiv,
             placement: "right",
