@@ -1,4 +1,5 @@
-import { Library, Delegate } from "../library.js";
+import { Delegate } from "../library/delegate.js";
+import { Library } from "../library/library.js";
 
 export class DropdownUI {
     dropdownElement;

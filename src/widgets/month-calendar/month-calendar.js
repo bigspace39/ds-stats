@@ -1,8 +1,10 @@
+/// <reference types="tippy.js" />
 import { Widget } from "../widget.js";
 import { MonthCalendarWidgetSettingsDialog } from "./month-calendar-settings.js";
 import { API } from "../../diapstash-api.js";
-import { Library, WidgetStatics } from "../../library.js";
+import { Library } from "../../library/library.js";
 import { Settings } from "../../settings.js";
+import { WidgetStatics } from "../../library/widget-statics.js";
 
 export class MonthCalendarWidget extends Widget {
     static displayName = "Month Calendar";
@@ -206,7 +208,7 @@ export class MonthCalendarWidget extends Widget {
             const lastEndDate = lastChange != null ? lastChange.endTime : null;
             let notWearingDurationBeforeCurrent = (startDate - lastEndDate) / 1000.0 / 60.0;
             if (i == 1 && (lastChange == null || lastEndDate < monthStartDate)) {
-                notWearingDurationBeforeCurrent = (startDate - monthStartDate) / 1000.0 / 60.0;
+                notWearingDurationBeforeCurrent = (startDate.getTime() - monthStartDate.getTime()) / 1000.0 / 60.0;
             }
             if (i > 0 && notWearingDurationBeforeCurrent > 0.001) {
                 const percentage = (notWearingDurationBeforeCurrent / weekLengthInMinutes) * 100.0;
@@ -221,7 +223,7 @@ export class MonthCalendarWidget extends Widget {
                 if (lastEndDate < monthStartDate)
                     continue;
 
-                let durationInMins = (change.endTime - monthStartDate) / 1000.0 / 60.0;
+                let durationInMins = (change.endTime.getTime() - monthStartDate.getTime()) / 1000.0 / 60.0;
                 percentage = (durationInMins / weekLengthInMinutes) * 100.0;
             }
             this.addStatusBarSection(percentage, color, change.changeString);

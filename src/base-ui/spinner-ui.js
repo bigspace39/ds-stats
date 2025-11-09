@@ -1,4 +1,4 @@
-import { Library } from "../library.js";
+import { Library } from "../library/library.js";
 
 export class SpinnerUI {
     span;

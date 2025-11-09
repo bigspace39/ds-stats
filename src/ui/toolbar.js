@@ -1,7 +1,12 @@
-import { Library, WidgetStatics } from "../library.js";
+import { Library } from "../library/library.js";
 import { API } from "../diapstash-api.js";
+import { WidgetStatics } from "../library/widget-statics.js";
 
-export class Toolbar {
+class Toolbar {
+    static {
+        Library.toolbar = new Toolbar();
+    }
+
     div;
     createWidgetButton;
     refreshButton;
@@ -23,7 +28,7 @@ export class Toolbar {
                 return;
 
             if (!await API.fetchData())
-                WidgetStatics.updateWidgetsOnSelectedDashboard();
+                await WidgetStatics.updateWidgetsOnSelectedDashboard();
         });
         
         this.refreshButtonSpinner = Library.createElement("span", this.refreshButton, "refresh");

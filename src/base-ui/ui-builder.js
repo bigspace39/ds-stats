@@ -1,4 +1,5 @@
-import { Enum, Library } from "../library.js";
+import { Enum } from "../library/enum.js";
+import { Library } from "../library/library.js";
 
 export class UIBuilder {
     static #defaultParent = null;

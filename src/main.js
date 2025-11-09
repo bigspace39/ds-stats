@@ -1,15 +1,18 @@
-import "../libraries/Coloris-0.25.0/src/coloris.js";
+import "../libraries/Coloris-0.25.0/dist/coloris.min.js";
 import "./settings.js";
 import "./database.js";
-import "./library.js";
+import "./library/library-imports.js";
+import "./diapstash-api.js";
+import "./ui/ui-imports.js";
 import "./dashboard.js";
 import "./widgets/widget.js";
-import "./diapstash-api.js";
-import { Database } from "./database.js";
+import "./widgets/widget-imports.js";
+import "./ui/add-widget-dialog.js";
+import { Database, DatabaseStore } from "./database.js";
 import { API } from "./diapstash-api.js";
 import { Settings } from "./settings.js";
-import { DashboardStatics, WidgetStatics } from "./library.js";
-import { Dashboard } from "./dashboard.js";
+import { DashboardStatics } from "./library/dashboard-statics.js";
+import { WidgetStatics } from "./library/widget-statics.js";
 
 const openDBRequest = indexedDB.open("DS-Stats-DB", 1);
 openDBRequest.onerror = function(event) {
@@ -19,12 +22,12 @@ openDBRequest.onerror = function(event) {
 openDBRequest.onupgradeneeded = (event) => {
     const db = event.target.result;
     
-    const dashboardStore = db.createObjectStore(Database.dashboardStoreName, { keyPath: "id" });
-    const widgetStore = db.createObjectStore(Database.widgetStoreName, { keyPath: "id" });
-    const changeStore = db.createObjectStore(Database.changeStoreName, { keyPath: "id" });
-    const accidentStore = db.createObjectStore(Database.accidentStoreName, { keyPath: "id" });
-    const typeStore = db.createObjectStore(Database.typeStoreName, { keyPath: "id" });
-    const brandStore = db.createObjectStore(Database.brandStoreName, { keyPath: "code" });
+    const dashboardStore = db.createObjectStore(DatabaseStore.Dashboards, { keyPath: "id" });
+    const widgetStore = db.createObjectStore(DatabaseStore.Widgets, { keyPath: "id" });
+    const changeStore = db.createObjectStore(DatabaseStore.Changes, { keyPath: "id" });
+    const accidentStore = db.createObjectStore(DatabaseStore.Accidents, { keyPath: "id" });
+    const typeStore = db.createObjectStore(DatabaseStore.Types, { keyPath: "id" });
+    const brandStore = db.createObjectStore(DatabaseStore.Brands, { keyPath: "code" });
 };
 
 openDBRequest.onsuccess = async function(event) {
@@ -45,9 +48,9 @@ openDBRequest.onsuccess = async function(event) {
 };
 
 async function createSavedDashboards() {
-    let tempDashboards = await Database.getAllFromObjectStore(Database.dashboardStoreName);
+    let tempDashboards = await Database.getAllFromObjectStore(DatabaseStore.Dashboards);
     for (let i = 0; i < tempDashboards.length; i++) {
-        const current = new Dashboard(tempDashboards[i].id);
+        const current = await DashboardStatics.createDashboard(tempDashboards[i].id);
 
         if (tempDashboards[i].label != "")
             current.setLabel(tempDashboards[i].label);
@@ -62,11 +65,11 @@ async function createSavedDashboards() {
     if (DashboardStatics.dashboards.size > 0)
         return;
 
-    new Dashboard();
+    DashboardStatics.createDashboard();
 }
 
 async function createSavedWidgets() {
-    let savedWidgets = await Database.getAllFromObjectStore(Database.widgetStoreName);
+    let savedWidgets = await Database.getAllFromObjectStore(DatabaseStore.Widgets);
     
     savedWidgets.forEach(function(element) {
         WidgetStatics.createWidget(element.dashboardId, element.class, element.id, element.transform, element.settings);

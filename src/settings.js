@@ -1,11 +1,4 @@
-import { API } from "./diapstash-api.js";
-import { DashboardStatics } from "./library.js";
-
 export class Settings {
-    static {
-        Settings.deserializeSettings();
-    }
-
     static notWearingLabel = "Not Wearing";
     static totalLabel = "Total";
     static notWearingColor = "rgb(44, 62, 80)";
@@ -36,6 +29,11 @@ export class Settings {
         diaperCategoryConfigs: JSON.parse(JSON.stringify(Settings.defaultDiaperCategoryConfigs)),
         externalDiaperData: "",
     }
+
+    static {
+        Settings.deserializeSettings();
+    }
+
     static parsedExternalDiaperData = new Map();
     
     static serializeSettings() {
@@ -121,15 +119,17 @@ export class Settings {
         return names;
     }
     
-    static getDefaultDiaperCategoryConfig() {
+    static async getDefaultDiaperCategoryConfig() {
+        const { DashboardStatics } = await import("./library/dashboard-statics.js");
         let index = DashboardStatics.selectedDashboard.defaultDiaperCatConfig;
         let config = Settings.data.diaperCategoryConfigs[index];
         return config.categories;
     }
     
     static async getMainCategoryFromChange(change, diaperCategoryConfig = null) {
+        const { API } = await import("./diapstash-api.js");
         if (diaperCategoryConfig == null)
-            diaperCategoryConfig = Settings.getDefaultDiaperCategoryConfig();
+            diaperCategoryConfig = await Settings.getDefaultDiaperCategoryConfig();
     
         if (change.diapers.length == 0)
             return null;
@@ -151,8 +151,9 @@ export class Settings {
     }
     
     static async getCategoryFromId(id, diaperCategoryConfig = null) {
+        const { API } = await import("./diapstash-api.js");
         if (diaperCategoryConfig == null)
-            diaperCategoryConfig = Settings.getDefaultDiaperCategoryConfig();
+            diaperCategoryConfig = await Settings.getDefaultDiaperCategoryConfig();
     
         let type = await API.getType(id);
     

@@ -1,7 +1,11 @@
 import { API } from "../diapstash-api.js";
-import { Library } from "../library.js";
+import { Library } from "../library/library.js";
 
-export class LoginPrompt {
+class LoginPrompt {
+    static {
+        Library.loginPrompt = new LoginPrompt();
+    }
+
     div;
     p;
     button;

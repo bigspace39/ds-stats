@@ -9,11 +9,15 @@ import { QuestionmarkTooltipUI } from "../base-ui/questionmark-tooltip-ui.js";
 import { SegmentedControlUI, SegmentedControlUIOption } from "../base-ui/segmented-control-ui.js";
 import { SpinnerUI } from "../base-ui/spinner-ui.js";
 import { ButtonStyle, UIBuilder } from "../base-ui/ui-builder.js";
+import { Database, DatabaseStore } from "../database.js";
 import { API } from "../diapstash-api.js";
-import { DashboardStatics, Library, WidgetStatics } from "../library.js";
+import { DashboardStatics } from "../library/dashboard-statics.js";
+import { Library } from "../library/library.js";
+import { WidgetStatics } from "../library/widget-statics.js";
 import { Settings } from "../settings.js";
 
 class DiaperCategoryConfigsListUI {
+
     list;
 
     constructor(parentElement) {
@@ -147,7 +151,11 @@ class DiaperCategoryUI {
     }
 }
 
-export class SettingsDialog extends DialogBoxUI {
+class SettingsDialog extends DialogBoxUI {
+    static {
+        Library.settingsDialog = new SettingsDialog();
+    }
+
     footer;
     applyButton;
     revertButton;
@@ -194,6 +202,9 @@ export class SettingsDialog extends DialogBoxUI {
     brandsText;
     fetchBrandsButton;
     fetchBrandsSpinner;
+
+    // === Reset ===
+    resetAllDataButton;
 
     constructor() {
         super();
@@ -321,7 +332,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchChangesButton.addEventListener("click", async function() {
             Library.settingsDialog.fetchChangesSpinner.show();
             await API.fetchChangeHistory();
-            WidgetStatics.updateWidgetsOnSelectedDashboard();
+            await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Library.settingsDialog.updateAPIDataCount();
             Library.settingsDialog.fetchChangesSpinner.hide();
         });
@@ -333,7 +344,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchAccidentsButton.addEventListener("click", async function() {
             Library.settingsDialog.fetchAccidentsSpinner.show();
             await API.fetchAccidentHistory();
-            WidgetStatics.updateWidgetsOnSelectedDashboard();
+            await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Library.settingsDialog.updateAPIDataCount();
             Library.settingsDialog.fetchAccidentsSpinner.hide();
         });
@@ -345,7 +356,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchTypesButton.addEventListener("click", async function() {
             Library.settingsDialog.fetchTypesSpinner.show();
             await API.fetchAllTypes();
-            WidgetStatics.updateWidgetsOnSelectedDashboard();
+            await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Library.settingsDialog.updateAPIDataCount();
             Library.settingsDialog.fetchTypesSpinner.hide();
         });
@@ -357,9 +368,20 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchBrandsButton.addEventListener("click", async function() {
             Library.settingsDialog.fetchBrandsSpinner.show();
             await API.fetchAllBrands();
-            WidgetStatics.updateWidgetsOnSelectedDashboard();
+            await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Library.settingsDialog.updateAPIDataCount();
             Library.settingsDialog.fetchBrandsSpinner.hide();
+        });
+
+        // === Reset ===
+        UIBuilder.createHeading("Reset");
+        this.resetAllDataButton = UIBuilder.createButton("Reset All Data", null, ButtonStyle.Cancel);
+        this.resetAllDataButton.addEventListener("click", async function() {
+            localStorage.clear();
+            sessionStorage.clear();
+            await Database.clearObjectStore(DatabaseStore.Dashboards);
+            await Database.clearObjectStore(DatabaseStore.Widgets);
+            API.logout();
         });
 
         UIBuilder.resetDefaultParent();

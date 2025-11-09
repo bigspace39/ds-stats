@@ -1,6 +1,7 @@
 import { DialogBoxUI } from "../base-ui/dialog-box-ui.js";
 import { ButtonStyle, UIBuilder } from "../base-ui/ui-builder.js";
-import { Library, WidgetStatics } from "../library.js";
+import { Library } from "../library/library.js";
+import { WidgetStatics } from "../library/widget-statics.js";
 
 export class WidgetSettingsDialog extends DialogBoxUI
 {

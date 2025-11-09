@@ -1,4 +1,5 @@
-import { Library } from "../library.js";
+/// <reference types="tippy.js" />
+import { Library } from "../library/library.js";
 import { UIBuilder } from "./ui-builder.js";
 import { SegmentedControlUIOption } from "./segmented-control-ui.js";
 import { MultiSegmentedControlUI } from "./multi-segmented-control-ui.js";

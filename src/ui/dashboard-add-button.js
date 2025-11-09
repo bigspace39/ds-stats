@@ -1,7 +1,11 @@
-import { Dashboard } from "../dashboard.js";
-import { Library } from "../library.js";
+import { DashboardStatics } from "../library/dashboard-statics.js";
+import { Library } from "../library/library.js";
 
-export class DashboardAddButton {
+class DashboardAddButton {
+    static {
+        Library.dashboardAddButton = new DashboardAddButton();
+    }
+
     buttonParent;
     button;
 
@@ -10,7 +14,7 @@ export class DashboardAddButton {
         this.button = Library.createElement("button", this.buttonParent, "dashboard-add-button");
         this.button.innerText = "+";
         this.button.addEventListener("click", function() {
-            new Dashboard();
+            DashboardStatics.createDashboard();
         });
     }
 }

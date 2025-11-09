@@ -2,7 +2,8 @@
   "compilerOptions": {
     "module": "CommonJS",
     "target": "ES6",
-    "checkJs": true
+    "checkJs": true,
+    "lib": ["ES2016", "DOM"]
   },
-  "include": ["src/**/*", "src/*"]
+  "include": ["src/**/*"]
 }

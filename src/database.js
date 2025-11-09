@@ -1,12 +1,19 @@
+import { Enum } from "./library/enum.js";
+
+export class DatabaseStore extends Enum {
+    static Dashboards = "dashboards";
+    static Widgets = "widgets";
+    static Changes = "changes";
+    static Accidents = "accidents";
+    static Types = "types";
+    static Brands = "brands";
+}
+
 export class Database {
+    /**
+     * @type {{ transaction: (arg0: any[], arg1: string) => any; onerror: (event: any) => void; }}
+     */
     static db;
-    
-    static dashboardStoreName = "dashboards";
-    static widgetStoreName = "widgets";
-    static changeStoreName = "changes";
-    static accidentStoreName = "accidents";
-    static typeStoreName = "types";
-    static brandStoreName = "brands";
     
     static getAllFromObjectStore(storeName, sortParameter = null, ascending = true) {
         return new Promise((resolve, reject) => {

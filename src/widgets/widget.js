@@ -1,5 +1,6 @@
-import { Database } from "../database.js";
-import { Library, WidgetStatics } from "../library.js";
+import { Database, DatabaseStore } from "../database.js";
+import { Library } from "../library/library.js";
+import { WidgetStatics } from "../library/widget-statics.js";
 
 export class Widget {
     mainDiv = null;
@@ -68,6 +69,7 @@ export class Widget {
         this.selectWidgetButton.innerText = `${WidgetClass.displayName || WidgetClass.name} (${this.widgetId})`;
         
         this.saveWidget();
+        // @ts-ignore
         this.draggable = Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.savePosition, onDragEndParams: [this]})[0];
         this.exitEditMode();
     }
@@ -128,7 +130,7 @@ export class Widget {
         this.mainDiv.innerHTML = "";
         this.mainDiv.remove();
         WidgetStatics.createdWidgets.delete(this.widgetId);
-        Database.deleteFromObjectStore(Database.widgetStoreName, this.widgetId);
+        Database.deleteFromObjectStore(DatabaseStore.Widgets, this.widgetId);
     }
 
     saveWidget() {
@@ -139,7 +141,7 @@ export class Widget {
             transform: this.mainDiv.style.transform,
             settings: this.getSerializableSettings()
         }
-        Database.putInObjectStore(Database.widgetStoreName, temp);
+        Database.putInObjectStore(DatabaseStore.Widgets, temp);
     }
 
     savePosition(widget) {

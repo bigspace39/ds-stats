@@ -1,4 +1,6 @@
-import { DashboardStatics, Delegate, WidgetStatics } from "../library.js";
+import { DashboardStatics } from "../library/dashboard-statics.js";
+import { Delegate } from "../library/delegate.js";
+import { WidgetStatics } from "../library/widget-statics.js";
 import { ButtonStyle, UIBuilder } from "./ui-builder.js";
 
 export class SelectConnectedWidgetButtonUI {
@@ -31,27 +33,27 @@ export class SelectConnectedWidgetButtonUI {
                 if (value.dashboardId != DashboardStatics.selectedDashboard.boardId)
                     return;
 
-                if (!WidgetStatics.widgetIsOfClass(value, this.selectConnectedWidgetStatics.targetClassName))
+                if (!WidgetStatics.widgetIsOfClass(value, this.selectConnectedWidget.targetClass))
                     return;
 
                 value.selectWidgetButton.style.display = "";
                 value.selectWidgetButton.targetWidget = value;
                 value.selectWidgetButton.selectConnectedWidget = this.selectConnectedWidget;
                 value.selectWidgetButton.onclick = function() {
-                    this.selectConnectedWidgetStatics.exitSelectMode();
-                    this.selectConnectedWidgetStatics.ownerWidgetStatics.settingsDialog.show();
-                    this.selectConnectedWidgetStatics.setConnectedWidgetId(this.targetWidgetStatics.widgetId);
-                    this.selectConnectedWidgetStatics.onSelectConnectedWidgetStatics.broadcast(this.targetWidget);
+                    this.selectConnectedWidget.exitSelectMode();
+                    this.selectConnectedWidget.ownerWidget.settingsDialog.show();
+                    this.selectConnectedWidget.setConnectedWidgetId(this.targetWidget.widgetId);
+                    this.selectConnectedWidget.onSelectConnectedWidget.broadcast(this.targetWidget);
                 };
 
             }, this);
 
-            this.selectConnectedWidgetStatics.ownerWidgetStatics.settingsDialog.hide();
+            this.selectConnectedWidget.ownerWidget.settingsDialog.hide();
         });
 
         this.clearButton.selectConnectedWidget = this;
         this.clearButton.addEventListener("click", function() {
-            this.selectConnectedWidgetStatics.setConnectedWidgetId(-1);
+            this.selectConnectedWidget.setConnectedWidgetId(-1);
         });
     }
 

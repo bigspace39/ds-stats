@@ -1,5 +1,7 @@
-import { Database } from "./database.js";
-import { Library, WidgetStatics, DashboardStatics } from "./library.js";
+import { Database, DatabaseStore } from "./database.js";
+import { DashboardStatics } from "./library/dashboard-statics.js";
+import { Library } from "./library/library.js";
+import { WidgetStatics } from "./library/widget-statics.js";
 
 export class Dashboard {
     board;
@@ -47,10 +49,6 @@ export class Dashboard {
         this.tabClose.dashboard = this;
         this.tab.dashboard = this;
         this.exists = true;
-        this.hideDashboard();
-
-        if (boardId == -1)
-            DashboardStatics.selectDashboard(this);
     }
 
     destroy() {
@@ -77,7 +75,7 @@ export class Dashboard {
         this.board.remove();
         this.tab.remove();
         DashboardStatics.dashboards.delete(this.boardId);
-       Database.deleteFromObjectStore(Database.dashboardStoreName, this.boardId);
+       Database.deleteFromObjectStore(DatabaseStore.Dashboards, this.boardId);
         this.exists = false;
 
         let widgets = Array.from(WidgetStatics.createdWidgets.values());
@@ -94,7 +92,7 @@ export class Dashboard {
             label: this.getLabel(),
             defaultDiaperCatConfig: this.defaultDiaperCatConfig
         }
-        Database.putInObjectStore(Database.dashboardStoreName, current);
+        Database.putInObjectStore(DatabaseStore.Dashboards, current);
     }
 
     showDashboard() {

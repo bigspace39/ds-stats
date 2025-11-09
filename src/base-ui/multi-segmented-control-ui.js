@@ -1,4 +1,5 @@
-import { Library, Delegate } from "../library.js";
+import { Delegate } from "../library/delegate.js";
+import { Library } from "../library/library.js";
 import { UIBuilder } from "./ui-builder.js";
 
 // Segmented control UI but where you can select none or multiple options

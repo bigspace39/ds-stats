@@ -1,5 +1,6 @@
-import { Library } from "../library.js";
+import { Library } from "../library/library.js";
 
+// @ts-ignore
 Coloris({
     el: ".coloris",
     theme: "polaroid",

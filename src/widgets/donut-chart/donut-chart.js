@@ -1,4 +1,6 @@
-import { Enum, Library, WidgetStatics } from "../../library.js";
+import { Enum } from "../../library/enum.js";
+import { Library } from "../../library/library.js";
+import { WidgetStatics } from "../../library/widget-statics.js";
 import { Widget } from "../widget.js";
 import { DonutChartWidgetSettingsDialog } from "./donut-chart-settings.js";
 
@@ -56,6 +58,7 @@ export class DonutChartWidget extends Widget {
             data: this.data,
         };
 
+        // @ts-ignore
         this.chart = new Chart(
             this.canvas,
             config

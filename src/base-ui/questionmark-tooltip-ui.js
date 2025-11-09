@@ -1,4 +1,5 @@
-import { Library } from "../library.js";
+/// <reference types="tippy.js" />
+import { Library } from "../library/library.js";
 
 export class QuestionmarkTooltipUI {
     div;

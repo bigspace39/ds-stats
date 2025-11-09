@@ -1,5 +1,7 @@
-import { Library, Delegate, WidgetStatics } from "./library.js";
-import { Database } from "./database.js";
+import { Library } from "./library/library.js";
+import { Database, DatabaseStore } from "./database.js";
+import { Delegate } from "./library/delegate.js";
+import { WidgetStatics } from "./library/widget-statics.js";
 
 // Swager: https://api.diapstash.com/api/docs/#/History
 // Account: https://account.diapstash.com/account
@@ -47,8 +49,8 @@ export class API {
         if (!bypassTimeCheck && fetchTimeStr) {
             let fetchTime = new Date(fetchTimeStr);
             let now = new Date();
-            if ((now - fetchTime) / 1000 < 60) {
-                console.log(`Tried to fetch data but it's been ${(now - fetchTime) / 1000} seconds since last fetch`);
+            if ((now.getTime() - fetchTime.getTime()) / 1000 < 60) {
+                console.log(`Tried to fetch data but it's been ${(now.getTime() - fetchTime.getTime()) / 1000} seconds since last fetch`);
                 return false;
             }
         }
@@ -74,7 +76,7 @@ export class API {
         else
             await API.fetchNewAccidentHistory();
     
-        WidgetStatics.updateWidgetsOnSelectedDashboard();
+        await WidgetStatics.updateWidgetsOnSelectedDashboard();
     
         localStorage.setItem("fetchDataTime", new Date().toUTCString());
         API.onStopFetchAPIData.broadcast();
@@ -84,7 +86,7 @@ export class API {
     
     static async fetchChangeHistory() {
         let params = new URLSearchParams({
-            size: 0
+            size: String(0)
         });
     
         let history = await API.fetchObjectFromAPI(API.CHANGE_API_URL, params, "change history");
@@ -93,8 +95,8 @@ export class API {
     
         API.changeHistory = history.data;
         await API.modifyChangeHistory(API.changeHistory);
-        await Database.clearObjectStore(Database.changeStoreName);
-        await Database.addArrayToObjectStore(Database.changeStoreName, API.changeHistory);
+        await Database.clearObjectStore(DatabaseStore.Changes);
+        await Database.addArrayToObjectStore(DatabaseStore.Changes, API.changeHistory);
     }
     
     static async modifyChangeHistory(history) {
@@ -121,7 +123,7 @@ export class API {
     
     static async fetchAccidentHistory() {
         let params = new URLSearchParams({
-            size: 0
+            size: String(0)
         });
     
         let history = await API.fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "accident history");
@@ -130,8 +132,8 @@ export class API {
     
         API.accidentHistory = history.data;
         await API.modifyAccidentHistory(API.accidentHistory);
-        await Database.clearObjectStore(Database.accidentStoreName);
-        await Database.addArrayToObjectStore(Database.accidentStoreName, API.accidentHistory);
+        await Database.clearObjectStore(DatabaseStore.Accidents);
+        await Database.addArrayToObjectStore(DatabaseStore.Accidents, API.accidentHistory);
     }
     
     static async modifyAccidentHistory(history) {
@@ -148,7 +150,7 @@ export class API {
     static async fetchNewChangeHistory() {
         const lastChange = API.changeHistory[API.changeHistory.length - 1];
         let params = new URLSearchParams({
-            size: 0,
+            size: String(0),
             "startTime.gte": lastChange.startTime.toJSON()
         });
     
@@ -157,8 +159,8 @@ export class API {
             return;
     
         await API.modifyChangeHistory(history.data);
-        await Database.putArrayInObjectStore(Database.changeStoreName, history.data);
-        API.changeHistory = await Database.getAllFromObjectStore(Database.changeStoreName, "startDate");
+        await Database.putArrayInObjectStore(DatabaseStore.Changes, history.data);
+        API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
         console.log("Change history after fetching new changes:");
         console.log(API.changeHistory);
     }
@@ -166,7 +168,7 @@ export class API {
     static async fetchNewAccidentHistory() {
         const lastAccident = API.accidentHistory[API.accidentHistory.length - 1];
         let params = new URLSearchParams({
-            size: 0,
+            size: String(0),
             "when.gte": lastAccident.when.toJSON()
         });
     
@@ -175,19 +177,19 @@ export class API {
             return;
     
         await API.modifyAccidentHistory(history.data);
-        await Database.putArrayInObjectStore(Database.accidentStoreName, history.data);
-        API.accidentHistory = await Database.getAllFromObjectStore(Database.accidentStoreName, "when");
+        await Database.putArrayInObjectStore(DatabaseStore.Accidents, history.data);
+        API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
         console.log("Accident history after fetching new accidents:");
         console.log(API.accidentHistory);
     }
     
     static async fetchAllTypes() {
         let params = new URLSearchParams({
-            size: 0,
-            detailed: true
+            size: String(0),
+            detailed: String(true)
         });
     
-        await Database.clearObjectStore(Database.typeStoreName);
+        await Database.clearObjectStore(DatabaseStore.Types);
         API.types.clear();
     
         let temp = await API.fetchObjectFromAPI(API.TYPES_API_URL, params, "types");
@@ -206,16 +208,16 @@ export class API {
             API.types.set(customTemp.data[i].id, customTemp.data[i]);
         }
     
-        await Database.putArrayInObjectStore(Database.typeStoreName, customTemp.data);
-        await Database.putArrayInObjectStore(Database.typeStoreName, temp.data);
+        await Database.putArrayInObjectStore(DatabaseStore.Types, customTemp.data);
+        await Database.putArrayInObjectStore(DatabaseStore.Types, temp.data);
     }
     
     static async fetchAllBrands() {
         let params = new URLSearchParams({
-            size: 0
+            size: String(0)
         });
     
-        await Database.clearObjectStore(Database.brandStoreName);
+        await Database.clearObjectStore(DatabaseStore.Brands);
         API.brands.clear();
     
         let temp = await API.fetchObjectFromAPI(API.BRANDS_API_URL, params, "brands");
@@ -226,7 +228,7 @@ export class API {
             API.brands.set(temp.data[i].code, temp.data[i]);
         }
     
-        await Database.addArrayToObjectStore(Database.brandStoreName, temp.data);
+        await Database.addArrayToObjectStore(DatabaseStore.Brands, temp.data);
     }
     
     static async getType(id) {
@@ -248,7 +250,7 @@ export class API {
     
         type = type.type;
         API.types.set(id, type);
-        Database.addToObjectStore(Database.typeStoreName, type);
+        Database.addToObjectStore(DatabaseStore.Types, type);
         return type;
     }
     
@@ -267,7 +269,7 @@ export class API {
     
         brand = brand.brand;
         API.brands.set(code, brand);
-        Database.addToObjectStore(Database.brandStoreName, brand);
+        Database.addToObjectStore(DatabaseStore.Brands, brand);
         return brand;
     }
     
@@ -334,7 +336,7 @@ export class API {
     }
     
     static async deserializeStoredAPIData() {
-        API.changeHistory = await Database.getAllFromObjectStore(Database.changeStoreName, "startDate");
+        API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
         for (let i = 0; i < API.changeHistory.length; i++) {
             let change = API.changeHistory[i];
             if (change.startTime != null)
@@ -344,15 +346,15 @@ export class API {
                 change.endTime = new Date(change.endTime);
         }
     
-        API.accidentHistory = await Database.getAllFromObjectStore(Database.accidentStoreName, "when");
+        API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
         for (let i = 0; i < API.accidentHistory.length; i++) {
             let accident = API.accidentHistory[i];
             if (accident.when != null)
                 accident.when = new Date(accident.when);
         }
     
-        API.types = await Database.getAllFromObjectStoreIntoMap(Database.typeStoreName, "id");
-        API.brands = await Database.getAllFromObjectStoreIntoMap(Database.brandStoreName, "code");
+        API.types = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Types, "id");
+        API.brands = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Brands, "code");
     }
     
     static async login() {
@@ -500,14 +502,14 @@ export class API {
                 body: data,
             });
     
-            response = await response.json();
+            let responseJson = await response.json();
     
-            API.saveToken(response);
-            let jwt = API.decodeJwt(response.id_token);
+            API.saveToken(responseJson);
+            let jwt = API.decodeJwt(responseJson.id_token);
             console.log(`Got token using refresh token for user: ${jwt.username}`);
             console.log(API.getTokenDebugObject());
     
-            return response;
+            return responseJson;
         }
         catch(err) {
             console.error(`Failed to fetch access token using refresh token, error is: ${err}`);
@@ -519,8 +521,8 @@ export class API {
         let token = localStorage.getItem('auth_token');
         try {
             if (token) {
-                token = JSON.parse(token);
-                token.access_expires_at = new Date(token.access_expires_at);
+                let tokenJson = JSON.parse(token);
+                tokenJson.access_expires_at = new Date(tokenJson.access_expires_at);
             }
         }
         catch (err) {
@@ -555,17 +557,13 @@ export class API {
         return { code_verifier, code_challenge };
     }
     
-    static logout() {
+    static async logout() {
         localStorage.removeItem('auth_token');
         localStorage.removeItem("fetchDataTime");
-        API.changeHistory = new Array();
-        API.accidentHistory = new Array();
-        API.types = new Map();
-        API.brands = new Map();
-        Database.clearObjectStore(Database.changeStoreName);
-        Database.clearObjectStore(Database.accidentStoreName);
-        Database.clearObjectStore(Database.typeStoreName);
-        Database.clearObjectStore(Database.brandStoreName);
+        await Database.clearObjectStore(DatabaseStore.Changes);
+        await Database.clearObjectStore(DatabaseStore.Accidents);
+        await Database.clearObjectStore(DatabaseStore.Types);
+        await Database.clearObjectStore(DatabaseStore.Brands);
         window.location.href = "/";
     }
 }
