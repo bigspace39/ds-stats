@@ -25,6 +25,8 @@ openDBRequest.onupgradeneeded = (event) => {
     const widgetStore = db.createObjectStore(DatabaseStore.Widgets, { keyPath: "id" });
     const changeStore = db.createObjectStore(DatabaseStore.Changes, { keyPath: "id" });
     const accidentStore = db.createObjectStore(DatabaseStore.Accidents, { keyPath: "id" });
+    const disposableStockStore = db.createObjectStore(DatabaseStore.DisposableStocks, { keyPath: "order" });
+    const reusableStockStore = db.createObjectStore(DatabaseStore.ReusableStocks, { keyPath: "order" });
     const typeStore = db.createObjectStore(DatabaseStore.Types, { keyPath: "id" });
     const brandStore = db.createObjectStore(DatabaseStore.Brands, { keyPath: "code" });
 };

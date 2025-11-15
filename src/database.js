@@ -5,6 +5,8 @@ export class DatabaseStore extends Enum {
     static Widgets = "widgets";
     static Changes = "changes";
     static Accidents = "accidents";
+    static DisposableStocks = "disposable-stocks";
+    static ReusableStocks = "reusable-stocks";
     static Types = "types";
     static Brands = "brands";
 }

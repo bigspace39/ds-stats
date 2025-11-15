@@ -334,7 +334,7 @@ export class MonthCalendarWidget extends Widget {
             let current = change;
 
             if (current.price != null)
-                this.price += parseFloat(current.price);
+                this.price += current.price;
 
             const date = change.startTime.getDate();
             this.days.get(date).push(current);

@@ -17,14 +17,24 @@ export class API {
     static BASE_API_URL = "https://api.diapstash.com/api";
     static CHANGE_API_URL = `${API.BASE_API_URL}/v1/history/changes`;
     static ACCIDENT_API_URL = `${API.BASE_API_URL}/v1/history/accidents`;
+    static DISPOSABLE_STOCKS_API_URL = `${API.BASE_API_URL}/v1/stock/disposables`;
+    static REUSABLE_STOCKS_API_URL = `${API.BASE_API_URL}/v1/stock/reusables`;
     static TYPES_API_URL = `${API.BASE_API_URL}/v1/type/types`;
     static CUSTOM_TYPES_API_URL = `${API.BASE_API_URL}/v1/type/types/custom`;
     static BRANDS_API_URL = `${API.BASE_API_URL}/v1/brand/brands`;
     static SCOPE = "openid offline_access username cloud-sync.history cloud-sync.stock cloud-sync.types";
     
+    /** @type {APITypes.Change[]} */
     static changeHistory = new Array();
+    /** @type {APITypes.Accident[]} */
     static accidentHistory = new Array();
+    /** This is currently disabled for API performance reasons! */
+    static disposableStocks = new Array();
+    /** This is currently disabled for API performance reasons! */
+    static reusableStocks = new Array();
+    /** @type {Map<number, APITypes.Type>} */
     static types = new Map();
+    /** @type {Map<string, APITypes.Brand>} */
     static brands = new Map();
     
     static isFetching = false;
@@ -33,7 +43,7 @@ export class API {
    
     static async handleAPI() {
         if (window.location.search) {
-            await API.handleOAuthCallback();
+            await API.#handleOAuthCallback();
         }
         else if (await API.getValidToken() == null) {
             Statics.loginPrompt.show();
@@ -43,6 +53,12 @@ export class API {
         }
     }
     
+    /**
+     * If we have no API data, will fetch all types, brands, changes, and accidents.
+     * If we have already fetched before, only new changes, and accidents will be fetched.
+     * @param {boolean} bypassTimeCheck Whether we should check the time since last fetch and disallow fetching if too recent.
+     * @returns {Promise<boolean>} Returns false if we aren't allowed to fetch yet (based on time check).
+     */
     static async fetchData(bypassTimeCheck = false) {
         let fetchTimeStr = localStorage.getItem("fetchDataTime");
         
@@ -75,6 +91,10 @@ export class API {
             await API.fetchAccidentHistory();
         else
             await API.fetchNewAccidentHistory();
+
+        // We need to fetch this more efficiently, and only new stocks/updated stocks
+        // await API.fetchDisposableStocks();
+        // await API.fetchReusableStocks();
     
         await WidgetStatics.updateWidgetsOnSelectedDashboard();
     
@@ -84,22 +104,26 @@ export class API {
         return true;
     }
     
+    /**
+     * Deletes change history from the database and does a complete refetch of the full change history.
+     * @returns {Promise<void>}
+     */
     static async fetchChangeHistory() {
         let params = new URLSearchParams({
             size: String(0)
         });
     
-        let history = await API.fetchObjectFromAPI(API.CHANGE_API_URL, params, "change history");
+        let history = await API.#fetchObjectFromAPI(API.CHANGE_API_URL, params, "change history");
         if (history == null || history.data == null)
             return;
     
         API.changeHistory = history.data;
-        await API.modifyChangeHistory(API.changeHistory);
+        await API.#modifyChangeHistory(API.changeHistory);
         await Database.clearObjectStore(DatabaseStore.Changes);
         await Database.addArrayToObjectStore(DatabaseStore.Changes, API.changeHistory);
     }
     
-    static async modifyChangeHistory(history) {
+    static async #modifyChangeHistory(history) {
         for (let i = 0; i < history.length; i++) {
             const change = history[i];
             if (change.startTime != null)
@@ -114,29 +138,33 @@ export class API {
                 change.price += diaper.price;
             }
     
-            await API.setChangeString(change);
+            await API.#setChangeString(change);
         }
     
         console.log("Modified change history:");
         console.log(history);
     }
     
+    /**
+     * Deletes accident history from the database and does a complete refetch of the full accident history.
+     * @returns {Promise<void>}
+     */
     static async fetchAccidentHistory() {
         let params = new URLSearchParams({
             size: String(0)
         });
     
-        let history = await API.fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "accident history");
+        let history = await API.#fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "accident history");
         if (history == null || history.data == null)
             return;
     
         API.accidentHistory = history.data;
-        await API.modifyAccidentHistory(API.accidentHistory);
+        await API.#modifyAccidentHistory(API.accidentHistory);
         await Database.clearObjectStore(DatabaseStore.Accidents);
         await Database.addArrayToObjectStore(DatabaseStore.Accidents, API.accidentHistory);
     }
     
-    static async modifyAccidentHistory(history) {
+    static async #modifyAccidentHistory(history) {
         for (let i = 0; i < history.length; i++) {
             const accident = history[i];
             if (accident.when != null)
@@ -146,7 +174,39 @@ export class API {
         console.log("Modified accident history:");
         console.log(history);
     }
+
+    static async fetchDisposableStocks() {
+        let params = new URLSearchParams({
+            size: String(0)
+        });
     
+        let history = await API.#fetchObjectFromAPI(API.DISPOSABLE_STOCKS_API_URL, params, "disposable-stocks");
+        if (history == null || history.data == null)
+            return;
+    
+        API.disposableStocks = history.data;
+        await Database.clearObjectStore(DatabaseStore.DisposableStocks);
+        await Database.addArrayToObjectStore(DatabaseStore.DisposableStocks, API.disposableStocks);
+    }
+
+    static async fetchReusableStocks() {
+        let params = new URLSearchParams({
+            size: String(0)
+        });
+    
+        let history = await API.#fetchObjectFromAPI(API.REUSABLE_STOCKS_API_URL, params, "reusable-stocks");
+        if (history == null || history.data == null)
+            return;
+    
+        API.reusableStocks = history.data;
+        await Database.clearObjectStore(DatabaseStore.ReusableStocks);
+        await Database.addArrayToObjectStore(DatabaseStore.ReusableStocks, API.reusableStocks);
+    }
+    
+    /**
+     * Fetches any new changes since last fetch.
+     * @returns {Promise<void>}
+     */
     static async fetchNewChangeHistory() {
         const lastChange = API.changeHistory[API.changeHistory.length - 1];
         let params = new URLSearchParams({
@@ -154,17 +214,21 @@ export class API {
             "startTime.gte": lastChange.startTime.toJSON()
         });
     
-        let history = await API.fetchObjectFromAPI(API.CHANGE_API_URL, params, "new change history");
+        let history = await API.#fetchObjectFromAPI(API.CHANGE_API_URL, params, "new change history");
         if (history == null || history.data == null || history.data.length == 0)
             return;
     
-        await API.modifyChangeHistory(history.data);
+        await API.#modifyChangeHistory(history.data);
         await Database.putArrayInObjectStore(DatabaseStore.Changes, history.data);
         API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
         console.log("Change history after fetching new changes:");
         console.log(API.changeHistory);
     }
     
+    /**
+     * Fetches any new accidents since last fetch.
+     * @returns {Promise<void>}
+     */
     static async fetchNewAccidentHistory() {
         const lastAccident = API.accidentHistory[API.accidentHistory.length - 1];
         let params = new URLSearchParams({
@@ -172,17 +236,21 @@ export class API {
             "when.gte": lastAccident.when.toJSON()
         });
     
-        let history = await API.fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "new accident history");
+        let history = await API.#fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "new accident history");
         if (history == null || history.data == null || history.data.length == 0)
             return;
     
-        await API.modifyAccidentHistory(history.data);
+        await API.#modifyAccidentHistory(history.data);
         await Database.putArrayInObjectStore(DatabaseStore.Accidents, history.data);
         API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
         console.log("Accident history after fetching new accidents:");
         console.log(API.accidentHistory);
     }
     
+    /**
+     * Deletes types from the database and does a complete refetch of them.
+     * @returns {Promise<void>}
+     */
     static async fetchAllTypes() {
         let params = new URLSearchParams({
             size: String(0),
@@ -192,7 +260,7 @@ export class API {
         await Database.clearObjectStore(DatabaseStore.Types);
         API.types.clear();
     
-        let temp = await API.fetchObjectFromAPI(API.TYPES_API_URL, params, "types");
+        let temp = await API.#fetchObjectFromAPI(API.TYPES_API_URL, params, "types");
         if (temp == null || temp.data == null)
             return;
         
@@ -200,7 +268,7 @@ export class API {
             API.types.set(temp.data[i].id, temp.data[i]);
         }
         
-        let customTemp = await API.fetchObjectFromAPI(API.CUSTOM_TYPES_API_URL, params, "custom types");
+        let customTemp = await API.#fetchObjectFromAPI(API.CUSTOM_TYPES_API_URL, params, "custom types");
         if (customTemp == null || customTemp.data == null)
             return;
     
@@ -212,6 +280,10 @@ export class API {
         await Database.putArrayInObjectStore(DatabaseStore.Types, temp.data);
     }
     
+    /**
+     * Deletes brands from the database and does a complete refetch of them.
+     * @returns {Promise<void>}
+     */
     static async fetchAllBrands() {
         let params = new URLSearchParams({
             size: String(0)
@@ -220,7 +292,7 @@ export class API {
         await Database.clearObjectStore(DatabaseStore.Brands);
         API.brands.clear();
     
-        let temp = await API.fetchObjectFromAPI(API.BRANDS_API_URL, params, "brands");
+        let temp = await API.#fetchObjectFromAPI(API.BRANDS_API_URL, params, "brands");
         if (temp == null || temp.data == null)
             return;
     
@@ -231,14 +303,19 @@ export class API {
         await Database.addArrayToObjectStore(DatabaseStore.Brands, temp.data);
     }
     
+    /**
+     * Returns the type if it has already been fetched, otherwise fetches it, saves it and returns it.
+     * @param {number} id The id of the type to get.
+     * @returns {Promise<APITypes.Type>}
+     */
     static async getType(id) {
         if (API.types.has(id))
             return API.types.get(id);
     
-        let type = await API.fetchObjectFromAPI(`${API.TYPES_API_URL}/${id}`, null, `type ${id}`);
+        let type = await API.#fetchObjectFromAPI(`${API.TYPES_API_URL}/${id}`, null, `type ${id}`);
         if (type.status == 404) {
             console.warn(`Tried to fetch official type with id ${id} but got a ${type.status} ${type.name}, trying to fetch custom type instead!`);
-            type = await API.fetchObjectFromAPI(`${API.CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
+            type = await API.#fetchObjectFromAPI(`${API.CUSTOM_TYPES_API_URL}/${id}`, null, `custom type ${id}`);
             if (type.status == 404) {
                 console.error(`Tried to fetch custom type with id ${id} but got a ${type.status} ${type.name}`);
                 return null;
@@ -254,11 +331,16 @@ export class API {
         return type;
     }
     
+    /**
+     * Returns the brand if it has already been fetched, otherwise fetches it, saves it and returns it.
+     * @param {string} code The code of the brand to get.
+     * @returns {Promise<APITypes.Brand>}
+     */
     static async getBrand(code) {
         if (API.brands.has(code))
             return API.brands.get(code);
     
-        let brand = await API.fetchObjectFromAPI(`${API.BRANDS_API_URL}/${code}`, null, `brand ${code}`);
+        let brand = await API.#fetchObjectFromAPI(`${API.BRANDS_API_URL}/${code}`, null, `brand ${code}`);
         if (brand.status == 404) {
             console.error(`Tried to fetch brand with code ${code} but got a ${brand.status} ${brand.name}`);
             return null;
@@ -273,7 +355,7 @@ export class API {
         return brand;
     }
     
-    static async setChangeString(change) {
+    static async #setChangeString(change) {
         let str = "";
         let firstBrand = null;
         for (let i = 0; i < change.diapers.length; i++) {
@@ -303,7 +385,7 @@ export class API {
         change.changeString = str;
     }
     
-    static async fetchObjectFromAPI(url, params, debugString) {
+    static async #fetchObjectFromAPI(url, params, debugString) {
         const token = await API.getValidToken();
         if (token == null) {
             console.warn("No valid token, login required!");
@@ -335,6 +417,9 @@ export class API {
         return obj;
     }
     
+    /**
+     * Loads all changes, accidents, types, and brands into memory from the database.
+     */
     static async deserializeStoredAPIData() {
         API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
         for (let i = 0; i < API.changeHistory.length; i++) {
@@ -353,12 +438,17 @@ export class API {
                 accident.when = new Date(accident.when);
         }
     
+        API.disposableStocks = await Database.getAllFromObjectStore(DatabaseStore.DisposableStocks, "order");
+        API.reusableStocks = await Database.getAllFromObjectStore(DatabaseStore.ReusableStocks, "order");
         API.types = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Types, "id");
         API.brands = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Brands, "code");
     }
     
+    /**
+     * Redirects the browser to the login page for the diapstash API.
+     */
     static async login() {
-        const { code_verifier, code_challenge } = await API.generatePKCECodes();
+        const { code_verifier, code_challenge } = await API.#generatePKCECodes();
         const state = crypto.randomUUID();
         const nonce = crypto.randomUUID();
     
@@ -382,7 +472,7 @@ export class API {
         window.location.href = url;
     }
     
-    static async handleOAuthCallback() {
+    static async #handleOAuthCallback() {
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
         const state = params.get("state");
@@ -393,14 +483,14 @@ export class API {
             else
                 console.warn("Search parameters are not an OAuth callback, ignoring...");
             
-            API.clearSearchParameters();
+            API.#clearSearchParameters();
             return;
         }
     
         const expectedState = sessionStorage.getItem("oauth_state");
         if (state !== expectedState) {
             alert("Invalid state");
-            API.clearSearchParameters();
+            API.#clearSearchParameters();
             return;
         }
     
@@ -423,28 +513,28 @@ export class API {
         const tokenResult = await response.json();
         if (tokenResult.error) {
             alert("Token exchange failed: " + tokenResult.error_description);
-            API.clearSearchParameters();
+            API.#clearSearchParameters();
             return;
         }
     
-        API.saveToken(tokenResult);
-        let jwt = API.decodeJwt(tokenResult.id_token);
+        API.#saveToken(tokenResult);
+        let jwt = API.#decodeJwt(tokenResult.id_token);
         console.log(`Got token for user: ${jwt.username}`);
-        console.log(API.getTokenDebugObject());
+        console.log(API.#getTokenDebugObject());
     
-        API.clearSearchParameters();
+        API.#clearSearchParameters();
         await API.fetchData();
     }
     
-    static clearSearchParameters() {
+    static #clearSearchParameters() {
         window.history.replaceState({ additionalInformation: 'Cleared OAuth callback parameters' }, '', Statics.REDIRECT_URI);
         sessionStorage.removeItem("pkce_code_verifier");
         sessionStorage.removeItem("oauth_state");
     }
     
-    static saveToken(data) {
+    static #saveToken(data) {
         const now = Date.now();
-        let jwt = API.decodeJwt(data.id_token);
+        let jwt = API.#decodeJwt(data.id_token);
         const tokenData = {
             access_token: data.access_token,
             refresh_token: data.refresh_token,
@@ -454,6 +544,10 @@ export class API {
         localStorage.setItem('auth_token', JSON.stringify(tokenData));
     }
     
+    /**
+     * Gets the access token string if there is a valid one.
+     * @returns {Promise<string?>} The access token
+     */
     static async getValidToken() {
         let tokenObject = await API.getValidTokenObject();
         if (tokenObject == null)
@@ -462,6 +556,10 @@ export class API {
         return tokenObject.access_token;
     }
     
+    /**
+     * Gets the auth token object if there is a valid one.
+     * @returns {Promise<APITypes.AuthToken>} The auth token object.
+     */
     static async getValidTokenObject() {
         const raw = localStorage.getItem('auth_token');
         if (!raw) {
@@ -475,7 +573,7 @@ export class API {
                 console.warn('Stored token expired.');
                 localStorage.removeItem('auth_token');
     
-                let result = await API.fetchAccessTokenFromRefreshToken(tokenData);
+                let result = await API.#fetchAccessTokenFromRefreshToken(tokenData);
                 return result;
             }
             return tokenData;
@@ -487,7 +585,7 @@ export class API {
         }
     }
     
-    static async fetchAccessTokenFromRefreshToken(tokenData) {
+    static async #fetchAccessTokenFromRefreshToken(tokenData) {
         const data = new URLSearchParams({
             grant_type: "refresh_token",
             client_id: API.CLIENT_ID,
@@ -504,10 +602,10 @@ export class API {
     
             let responseJson = await response.json();
     
-            API.saveToken(responseJson);
-            let jwt = API.decodeJwt(responseJson.id_token);
+            API.#saveToken(responseJson);
+            let jwt = API.#decodeJwt(responseJson.id_token);
             console.log(`Got token using refresh token for user: ${jwt.username}`);
-            console.log(API.getTokenDebugObject());
+            console.log(API.#getTokenDebugObject());
     
             return responseJson;
         }
@@ -517,7 +615,7 @@ export class API {
         }
     }
     
-    static getTokenDebugObject() {
+    static #getTokenDebugObject() {
         let token = localStorage.getItem('auth_token');
         try {
             if (token) {
@@ -532,7 +630,7 @@ export class API {
         return token;
     }
     
-    static decodeJwt(token) {
+    static #decodeJwt(token) {
         const parts = token.split(".");
         if (parts.length !== 3) return null;
         try {
@@ -543,25 +641,30 @@ export class API {
         }
     }
     
-    static base64URLEncode(str) {
+    static #base64URLEncode(str) {
         return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
             .replace(/\+/g, "-")
             .replace(/\//g, "_")
             .replace(/=+$/, "");
     }
     
-    static async generatePKCECodes() {
-        const code_verifier = API.base64URLEncode(crypto.getRandomValues(new Uint8Array(32)));
+    static async #generatePKCECodes() {
+        const code_verifier = API.#base64URLEncode(crypto.getRandomValues(new Uint8Array(32)));
         const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code_verifier));
-        const code_challenge = API.base64URLEncode(digest);
+        const code_challenge = API.#base64URLEncode(digest);
         return { code_verifier, code_challenge };
     }
     
+    /**
+     * Deletes the access token, and all API objects from the database and reloads the page.
+     */
     static async logout() {
         localStorage.removeItem('auth_token');
         localStorage.removeItem("fetchDataTime");
         await Database.clearObjectStore(DatabaseStore.Changes);
         await Database.clearObjectStore(DatabaseStore.Accidents);
+        await Database.clearObjectStore(DatabaseStore.DisposableStocks);
+        await Database.clearObjectStore(DatabaseStore.ReusableStocks);
         await Database.clearObjectStore(DatabaseStore.Types);
         await Database.clearObjectStore(DatabaseStore.Brands);
         window.location.href = "/";
