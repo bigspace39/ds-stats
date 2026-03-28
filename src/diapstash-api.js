@@ -11,7 +11,7 @@ if (!crypto.subtle) {
 }
 
 export class API {
-    static CLIENT_ID = "test-api-eada8297";
+    static CLIENT_ID = "diapstash-statistics-2b43cf32";
     static AUTH_URL = "https://account.diapstash.com/oidc/auth";
     static TOKEN_URL = "https://account.diapstash.com/oidc/token";
     static BASE_API_URL = "https://api.diapstash.com/api";
