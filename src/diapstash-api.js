@@ -23,6 +23,7 @@ export class API {
     static CUSTOM_TYPES_API_URL = `${API.BASE_API_URL}/v1/type/types/custom`;
     static BRANDS_API_URL = `${API.BASE_API_URL}/v1/brand/brands`;
     static SCOPE = "openid offline_access username cloud-sync.history cloud-sync.stock cloud-sync.types";
+    static MAX_FETCH_SIZE = 200;
     
     /** @type {APITypes.Change[]} */
     static changeHistory = new Array();
@@ -110,7 +111,7 @@ export class API {
      */
     static async fetchChangeHistory() {
         let params = new URLSearchParams({
-            size: String(0)
+            size: String(API.MAX_FETCH_SIZE)
         });
     
         let history = await API.#fetchObjectFromAPI(API.CHANGE_API_URL, params, "change history");
@@ -151,7 +152,7 @@ export class API {
      */
     static async fetchAccidentHistory() {
         let params = new URLSearchParams({
-            size: String(0)
+            size: String(API.MAX_FETCH_SIZE)
         });
     
         let history = await API.#fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "accident history");
@@ -177,7 +178,7 @@ export class API {
 
     static async fetchDisposableStocks() {
         let params = new URLSearchParams({
-            size: String(0)
+            size: String(API.MAX_FETCH_SIZE)
         });
     
         let history = await API.#fetchObjectFromAPI(API.DISPOSABLE_STOCKS_API_URL, params, "disposable-stocks");
@@ -191,7 +192,7 @@ export class API {
 
     static async fetchReusableStocks() {
         let params = new URLSearchParams({
-            size: String(0)
+            size: String(API.MAX_FETCH_SIZE)
         });
     
         let history = await API.#fetchObjectFromAPI(API.REUSABLE_STOCKS_API_URL, params, "reusable-stocks");
@@ -210,7 +211,7 @@ export class API {
     static async fetchNewChangeHistory() {
         const lastChange = API.changeHistory[API.changeHistory.length - 1];
         let params = new URLSearchParams({
-            size: String(0),
+            size: String(API.MAX_FETCH_SIZE),
             "startTime.gte": lastChange.startTime.toJSON()
         });
     
@@ -232,7 +233,7 @@ export class API {
     static async fetchNewAccidentHistory() {
         const lastAccident = API.accidentHistory[API.accidentHistory.length - 1];
         let params = new URLSearchParams({
-            size: String(0),
+            size: String(API.MAX_FETCH_SIZE),
             "when.gte": lastAccident.when.toJSON()
         });
     
@@ -253,7 +254,7 @@ export class API {
      */
     static async fetchAllTypes() {
         let params = new URLSearchParams({
-            size: String(0),
+            size: String(API.MAX_FETCH_SIZE),
             detailed: String(true)
         });
     
@@ -286,7 +287,7 @@ export class API {
      */
     static async fetchAllBrands() {
         let params = new URLSearchParams({
-            size: String(0)
+            size: String(API.MAX_FETCH_SIZE)
         });
     
         await Database.clearObjectStore(DatabaseStore.Brands);
