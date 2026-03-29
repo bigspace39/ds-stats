@@ -74,13 +74,13 @@ export class API {
     
         API.isFetching = true;
         API.onStartFetchAPIData.broadcast();
+
+        if (API.brands.size == 0) {
+            await API.fetchAllBrands();
+        }
     
         if (API.types.size == 0) {
             await API.fetchAllTypes();
-        }
-    
-        if (API.brands.size == 0) {
-            await API.fetchAllBrands();
         }
     
         if (API.changeHistory.length == 0)
@@ -114,11 +114,11 @@ export class API {
             size: String(API.MAX_FETCH_SIZE)
         });
     
-        let history = await API.#fetchObjectFromAPI(API.CHANGE_API_URL, params, "change history");
-        if (history == null || history.data == null)
+        let history = await API.#fetchIncrementallyFromAPI(API.CHANGE_API_URL, params, "changes");
+        if (history == null || history.length == 0)
             return;
     
-        API.changeHistory = history.data;
+        API.changeHistory = history;
         await API.#modifyChangeHistory(API.changeHistory);
         await Database.clearObjectStore(DatabaseStore.Changes);
         await Database.addArrayToObjectStore(DatabaseStore.Changes, API.changeHistory);
@@ -155,11 +155,11 @@ export class API {
             size: String(API.MAX_FETCH_SIZE)
         });
     
-        let history = await API.#fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "accident history");
-        if (history == null || history.data == null)
+        let history = await API.#fetchIncrementallyFromAPI(API.ACCIDENT_API_URL, params, "accidents");
+        if (history == null || history.length == 0)
             return;
     
-        API.accidentHistory = history.data;
+        API.accidentHistory = history;
         await API.#modifyAccidentHistory(API.accidentHistory);
         await Database.clearObjectStore(DatabaseStore.Accidents);
         await Database.addArrayToObjectStore(DatabaseStore.Accidents, API.accidentHistory);
@@ -215,12 +215,12 @@ export class API {
             "startTime.gte": lastChange.startTime.toJSON()
         });
     
-        let history = await API.#fetchObjectFromAPI(API.CHANGE_API_URL, params, "new change history");
-        if (history == null || history.data == null || history.data.length == 0)
+        let history = await API.#fetchIncrementallyFromAPI(API.CHANGE_API_URL, params, "new changes");
+        if (history == null || history.length == 0)
             return;
     
-        await API.#modifyChangeHistory(history.data);
-        await Database.putArrayInObjectStore(DatabaseStore.Changes, history.data);
+        await API.#modifyChangeHistory(history);
+        await Database.putArrayInObjectStore(DatabaseStore.Changes, history);
         API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
         console.log("Change history after fetching new changes:");
         console.log(API.changeHistory);
@@ -237,12 +237,12 @@ export class API {
             "when.gte": lastAccident.when.toJSON()
         });
     
-        let history = await API.#fetchObjectFromAPI(API.ACCIDENT_API_URL, params, "new accident history");
-        if (history == null || history.data == null || history.data.length == 0)
+        let history = await API.#fetchIncrementallyFromAPI(API.ACCIDENT_API_URL, params, "new accidents");
+        if (history == null || history.length == 0)
             return;
     
-        await API.#modifyAccidentHistory(history.data);
-        await Database.putArrayInObjectStore(DatabaseStore.Accidents, history.data);
+        await API.#modifyAccidentHistory(history);
+        await Database.putArrayInObjectStore(DatabaseStore.Accidents, history);
         API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
         console.log("Accident history after fetching new accidents:");
         console.log(API.accidentHistory);
@@ -261,24 +261,24 @@ export class API {
         await Database.clearObjectStore(DatabaseStore.Types);
         API.types.clear();
     
-        let temp = await API.#fetchObjectFromAPI(API.TYPES_API_URL, params, "types");
-        if (temp == null || temp.data == null)
+        let temp = await API.#fetchIncrementallyFromAPI(API.TYPES_API_URL, params, "types");
+        if (temp == null || temp.length == 0)
             return;
         
-        for (let i = 0; i < temp.data.length; i++) {
-            API.types.set(temp.data[i].id, temp.data[i]);
+        for (let i = 0; i < temp.length; i++) {
+            API.types.set(temp[i].id, temp[i]);
         }
         
-        let customTemp = await API.#fetchObjectFromAPI(API.CUSTOM_TYPES_API_URL, params, "custom types");
-        if (customTemp == null || customTemp.data == null)
+        let customTemp = await API.#fetchIncrementallyFromAPI(API.CUSTOM_TYPES_API_URL, params, "custom types");
+        if (customTemp == null || customTemp.length == 0)
             return;
     
-        for (let i = 0; i < customTemp.data.length; i++) {
-            API.types.set(customTemp.data[i].id, customTemp.data[i]);
+        for (let i = 0; i < customTemp.length; i++) {
+            API.types.set(customTemp[i].id, customTemp[i]);
         }
     
-        await Database.putArrayInObjectStore(DatabaseStore.Types, customTemp.data);
-        await Database.putArrayInObjectStore(DatabaseStore.Types, temp.data);
+        await Database.putArrayInObjectStore(DatabaseStore.Types, customTemp);
+        await Database.putArrayInObjectStore(DatabaseStore.Types, temp);
     }
     
     /**
@@ -293,15 +293,15 @@ export class API {
         await Database.clearObjectStore(DatabaseStore.Brands);
         API.brands.clear();
     
-        let temp = await API.#fetchObjectFromAPI(API.BRANDS_API_URL, params, "brands");
-        if (temp == null || temp.data == null)
+        let temp = await API.#fetchIncrementallyFromAPI(API.BRANDS_API_URL, params, "brands");
+        if (temp == null || temp.length == 0)
             return;
     
-        for (let i = 0; i < temp.data.length; i++) {
-            API.brands.set(temp.data[i].code, temp.data[i]);
+        for (let i = 0; i < temp.length; i++) {
+            API.brands.set(temp[i].code, temp[i]);
         }
     
-        await Database.addArrayToObjectStore(DatabaseStore.Brands, temp.data);
+        await Database.addArrayToObjectStore(DatabaseStore.Brands, temp);
     }
     
     /**
@@ -385,7 +385,42 @@ export class API {
     
         change.changeString = str;
     }
+
+    /**
+     * Will keep fetching until all items in the list have been fetched or we hit the rate limit!
+     * @param {string} url The endpoint for which to fetch from.
+     * @param {URLSearchParams} params The parameters for the fetch
+     * @param {string} type The string that will be used to print what was fetched to the log and to save what was partially fetched.
+     * @returns {Promise<Array<Object>>}
+     */
+    static async #fetchIncrementallyFromAPI(url, params, type) {
+        let page = 0;
+        let data = new Array();
+        while (true) {
+            params.set("page", String(page));
+            let object = await API.#fetchObjectFromAPI(url, params, type);
+            if (object == null)
+                return null;
+
+            data = data.concat(object.data);
+            let currentCount = page * object.size + object.count;
+            let totalCount = object.totalCount;
+            if (currentCount == totalCount)
+                break;
+
+            ++page;
+        }
+
+        return data;
+    }
     
+    /**
+     * Will fetch the javascript object from the specified API endpoint url with the specified params.
+     * @param {string} url The endpoint for which to fetch from.
+     * @param {URLSearchParams} params The parameters for the fetch
+     * @param {string} debugString The string that will be used to print what was fetched to the log.
+     * @returns {Promise<Object>}
+     */
     static async #fetchObjectFromAPI(url, params, debugString) {
         const token = await API.getValidToken();
         if (token == null) {

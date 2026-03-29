@@ -32,7 +32,7 @@ export class DiaperTypeFilterUI {
         this.button.role = "button";
         this.button.innerText = "0 filters active";
 
-        this.tooltipParentDiv = UIBuilder.createElement("div", null, "diaper-type-filter-edit");
+        this.tooltipParentDiv = UIBuilder.createElement("div", parentElement, "diaper-type-filter-edit");
         this.tippy = tippy(this.button, {
             content: this.tooltipParentDiv,
             placement: "right",
