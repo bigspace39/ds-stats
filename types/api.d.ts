@@ -90,4 +90,12 @@ declare namespace APITypes {
         access_expires_at: number,
         username: string
     }
+
+    interface RateLimitInfo {
+        type: string,
+        attemptedPage: number,
+        url: string,
+        params: URLSearchParams,
+        retryAfter: number
+    }
 }

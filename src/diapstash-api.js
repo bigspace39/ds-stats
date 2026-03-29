@@ -24,6 +24,7 @@ export class API {
     static BRANDS_API_URL = `${API.BASE_API_URL}/v1/brand/brands`;
     static SCOPE = "openid offline_access username cloud-sync.history cloud-sync.stock cloud-sync.types";
     static MAX_FETCH_SIZE = 200;
+    static LOCAL_STORAGE_RATELIMIT = "rate-limit";
     
     /** @type {APITypes.Change[]} */
     static changeHistory = new Array();
@@ -41,6 +42,8 @@ export class API {
     static isFetching = false;
     static onStartFetchAPIData = new Delegate();
     static onStopFetchAPIData = new Delegate();
+
+    static #rateLimited = false;
    
     static async handleAPI() {
         if (window.location.search) {
@@ -72,28 +75,33 @@ export class API {
             }
         }
     
+        API.#rateLimited = false;
         API.isFetching = true;
         API.onStartFetchAPIData.broadcast();
 
-        if (API.brands.size == 0) {
+        if (API.brands.size == 0 && !API.#rateLimited) {
             await API.fetchAllBrands();
         }
     
-        if (API.types.size == 0) {
+        if (API.types.size == 0 && !API.#rateLimited) {
             await API.fetchAllTypes();
         }
     
-        if (API.changeHistory.length == 0)
-            await API.fetchChangeHistory();
-        else
-            await API.fetchNewChangeHistory();
+        if (!API.#rateLimited) {
+            if (API.changeHistory.length == 0)
+                await API.fetchAllChangeHistory();
+            else
+                await API.fetchNewChangeHistory();
+        }
     
-        if (API.accidentHistory.length == 0)
-            await API.fetchAccidentHistory();
-        else
-            await API.fetchNewAccidentHistory();
+        if (!API.#rateLimited) {
+            if (API.accidentHistory.length == 0)
+                await API.fetchAllAccidentHistory();
+            else
+                await API.fetchNewAccidentHistory();
+        }
 
-        // We need to fetch this more efficiently, and only new stocks/updated stocks
+        // TODO: We need to fetch this more efficiently, and only new stocks/updated stocks
         // await API.fetchDisposableStocks();
         // await API.fetchReusableStocks();
     
@@ -109,7 +117,7 @@ export class API {
      * Deletes change history from the database and does a complete refetch of the full change history.
      * @returns {Promise<void>}
      */
-    static async fetchChangeHistory() {
+    static async fetchAllChangeHistory() {
         let params = new URLSearchParams({
             size: String(API.MAX_FETCH_SIZE)
         });
@@ -121,9 +129,13 @@ export class API {
         API.changeHistory = history;
         await API.#modifyChangeHistory(API.changeHistory);
         await Database.clearObjectStore(DatabaseStore.Changes);
-        await Database.addArrayToObjectStore(DatabaseStore.Changes, API.changeHistory);
+        await Database.putArrayInObjectStore(DatabaseStore.Changes, API.changeHistory);
     }
     
+    /**
+     * Loops through the change history and makes the times be actual Date objects instead of strings and also sets the changeString and overall price for the change.
+     * @param {APITypes.Change[]} history 
+     */
     static async #modifyChangeHistory(history) {
         for (let i = 0; i < history.length; i++) {
             const change = history[i];
@@ -132,6 +144,10 @@ export class API {
     
             if (change.endTime != null)
                 change.endTime = new Date(change.endTime);
+
+            // TODO: Uncomment when updatedAt is implemented (if it is)
+            // if (change.updatedAt != null)
+            //     change.updatedAt = new Date(change.updatedAt);
     
             change.price = 0;
             for (let j = 0; j < change.diapers.length; j++) {
@@ -150,7 +166,7 @@ export class API {
      * Deletes accident history from the database and does a complete refetch of the full accident history.
      * @returns {Promise<void>}
      */
-    static async fetchAccidentHistory() {
+    static async fetchAllAccidentHistory() {
         let params = new URLSearchParams({
             size: String(API.MAX_FETCH_SIZE)
         });
@@ -162,14 +178,22 @@ export class API {
         API.accidentHistory = history;
         await API.#modifyAccidentHistory(API.accidentHistory);
         await Database.clearObjectStore(DatabaseStore.Accidents);
-        await Database.addArrayToObjectStore(DatabaseStore.Accidents, API.accidentHistory);
+        await Database.putArrayInObjectStore(DatabaseStore.Accidents, API.accidentHistory);
     }
     
+    /**
+     * Loops through the accident history and makes the times be actual Date objects instead of strings.
+     * @param {APITypes.Accident[]} history 
+     */
     static async #modifyAccidentHistory(history) {
         for (let i = 0; i < history.length; i++) {
             const accident = history[i];
             if (accident.when != null)
                 accident.when = new Date(accident.when);
+
+            // TODO: Uncomment when updatedAt is implemented (if it is)
+            // if (accident.updatedAt != null)
+            //     accident.updatedAt = new Date(accident.updatedAt);
         }
     
         console.log("Modified accident history:");
@@ -181,13 +205,13 @@ export class API {
             size: String(API.MAX_FETCH_SIZE)
         });
     
-        let history = await API.#fetchObjectFromAPI(API.DISPOSABLE_STOCKS_API_URL, params, "disposable-stocks");
+        let history = await API.#fetchObjectFromAPI(API.DISPOSABLE_STOCKS_API_URL, params, "disposable stocks");
         if (history == null || history.data == null)
             return;
     
         API.disposableStocks = history.data;
         await Database.clearObjectStore(DatabaseStore.DisposableStocks);
-        await Database.addArrayToObjectStore(DatabaseStore.DisposableStocks, API.disposableStocks);
+        await Database.putArrayInObjectStore(DatabaseStore.DisposableStocks, API.disposableStocks);
     }
 
     static async fetchReusableStocks() {
@@ -195,13 +219,13 @@ export class API {
             size: String(API.MAX_FETCH_SIZE)
         });
     
-        let history = await API.#fetchObjectFromAPI(API.REUSABLE_STOCKS_API_URL, params, "reusable-stocks");
+        let history = await API.#fetchObjectFromAPI(API.REUSABLE_STOCKS_API_URL, params, "reusable stocks");
         if (history == null || history.data == null)
             return;
     
         API.reusableStocks = history.data;
         await Database.clearObjectStore(DatabaseStore.ReusableStocks);
-        await Database.addArrayToObjectStore(DatabaseStore.ReusableStocks, API.reusableStocks);
+        await Database.putArrayInObjectStore(DatabaseStore.ReusableStocks, API.reusableStocks);
     }
     
     /**
@@ -301,7 +325,7 @@ export class API {
             API.brands.set(temp[i].code, temp[i]);
         }
     
-        await Database.addArrayToObjectStore(DatabaseStore.Brands, temp);
+        await Database.putArrayInObjectStore(DatabaseStore.Brands, temp);
     }
     
     /**
@@ -323,7 +347,7 @@ export class API {
             }
         }
     
-        if (type == null || type.type == null)
+        if (type == null || type.type == null || (type.status && !type.ok))
             return;
     
         type = type.type;
@@ -347,7 +371,7 @@ export class API {
             return null;
         }
     
-        if (brand == null || brand.brand == null)
+        if (brand == null || brand.brand == null || (brand.status && !brand.ok))
             return;
     
         brand = brand.brand;
@@ -391,16 +415,49 @@ export class API {
      * @param {string} url The endpoint for which to fetch from.
      * @param {URLSearchParams} params The parameters for the fetch
      * @param {string} type The string that will be used to print what was fetched to the log and to save what was partially fetched.
-     * @returns {Promise<Array<Object>>}
+     * @param {Number} page The page to start on.
+     * @returns {Promise<Object[]>}
      */
-    static async #fetchIncrementallyFromAPI(url, params, type) {
-        let page = 0;
+    static async #fetchIncrementallyFromAPI(url, params, type, page = 0) {
         let data = new Array();
         while (true) {
             params.set("page", String(page));
             let object = await API.#fetchObjectFromAPI(url, params, type);
             if (object == null)
                 return null;
+
+            if (object.status && object.status == 429) {
+                /** @type {Response} */
+                let response = object;
+                let retryAfter = response.headers.get("retry-after");
+                let retryAfterFloat = null;
+                let minutes = null;
+                if (retryAfter != null) {
+                    retryAfterFloat = parseFloat(retryAfter);
+                    minutes = retryAfterFloat / 60.0;
+                }
+                console.warn(`Rate limit reached while incrementally fetching ${type}, will expire in ${minutes} minutes`);
+                API.#rateLimited = true;
+
+                if (!localStorage.getItem(API.LOCAL_STORAGE_RATELIMIT)) {
+                    // TODO: Uncomment when rate limiting handling is implemented
+                    // /** @type {APITypes.RateLimitInfo} */
+                    // const rateLimitInfo = {
+                    //     type: type,
+                    //     attemptedPage: page,
+                    //     url: url,
+                    //     params: params,
+                    //     retryAfter: retryAfterFloat
+                    // };
+                    // localStorage.setItem(API.LOCAL_STORAGE_RATELIMIT, JSON.stringify(rateLimitInfo));
+                    return null;
+                }
+                else {
+                    return null;
+                }
+
+                break;
+            }
 
             data = data.concat(object.data);
             let currentCount = page * object.size + object.count;
@@ -418,10 +475,10 @@ export class API {
      * Will fetch the javascript object from the specified API endpoint url with the specified params.
      * @param {string} url The endpoint for which to fetch from.
      * @param {URLSearchParams} params The parameters for the fetch
-     * @param {string} debugString The string that will be used to print what was fetched to the log.
+     * @param {string} type The string that will be used to print what was fetched to the log.
      * @returns {Promise<Object>}
      */
-    static async #fetchObjectFromAPI(url, params, debugString) {
+    static async #fetchObjectFromAPI(url, params, type) {
         const token = await API.getValidToken();
         if (token == null) {
             console.warn("No valid token, login required!");
@@ -443,12 +500,17 @@ export class API {
             });
         }
         catch(err) {
-            console.error(`Failed to fetch ${debugString}, error is: ${err}`);
+            console.error(`Failed to fetch ${type}, error is: ${err}`);
             return null;
+        }
+
+        if (!response.ok) {
+            console.warn(`Failed to fetch ${type} because of status ${response.status} (${await response.text()})`);
+            return response;
         }
     
         let obj = await response.json();
-        console.log(`Fetched ${debugString}:`);
+        console.log(`Fetched ${type}:`);
         console.log(obj);
         return obj;
     }
@@ -465,6 +527,10 @@ export class API {
     
             if (change.endTime != null)
                 change.endTime = new Date(change.endTime);
+
+            // TODO: Uncomment when updatedAt is implemented (if it is)
+            // if (change.updatedAt != null)
+            //     change.updatedAt = new Date(change.updatedAt);
         }
     
         API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
@@ -472,6 +538,10 @@ export class API {
             let accident = API.accidentHistory[i];
             if (accident.when != null)
                 accident.when = new Date(accident.when);
+
+            // TODO: Uncomment when updatedAt is implemented (if it is)
+            // if (accident.updatedAt != null)
+            //     accident.updatedAt = new Date(accident.updatedAt);
         }
     
         API.disposableStocks = await Database.getAllFromObjectStore(DatabaseStore.DisposableStocks, "order");
@@ -571,6 +641,7 @@ export class API {
     static #saveToken(data) {
         const now = Date.now();
         let jwt = API.#decodeJwt(data.id_token);
+        /** @type {APITypes.AuthToken} */
         const tokenData = {
             access_token: data.access_token,
             refresh_token: data.refresh_token,
@@ -603,6 +674,7 @@ export class API {
         }
     
         try {
+            /** @type {APITypes.AuthToken} */
             const tokenData = JSON.parse(raw);
             const now = Date.now();
             if (now >= tokenData.access_expires_at) {
@@ -621,6 +693,11 @@ export class API {
         }
     }
     
+    /**
+     * Fetches a new access token using the refresh token as part of the given auth token.
+     * @param {APITypes.AuthToken} tokenData 
+     * @returns {Promise<Object>}
+     */
     static async #fetchAccessTokenFromRefreshToken(tokenData) {
         const data = new URLSearchParams({
             grant_type: "refresh_token",

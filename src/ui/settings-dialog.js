@@ -330,7 +330,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchChangesSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchChangesButton, this, async function() {
             Statics.settingsDialog.fetchChangesSpinner.show();
-            await API.fetchChangeHistory();
+            await API.fetchAllChangeHistory();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchChangesSpinner.hide();
@@ -342,7 +342,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchAccidentsSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchAccidentsButton, this, async function() {
             Statics.settingsDialog.fetchAccidentsSpinner.show();
-            await API.fetchAccidentHistory();
+            await API.fetchAllAccidentHistory();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchAccidentsSpinner.hide();
