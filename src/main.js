@@ -14,10 +14,12 @@ import { DashboardStatics } from "./library/dashboard-statics.js";
 import { WidgetStatics } from "./library/widget-statics.js";
 
 const openDBRequest = indexedDB.open("DS-Stats-DB", 1);
+// @ts-ignore
 openDBRequest.onerror = function(event) {
     console.error(`Error when creating databse: ${event.target.error?.message}`);
 };
 
+// @ts-ignore
 openDBRequest.onupgradeneeded = (event) => {
     const db = event.target.result;
     
@@ -31,6 +33,7 @@ openDBRequest.onupgradeneeded = (event) => {
     const brandStore = db.createObjectStore(DatabaseStore.Brands, { keyPath: "code" });
 };
 
+// @ts-ignore
 openDBRequest.onsuccess = async function(event) {
     Database.db = event.target.result;
     Database.db.onerror = (event) => {
@@ -43,7 +46,12 @@ openDBRequest.onsuccess = async function(event) {
     await API.handleAPI();
 
     if (Settings.data.autoRefreshFrequency > 0) {
-        setInterval(function() { API.fetchData(true); }, Settings.data.autoRefreshFrequency * 1000);
+        setInterval(function() {
+            if (API.isFetching)
+                return;
+
+            API.fetchData(true);
+        }, Settings.data.autoRefreshFrequency * 1000);
         console.log("Set to auto refresh every " + Settings.data.autoRefreshFrequency + " seconds");
     }
 };

@@ -21,6 +21,10 @@ import { Settings } from "../settings.js";
 class DiaperCategoryConfigsListUI {
     list;
 
+    /**
+     * 
+     * @param {HTMLElement} parentElement 
+     */
     constructor(parentElement) {
         this.list = new ListUI(parentElement, DiaperCategoryConfigUI);
         this.list.onAddElement.addFunction(this, function() {
@@ -317,6 +321,9 @@ export class SettingsDialog extends DialogBoxUI {
         UIBuilder.createHeading("API Data");
         this.fetchNewHistory = UIBuilder.createButton("Fetch New History");
         ElementStatics.bindOnClick(this.fetchNewHistory, this, function() {
+            if (API.isFetching)
+                return;
+
             API.fetchData();
         });
 
@@ -329,11 +336,16 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchChangesButton = UIBuilder.createButton("Refetch All Changes", horizontal);
         this.fetchChangesSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchChangesButton, this, async function() {
+            if (API.isFetching)
+                return;
+
+            API.isFetching = true;
             Statics.settingsDialog.fetchChangesSpinner.show();
             await API.fetchChangeHistory(true);
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchChangesSpinner.hide();
+            API.isFetching = false;
         });
 
         this.accidentsText = UIBuilder.createText("Accidents: 0");
@@ -341,11 +353,16 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchAccidentsButton = UIBuilder.createButton("Refetch All Accidents", horizontal);
         this.fetchAccidentsSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchAccidentsButton, this, async function() {
+            if (API.isFetching)
+                return;
+
+            API.isFetching = true;
             Statics.settingsDialog.fetchAccidentsSpinner.show();
             await API.fetchAccidentHistory(true);
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchAccidentsSpinner.hide();
+            API.isFetching = false;
         });
 
         this.typesText = UIBuilder.createText("Types: 0");
@@ -353,11 +370,16 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchTypesButton = UIBuilder.createButton("Refetch All Types", horizontal);
         this.fetchTypesSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchTypesButton, this, async function() {
+            if (API.isFetching)
+                return;
+
+            API.isFetching = true;
             Statics.settingsDialog.fetchTypesSpinner.show();
             await API.fetchTypes(true);
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchTypesSpinner.hide();
+            API.isFetching = false;
         });
 
         this.brandsText = UIBuilder.createText("Brands: 0");
@@ -365,11 +387,16 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchBrandsButton = UIBuilder.createButton("Refetch All Brands", horizontal);
         this.fetchBrandsSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchBrandsButton, this, async function() {
+            if (API.isFetching)
+                return;
+
+            API.isFetching = true;
             Statics.settingsDialog.fetchBrandsSpinner.show();
             await API.fetchBrands();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchBrandsSpinner.hide();
+            API.isFetching = false;
         });
 
         // === Reset ===

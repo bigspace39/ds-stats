@@ -1,6 +1,7 @@
 import { Enum } from "../library/enum.js";
 
 export class UIBuilder {
+    /** @type {HTMLElement?} */
     static #defaultParent = null;
 
     /**
@@ -22,8 +23,8 @@ export class UIBuilder {
      * Creates a new html element with the given tag, parent and id.
      * @template {keyof HTMLElementTagNameMap} K
      * @param {K} tag The element tag name.
-     * @param {HTMLElement} [parentElement] The parent element.
-     * @param {string} [id] The element's id.
+     * @param {HTMLElement?} [parentElement] The parent element.
+     * @param {string?} [id] The element's id.
      * @returns {HTMLElementTagNameMap[K]} The created element.
      */
     static createElement(tag, parentElement = null, id = null) {
@@ -42,7 +43,7 @@ export class UIBuilder {
     /**
      * Creates a heading element with the specified text.
      * @param {string} text The text content of the heading element.
-     * @param {HTMLElement} parentElement The parent element, can be null if default parent is set.
+     * @param {HTMLElement?} parentElement The parent element, can be null if default parent is set.
      * @returns {HTMLHeadingElement} The created element.
      */
     static createHeading(text, parentElement = null) {
@@ -56,7 +57,7 @@ export class UIBuilder {
     /**
      * Creates a paragraph element with the specified text.
      * @param {string} text The text content of the paragraph element.
-     * @param {HTMLElement} parentElement The parent element, can be null if default parent is set.
+     * @param {HTMLElement?} parentElement The parent element, can be null if default parent is set.
      * @returns {HTMLParagraphElement} The created element.
      */
     static createText(text, parentElement = null) {
@@ -76,7 +77,7 @@ export class UIBuilder {
     /**
      * Creates a button with the specified label.
      * @param {string} label The label text of the button.
-     * @param {HTMLElement} parentElement The parent element, can be null if default parent is set.
+     * @param {HTMLElement?} parentElement The parent element, can be null if default parent is set.
      * @param {string} buttonStyle The id of the button, use ButtonStyle here!
      * @returns {HTMLButtonElement} The created element.
      */
@@ -94,7 +95,7 @@ export class UIBuilder {
 
     /**
      * Creates a text input field.
-     * @param {HTMLElement} parentElement The parent element, can be null if default parent is set.
+     * @param {HTMLElement?} parentElement The parent element, can be null if default parent is set.
      * @param {*} inlineLabel 
      * @returns {HTMLInputElement} The created element.
      */
@@ -114,7 +115,7 @@ export class UIBuilder {
 
     /**
      * Creates a text area.
-     * @param {HTMLElement} parentElement The parent element, can be null if default parent is set.
+     * @param {HTMLElement?} parentElement The parent element, can be null if default parent is set.
      * @returns {HTMLTextAreaElement} The created element.
      */
     static createTextArea(parentElement = null) {
@@ -129,7 +130,7 @@ export class UIBuilder {
 
     /**
      * Creates a horizontal flex box div (row).
-     * @param {HTMLElement} parentElement The parent element, can be null if default parent is set.
+     * @param {HTMLElement?} parentElement The parent element, can be null if default parent is set.
      * @returns {HTMLDivElement} The created element.
      */
     static createHorizontal(parentElement = null) {
@@ -137,12 +138,18 @@ export class UIBuilder {
         return UIBuilder.createElement("div", parentElement, "horizontal-form");
     }
 
+    /**
+     * 
+     * @param {HTMLElement?} parentElement 
+     * @returns {HTMLElement}
+     */
     static #getParentElement(parentElement) {
         if (parentElement == null)
         {
             if (this.#defaultParent == null)
                 console.error("No default parent set!");
 
+            // @ts-ignore
             return this.#defaultParent;
         }
 
