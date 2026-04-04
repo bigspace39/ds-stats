@@ -11,6 +11,8 @@ declare namespace APITypes {
         leak: boolean | null,
         messyOverflow: boolean | null,
         changePeriod: string | null,
+        createdAt: Date,
+        updatedAt: Date | null,
         diapers: [
             {
                 order: number,
@@ -35,7 +37,9 @@ declare namespace APITypes {
         when: Date | null,
         cause: string | null,
         location: string | null,
-        position: string | null
+        position: string | null,
+        createdAt: Date,
+        updatedAt: Date | null
     }
 
     interface Type {

@@ -145,14 +145,17 @@ export class API {
             if (change.endTime != null)
                 change.endTime = new Date(change.endTime);
 
-            // TODO: Uncomment when updatedAt is implemented (if it is)
-            // if (change.updatedAt != null)
-            //     change.updatedAt = new Date(change.updatedAt);
+            change.createdAt = new Date(change.createdAt);
+
+            if (change.updatedAt != null)
+                change.updatedAt = new Date(change.updatedAt);
     
             change.price = 0;
             for (let j = 0; j < change.diapers.length; j++) {
                 const diaper = change.diapers[j];
-                change.price += diaper.price;
+
+                if (diaper.price != null)
+                    change.price += diaper.price;
             }
     
             await API.#setChangeString(change);
@@ -191,9 +194,10 @@ export class API {
             if (accident.when != null)
                 accident.when = new Date(accident.when);
 
-            // TODO: Uncomment when updatedAt is implemented (if it is)
-            // if (accident.updatedAt != null)
-            //     accident.updatedAt = new Date(accident.updatedAt);
+            accident.createdAt = new Date(accident.createdAt);
+
+            if (accident.updatedAt != null)
+                accident.updatedAt = new Date(accident.updatedAt);
         }
     
         console.log("Modified accident history:");
@@ -331,7 +335,7 @@ export class API {
     /**
      * Returns the type if it has already been fetched, otherwise fetches it, saves it and returns it.
      * @param {number} id The id of the type to get.
-     * @returns {Promise<APITypes.Type>}
+     * @returns {Promise<APITypes.Type | undefined | null>}
      */
     static async getType(id) {
         if (API.types.has(id))
@@ -348,7 +352,7 @@ export class API {
         }
     
         if (type == null || type.type == null || (type.status && !type.ok))
-            return;
+            return null;
     
         type = type.type;
         API.types.set(id, type);
@@ -359,7 +363,7 @@ export class API {
     /**
      * Returns the brand if it has already been fetched, otherwise fetches it, saves it and returns it.
      * @param {string} code The code of the brand to get.
-     * @returns {Promise<APITypes.Brand>}
+     * @returns {Promise<APITypes.Brand | undefined | null>}
      */
     static async getBrand(code) {
         if (API.brands.has(code))
@@ -372,7 +376,7 @@ export class API {
         }
     
         if (brand == null || brand.brand == null || (brand.status && !brand.ok))
-            return;
+            return null;
     
         brand = brand.brand;
         API.brands.set(code, brand);
@@ -380,6 +384,10 @@ export class API {
         return brand;
     }
     
+    /**
+     * 
+     * @param {APITypes.Change} change 
+     */
     static async #setChangeString(change) {
         let str = "";
         let firstBrand = null;
@@ -416,7 +424,7 @@ export class API {
      * @param {URLSearchParams} params The parameters for the fetch
      * @param {string} type The string that will be used to print what was fetched to the log and to save what was partially fetched.
      * @param {Number} page The page to start on.
-     * @returns {Promise<Object[]>}
+     * @returns {Promise<any[] | null>}
      */
     static async #fetchIncrementallyFromAPI(url, params, type, page = 0) {
         let data = new Array();
@@ -474,9 +482,8 @@ export class API {
     /**
      * Will fetch the javascript object from the specified API endpoint url with the specified params.
      * @param {string} url The endpoint for which to fetch from.
-     * @param {URLSearchParams} params The parameters for the fetch
+     * @param {URLSearchParams?} params The parameters for the fetch
      * @param {string} type The string that will be used to print what was fetched to the log.
-     * @returns {Promise<Object>}
      */
     static async #fetchObjectFromAPI(url, params, type) {
         const token = await API.getValidToken();
@@ -528,9 +535,10 @@ export class API {
             if (change.endTime != null)
                 change.endTime = new Date(change.endTime);
 
-            // TODO: Uncomment when updatedAt is implemented (if it is)
-            // if (change.updatedAt != null)
-            //     change.updatedAt = new Date(change.updatedAt);
+            change.createdAt = new Date(change.createdAt);
+
+            if (change.updatedAt != null)
+                change.updatedAt = new Date(change.updatedAt);
         }
     
         API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
@@ -539,9 +547,10 @@ export class API {
             if (accident.when != null)
                 accident.when = new Date(accident.when);
 
-            // TODO: Uncomment when updatedAt is implemented (if it is)
-            // if (accident.updatedAt != null)
-            //     accident.updatedAt = new Date(accident.updatedAt);
+            accident.createdAt = new Date(accident.createdAt);
+
+            if (accident.updatedAt != null)
+                accident.updatedAt = new Date(accident.updatedAt);
         }
     
         API.disposableStocks = await Database.getAllFromObjectStore(DatabaseStore.DisposableStocks, "order");
@@ -602,6 +611,7 @@ export class API {
     
         const code_verifier = sessionStorage.getItem("pkce_code_verifier");
     
+        // @ts-ignore
         const data = new URLSearchParams({
             grant_type: "authorization_code",
             code,
@@ -638,6 +648,10 @@ export class API {
         sessionStorage.removeItem("oauth_state");
     }
     
+    /**
+     * Saves the raw fetched token into localStorage
+     * @param {any} data 
+     */
     static #saveToken(data) {
         const now = Date.now();
         let jwt = API.#decodeJwt(data.id_token);
@@ -665,7 +679,7 @@ export class API {
     
     /**
      * Gets the auth token object if there is a valid one.
-     * @returns {Promise<APITypes.AuthToken>} The auth token object.
+     * @returns {Promise<APITypes.AuthToken | null>} The auth token object.
      */
     static async getValidTokenObject() {
         const raw = localStorage.getItem('auth_token');
@@ -696,7 +710,7 @@ export class API {
     /**
      * Fetches a new access token using the refresh token as part of the given auth token.
      * @param {APITypes.AuthToken} tokenData 
-     * @returns {Promise<Object>}
+     * @returns {Promise<any | null>}
      */
     static async #fetchAccessTokenFromRefreshToken(tokenData) {
         const data = new URLSearchParams({
@@ -743,6 +757,11 @@ export class API {
         return token;
     }
     
+    /**
+     * 
+     * @param {any} token 
+     * @returns 
+     */
     static #decodeJwt(token) {
         const parts = token.split(".");
         if (parts.length !== 3) return null;
@@ -753,8 +772,14 @@ export class API {
             return null;
         }
     }
-    
+
+    /**
+     * 
+     * @param {any} str 
+     * @returns 
+     */
     static #base64URLEncode(str) {
+        // @ts-ignore
         return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
             .replace(/\+/g, "-")
             .replace(/\//g, "_")
