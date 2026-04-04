@@ -2,12 +2,24 @@ import { Statics } from "./library/statics.js";
 import { Database, DatabaseStore } from "./database.js";
 import { Delegate } from "./library/delegate.js";
 import { WidgetStatics } from "./library/widget-statics.js";
+import { Enum } from "./library/enum.js";
 
 // Swager: https://api.diapstash.com/api/docs/#/History
 // Account: https://account.diapstash.com/account
 
 if (!crypto.subtle) {
     console.error("Web Crypto API (subtle) is not available. PKCE is unavailable so we cannot fetch any API data");
+}
+
+class FetchDataType extends Enum {
+    static Changes = "changes";
+    static Accidents = "accidents";
+    static Brands = "brands";
+    static Types = "types";
+    static CustomTypes = "custom types";
+    static Stocks = "stocks";
+    static DisposableStocks = "disposable stocks";
+    static ReusableStocks = "reusable stocks";
 }
 
 export class API {
@@ -80,25 +92,18 @@ export class API {
         API.onStartFetchAPIData.broadcast();
 
         if (API.brands.size == 0 && !API.#rateLimited) {
-            await API.fetchAllBrands();
-        }
-    
-        if (API.types.size == 0 && !API.#rateLimited) {
-            await API.fetchAllTypes();
+            await API.fetchBrands();
         }
     
         if (!API.#rateLimited) {
-            if (API.changeHistory.length == 0)
-                await API.fetchAllChangeHistory();
-            else
-                await API.fetchNewChangeHistory();
+            await API.fetchTypes();
         }
     
         if (!API.#rateLimited) {
-            if (API.accidentHistory.length == 0)
-                await API.fetchAllAccidentHistory();
-            else
-                await API.fetchNewAccidentHistory();
+            let changePromise = API.fetchChangeHistory();
+            let accidentPromise = API.fetchAccidentHistory();
+            await changePromise;
+            await accidentPromise;
         }
 
         // TODO: We need to fetch this more efficiently, and only new stocks/updated stocks
@@ -114,22 +119,46 @@ export class API {
     }
     
     /**
-     * Deletes change history from the database and does a complete refetch of the full change history.
+     * Fetches either the entire change history, or just the new changes if we already have some history.
+     * @param {boolean} fullRefetch If true, will clear the database and refetch from scratch.
      * @returns {Promise<void>}
      */
-    static async fetchAllChangeHistory() {
+    static async fetchChangeHistory(fullRefetch = false) {
         let params = new URLSearchParams({
-            size: String(API.MAX_FETCH_SIZE)
+            size: String(API.MAX_FETCH_SIZE),
+            sort: "startTime,desc"
         });
+
+        if (API.changeHistory.length == 0 || fullRefetch) {
+            fullRefetch = true;
+        }
+        else {
+            let fetchTime = API.getFetchTime(FetchDataType.Changes);
+            if (fetchTime == null) {
+                console.warn("Couldn't get the fetch time for changes, performing a full refetch!");
+                fullRefetch = true;
+            }
+            else {
+                params.append("updatedAt.gt", fetchTime.toJSON());
+            }
+        }
+
+        let currentTime = new Date();
+        if (fullRefetch) {
+            await Database.clearObjectStore(DatabaseStore.Changes);
+            params.append("updatedAt.lte", currentTime.toJSON());
+        }
     
-        let history = await API.#fetchIncrementallyFromAPI(API.CHANGE_API_URL, params, "changes");
+        API.setFetchTime(FetchDataType.Changes, currentTime);
+        let history = await API.#fetchIncrementallyFromAPI(API.CHANGE_API_URL, params, FetchDataType.Changes);
         if (history == null || history.length == 0)
             return;
     
-        API.changeHistory = history;
-        await API.#modifyChangeHistory(API.changeHistory);
-        await Database.clearObjectStore(DatabaseStore.Changes);
-        await Database.putArrayInObjectStore(DatabaseStore.Changes, API.changeHistory);
+        await API.#modifyChangeHistory(history);
+        await Database.putArrayInObjectStore(DatabaseStore.Changes, history);
+        API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
+        console.log("Change history after fetching:");
+        console.log(API.changeHistory);
     }
     
     /**
@@ -166,22 +195,46 @@ export class API {
     }
     
     /**
-     * Deletes accident history from the database and does a complete refetch of the full accident history.
+     * Fetches either the entire accident history, or just the new accidents if we already have some history.
+     *  @param {boolean} fullRefetch If true, will clear the database and refetch from scratch.
      * @returns {Promise<void>}
      */
-    static async fetchAllAccidentHistory() {
+    static async fetchAccidentHistory(fullRefetch = false) {
         let params = new URLSearchParams({
-            size: String(API.MAX_FETCH_SIZE)
+            size: String(API.MAX_FETCH_SIZE),
+            sort: "createdAt,desc"
         });
+
+        if (API.accidentHistory.length == 0 || fullRefetch) {
+            fullRefetch = true;
+        }
+        else {
+            let fetchTime = API.getFetchTime(FetchDataType.Accidents);
+            if (fetchTime == null) {
+                console.warn("Couldn't get the fetch time for accidents, performing a full refetch!");
+                fullRefetch = true;
+            }
+            else {
+                params.append("updatedAt.gt", fetchTime.toJSON());
+            }
+        }
+
+        let currentTime = new Date();
+        if (fullRefetch) {
+            await Database.clearObjectStore(DatabaseStore.Accidents);
+            params.append("updatedAt.lte", currentTime.toJSON());
+        }
     
-        let history = await API.#fetchIncrementallyFromAPI(API.ACCIDENT_API_URL, params, "accidents");
+        API.setFetchTime(FetchDataType.Accidents, currentTime);
+        let history = await API.#fetchIncrementallyFromAPI(API.ACCIDENT_API_URL, params, FetchDataType.Accidents);
         if (history == null || history.length == 0)
             return;
     
-        API.accidentHistory = history;
-        await API.#modifyAccidentHistory(API.accidentHistory);
-        await Database.clearObjectStore(DatabaseStore.Accidents);
-        await Database.putArrayInObjectStore(DatabaseStore.Accidents, API.accidentHistory);
+        await API.#modifyAccidentHistory(history);
+        await Database.putArrayInObjectStore(DatabaseStore.Accidents, history);
+        API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
+        console.log("Accident history after fetching:");
+        console.log(API.accidentHistory);
     }
     
     /**
@@ -233,87 +286,55 @@ export class API {
     }
     
     /**
-     * Fetches any new changes since last fetch.
+     * Fetches either the entire type catalog, or just the new/updated types if we already have some.
+     * @param {boolean} fullRefetch If true, will clear the database and refetch from scratch.
      * @returns {Promise<void>}
      */
-    static async fetchNewChangeHistory() {
-        const lastChange = API.changeHistory[API.changeHistory.length - 1];
-        let params = new URLSearchParams({
-            size: String(API.MAX_FETCH_SIZE),
-            "startTime.gte": lastChange.startTime.toJSON()
-        });
-    
-        let history = await API.#fetchIncrementallyFromAPI(API.CHANGE_API_URL, params, "new changes");
-        if (history == null || history.length == 0)
-            return;
-    
-        await API.#modifyChangeHistory(history);
-        await Database.putArrayInObjectStore(DatabaseStore.Changes, history);
-        API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
-        console.log("Change history after fetching new changes:");
-        console.log(API.changeHistory);
-    }
-    
-    /**
-     * Fetches any new accidents since last fetch.
-     * @returns {Promise<void>}
-     */
-    static async fetchNewAccidentHistory() {
-        const lastAccident = API.accidentHistory[API.accidentHistory.length - 1];
-        let params = new URLSearchParams({
-            size: String(API.MAX_FETCH_SIZE),
-            "when.gte": lastAccident.when.toJSON()
-        });
-    
-        let history = await API.#fetchIncrementallyFromAPI(API.ACCIDENT_API_URL, params, "new accidents");
-        if (history == null || history.length == 0)
-            return;
-    
-        await API.#modifyAccidentHistory(history);
-        await Database.putArrayInObjectStore(DatabaseStore.Accidents, history);
-        API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
-        console.log("Accident history after fetching new accidents:");
-        console.log(API.accidentHistory);
-    }
-    
-    /**
-     * Deletes types from the database and does a complete refetch of them.
-     * @returns {Promise<void>}
-     */
-    static async fetchAllTypes() {
+    static async fetchTypes(fullRefetch = false) {
         let params = new URLSearchParams({
             size: String(API.MAX_FETCH_SIZE),
             detailed: String(true)
         });
-    
-        await Database.clearObjectStore(DatabaseStore.Types);
-        API.types.clear();
-    
-        let temp = await API.#fetchIncrementallyFromAPI(API.TYPES_API_URL, params, "types");
-        if (temp == null || temp.length == 0)
-            return;
-        
-        for (let i = 0; i < temp.length; i++) {
-            API.types.set(temp[i].id, temp[i]);
+
+        if (API.types.size == 0 || fullRefetch) {
+            fullRefetch = true;
+        }
+        else {
+            let fetchTime = API.getFetchTime(FetchDataType.Types);
+            if (fetchTime == null) {
+                console.warn("Couldn't get the fetch time for types, performing a full refetch!");
+                fullRefetch = true;
+            }
+            else {
+                params.append("updatedAt.gt", fetchTime.toJSON());
+            }
+        }
+
+        let currentTime = new Date();
+        if (fullRefetch) {
+            await Database.clearObjectStore(DatabaseStore.Types);
+            params.append("updatedAt.lte", currentTime.toJSON());
         }
         
-        let customTemp = await API.#fetchIncrementallyFromAPI(API.CUSTOM_TYPES_API_URL, params, "custom types");
-        if (customTemp == null || customTemp.length == 0)
-            return;
+        API.setFetchTime(FetchDataType.Types, currentTime);
+        let customTemp = await API.#fetchIncrementallyFromAPI(API.CUSTOM_TYPES_API_URL, params, FetchDataType.CustomTypes);
+        if (customTemp != null && customTemp.length > 0)
+            await Database.putArrayInObjectStore(DatabaseStore.Types, customTemp);
     
-        for (let i = 0; i < customTemp.length; i++) {
-            API.types.set(customTemp[i].id, customTemp[i]);
-        }
-    
-        await Database.putArrayInObjectStore(DatabaseStore.Types, customTemp);
-        await Database.putArrayInObjectStore(DatabaseStore.Types, temp);
+        let temp = await API.#fetchIncrementallyFromAPI(API.TYPES_API_URL, params, FetchDataType.Types);
+        if (temp != null && temp.length > 0)
+            await Database.putArrayInObjectStore(DatabaseStore.Types, temp);
+        
+        API.types = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Types, "id");
+        console.log("Types after fetching:");
+        console.log(API.types);
     }
     
     /**
      * Deletes brands from the database and does a complete refetch of them.
      * @returns {Promise<void>}
      */
-    static async fetchAllBrands() {
+    static async fetchBrands() {
         let params = new URLSearchParams({
             size: String(API.MAX_FETCH_SIZE)
         });
@@ -321,7 +342,7 @@ export class API {
         await Database.clearObjectStore(DatabaseStore.Brands);
         API.brands.clear();
     
-        let temp = await API.#fetchIncrementallyFromAPI(API.BRANDS_API_URL, params, "brands");
+        let temp = await API.#fetchIncrementallyFromAPI(API.BRANDS_API_URL, params, FetchDataType.Brands);
         if (temp == null || temp.length == 0)
             return;
     
@@ -382,6 +403,30 @@ export class API {
         API.brands.set(code, brand);
         Database.addToObjectStore(DatabaseStore.Brands, brand);
         return brand;
+    }
+
+    /**
+     * Will get the fetch time for the given data type str from localStorage.
+     * @param {string} fetchTimeType The type of data that was fetched.
+     * @returns {Date | null} 
+     */
+    static getFetchTime(fetchTimeType) {
+        let str = localStorage.getItem("fetchTime_" + fetchTimeType);
+        if (str == null)
+            return null;
+
+        let date = new Date(str);
+        return date;
+    }
+
+    /**
+     * Will set the fetch time for the given data type str in localStorage.
+     * @param {string} fetchTimeType The type of data that was fetched.
+     * @param {Date} time The fetch time.
+     */
+    static setFetchTime(fetchTimeType, time) {
+        let str = time.toUTCString();
+        localStorage.setItem("fetchTime_" + fetchTimeType, str);
     }
     
     /**

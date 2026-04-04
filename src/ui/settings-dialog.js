@@ -330,7 +330,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchChangesSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchChangesButton, this, async function() {
             Statics.settingsDialog.fetchChangesSpinner.show();
-            await API.fetchAllChangeHistory();
+            await API.fetchChangeHistory(true);
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchChangesSpinner.hide();
@@ -342,7 +342,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchAccidentsSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchAccidentsButton, this, async function() {
             Statics.settingsDialog.fetchAccidentsSpinner.show();
-            await API.fetchAllAccidentHistory();
+            await API.fetchAccidentHistory(true);
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchAccidentsSpinner.hide();
@@ -354,7 +354,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchTypesSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchTypesButton, this, async function() {
             Statics.settingsDialog.fetchTypesSpinner.show();
-            await API.fetchAllTypes();
+            await API.fetchTypes(true);
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchTypesSpinner.hide();
@@ -366,7 +366,7 @@ export class SettingsDialog extends DialogBoxUI {
         this.fetchBrandsSpinner = new SpinnerUI(horizontal, true);
         ElementStatics.bindOnClick(this.fetchBrandsButton, this, async function() {
             Statics.settingsDialog.fetchBrandsSpinner.show();
-            await API.fetchAllBrands();
+            await API.fetchBrands();
             await WidgetStatics.updateWidgetsOnSelectedDashboard();
             Statics.settingsDialog.updateAPIDataCount();
             Statics.settingsDialog.fetchBrandsSpinner.hide();
