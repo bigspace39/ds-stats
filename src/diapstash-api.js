@@ -36,15 +36,15 @@ export class API {
     static BRANDS_API_URL = `${API.BASE_API_URL}/v1/brand/brands`;
     static SCOPE = "openid offline_access username cloud-sync.history cloud-sync.stock cloud-sync.types";
     static MAX_FETCH_SIZE = 200;
-    static LOCAL_STORAGE_RATELIMIT = "rate-limit";
+    static LOCAL_STORAGE_RATELIMIT_PREFIX = "rateLimit_";
     
     /** @type {APITypes.Change[]} */
     static changeHistory = new Array();
     /** @type {APITypes.Accident[]} */
     static accidentHistory = new Array();
-    /** This is currently disabled for API performance reasons! */
+    /** This is currently disabled since it's not in use! */
     static disposableStocks = new Array();
-    /** This is currently disabled for API performance reasons! */
+    /** This is currently disabled since it's not in use! */
     static reusableStocks = new Array();
     /** @type {Map<number, APITypes.Type>} */
     static types = new Map();
@@ -145,6 +145,7 @@ export class API {
 
         let currentTime = new Date();
         if (fullRefetch) {
+            console.log("Performing a full refetch of all changes");
             await Database.clearObjectStore(DatabaseStore.Changes);
             params.append("updatedAt.lte", currentTime.toJSON());
         }
@@ -156,7 +157,7 @@ export class API {
     
         await API.#modifyChangeHistory(history);
         await Database.putArrayInObjectStore(DatabaseStore.Changes, history);
-        API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
+        await API.#deserializeChangeHistory();
         console.log("Change history after fetching:");
         console.log(API.changeHistory);
     }
@@ -168,16 +169,6 @@ export class API {
     static async #modifyChangeHistory(history) {
         for (let i = 0; i < history.length; i++) {
             const change = history[i];
-            if (change.startTime != null)
-                change.startTime = new Date(change.startTime);
-    
-            if (change.endTime != null)
-                change.endTime = new Date(change.endTime);
-
-            change.createdAt = new Date(change.createdAt);
-
-            if (change.updatedAt != null)
-                change.updatedAt = new Date(change.updatedAt);
     
             change.price = 0;
             for (let j = 0; j < change.diapers.length; j++) {
@@ -221,6 +212,7 @@ export class API {
 
         let currentTime = new Date();
         if (fullRefetch) {
+            console.log("Performing a full refetch of all accidents");
             await Database.clearObjectStore(DatabaseStore.Accidents);
             params.append("updatedAt.lte", currentTime.toJSON());
         }
@@ -230,60 +222,39 @@ export class API {
         if (history == null || history.length == 0)
             return;
     
-        await API.#modifyAccidentHistory(history);
         await Database.putArrayInObjectStore(DatabaseStore.Accidents, history);
-        API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
+        await API.#deserializeAccidentHistory();
         console.log("Accident history after fetching:");
         console.log(API.accidentHistory);
     }
-    
-    /**
-     * Loops through the accident history and makes the times be actual Date objects instead of strings.
-     * @param {APITypes.Accident[]} history 
-     */
-    static async #modifyAccidentHistory(history) {
-        for (let i = 0; i < history.length; i++) {
-            const accident = history[i];
-            if (accident.when != null)
-                accident.when = new Date(accident.when);
 
-            accident.createdAt = new Date(accident.createdAt);
+    // static async fetchDisposableStocks() {
+    //     let params = new URLSearchParams({
+    //         size: String(API.MAX_FETCH_SIZE)
+    //     });
+    
+    //     let history = await API.#fetchObjectFromAPI(API.DISPOSABLE_STOCKS_API_URL, params, "disposable stocks");
+    //     if (history == null || history.data == null)
+    //         return;
+    
+    //     API.disposableStocks = history.data;
+    //     await Database.clearObjectStore(DatabaseStore.DisposableStocks);
+    //     await Database.putArrayInObjectStore(DatabaseStore.DisposableStocks, API.disposableStocks);
+    // }
 
-            if (accident.updatedAt != null)
-                accident.updatedAt = new Date(accident.updatedAt);
-        }
+    // static async fetchReusableStocks() {
+    //     let params = new URLSearchParams({
+    //         size: String(API.MAX_FETCH_SIZE)
+    //     });
     
-        console.log("Modified accident history:");
-        console.log(history);
-    }
-
-    static async fetchDisposableStocks() {
-        let params = new URLSearchParams({
-            size: String(API.MAX_FETCH_SIZE)
-        });
+    //     let history = await API.#fetchObjectFromAPI(API.REUSABLE_STOCKS_API_URL, params, "reusable stocks");
+    //     if (history == null || history.data == null)
+    //         return;
     
-        let history = await API.#fetchObjectFromAPI(API.DISPOSABLE_STOCKS_API_URL, params, "disposable stocks");
-        if (history == null || history.data == null)
-            return;
-    
-        API.disposableStocks = history.data;
-        await Database.clearObjectStore(DatabaseStore.DisposableStocks);
-        await Database.putArrayInObjectStore(DatabaseStore.DisposableStocks, API.disposableStocks);
-    }
-
-    static async fetchReusableStocks() {
-        let params = new URLSearchParams({
-            size: String(API.MAX_FETCH_SIZE)
-        });
-    
-        let history = await API.#fetchObjectFromAPI(API.REUSABLE_STOCKS_API_URL, params, "reusable stocks");
-        if (history == null || history.data == null)
-            return;
-    
-        API.reusableStocks = history.data;
-        await Database.clearObjectStore(DatabaseStore.ReusableStocks);
-        await Database.putArrayInObjectStore(DatabaseStore.ReusableStocks, API.reusableStocks);
-    }
+    //     API.reusableStocks = history.data;
+    //     await Database.clearObjectStore(DatabaseStore.ReusableStocks);
+    //     await Database.putArrayInObjectStore(DatabaseStore.ReusableStocks, API.reusableStocks);
+    // }
     
     /**
      * Fetches either the entire type catalog, or just the new/updated types if we already have some.
@@ -312,6 +283,7 @@ export class API {
 
         let currentTime = new Date();
         if (fullRefetch) {
+            console.log("Performing a full refetch of all types");
             await Database.clearObjectStore(DatabaseStore.Types);
             params.append("updatedAt.lte", currentTime.toJSON());
         }
@@ -325,7 +297,7 @@ export class API {
         if (temp != null && temp.length > 0)
             await Database.putArrayInObjectStore(DatabaseStore.Types, temp);
         
-        API.types = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Types, "id");
+        await API.#deserializeTypes();
         console.log("Types after fetching:");
         console.log(API.types);
     }
@@ -473,6 +445,7 @@ export class API {
      */
     static async #fetchIncrementallyFromAPI(url, params, type, page = 0) {
         let data = new Array();
+        let rateLimitInfoStr = localStorage.getItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + type);
         while (true) {
             params.set("page", String(page));
             let object = await API.#fetchObjectFromAPI(url, params, type);
@@ -492,18 +465,18 @@ export class API {
                 console.warn(`Rate limit reached while incrementally fetching ${type}, will expire in ${minutes} minutes`);
                 API.#rateLimited = true;
 
-                if (!localStorage.getItem(API.LOCAL_STORAGE_RATELIMIT)) {
-                    // TODO: Uncomment when rate limiting handling is implemented
-                    // /** @type {APITypes.RateLimitInfo} */
-                    // const rateLimitInfo = {
-                    //     type: type,
-                    //     attemptedPage: page,
-                    //     url: url,
-                    //     params: params,
-                    //     retryAfter: retryAfterFloat
-                    // };
-                    // localStorage.setItem(API.LOCAL_STORAGE_RATELIMIT, JSON.stringify(rateLimitInfo));
-                    return null;
+                if (page > 0 && rateLimitInfoStr == null && type != FetchDataType.Brands) {
+                    /** @type {APITypes.RateLimitInfo} */
+                    const newRateLimit = {
+                        type: type,
+                        attemptedPage: page,
+                        url: url,
+                        params: params.toString(),
+                        retryAfter: retryAfterFloat
+                    };
+                    localStorage.setItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + type, JSON.stringify(newRateLimit));
+                    console.log("Saving rate limit info for fetch!");
+                    console.log(newRateLimit);
                 }
                 else {
                     return null;
@@ -519,6 +492,17 @@ export class API {
                 break;
 
             ++page;
+        }
+
+        if (rateLimitInfoStr != null) {
+            /** @type {APITypes.RateLimitInfo} */
+            let rateLimitInfo = JSON.parse(rateLimitInfoStr);
+            console.log("Continuing previously rate limited fetch!");
+            console.log(rateLimitInfo);
+            localStorage.removeItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + type);
+            let moreData = await API.#fetchIncrementallyFromAPI(rateLimitInfo.url, new URLSearchParams(rateLimitInfo.params), rateLimitInfo.type, rateLimitInfo.attemptedPage - 1);
+            if (moreData != null)
+                data.concat(moreData);
         }
 
         return data;
@@ -571,6 +555,16 @@ export class API {
      * Loads all changes, accidents, types, and brands into memory from the database.
      */
     static async deserializeStoredAPIData() {
+        await API.#deserializeChangeHistory();
+        await API.#deserializeAccidentHistory();
+        
+        await API.#deserializeBrands();
+        await API.#deserializeTypes();
+        await API.#deserializeDisposableStocks();
+        await API.#deserializeReusableStocks();
+    }
+
+    static async #deserializeChangeHistory() {
         API.changeHistory = await Database.getAllFromObjectStore(DatabaseStore.Changes, "startDate");
         for (let i = 0; i < API.changeHistory.length; i++) {
             let change = API.changeHistory[i];
@@ -585,7 +579,9 @@ export class API {
             if (change.updatedAt != null)
                 change.updatedAt = new Date(change.updatedAt);
         }
-    
+    }
+
+    static async #deserializeAccidentHistory() {
         API.accidentHistory = await Database.getAllFromObjectStore(DatabaseStore.Accidents, "when");
         for (let i = 0; i < API.accidentHistory.length; i++) {
             let accident = API.accidentHistory[i];
@@ -597,11 +593,28 @@ export class API {
             if (accident.updatedAt != null)
                 accident.updatedAt = new Date(accident.updatedAt);
         }
-    
-        API.disposableStocks = await Database.getAllFromObjectStore(DatabaseStore.DisposableStocks, "order");
-        API.reusableStocks = await Database.getAllFromObjectStore(DatabaseStore.ReusableStocks, "order");
-        API.types = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Types, "id");
+    }
+
+    static async #deserializeBrands() {
         API.brands = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Brands, "code");
+    }
+
+    static async #deserializeTypes() {
+        API.types = await Database.getAllFromObjectStoreIntoMap(DatabaseStore.Types, "id");
+        API.types.forEach(function(value, key, map) {
+            value.createdAt = new Date(value.createdAt);
+
+            if (value.updatedAt != null)
+                value.updatedAt = new Date(value.updatedAt);
+        });
+    }
+
+    static async #deserializeDisposableStocks() {
+        API.disposableStocks = await Database.getAllFromObjectStore(DatabaseStore.DisposableStocks, "order");
+    }
+
+    static async #deserializeReusableStocks() {
+        API.reusableStocks = await Database.getAllFromObjectStore(DatabaseStore.ReusableStocks, "order");
     }
     
     /**

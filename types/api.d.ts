@@ -60,8 +60,8 @@ declare namespace APITypes {
         backingMaterial: string | null,
         landingZone: boolean | null,
         wetnessIndicator: boolean | null,
-        createdAt: string,
-        updatedAt: string | null,
+        createdAt: Date,
+        updatedAt: Date | null,
         primaryImage: {
             url: string,
             representation: string | null
@@ -99,7 +99,7 @@ declare namespace APITypes {
         type: string,
         attemptedPage: number,
         url: string,
-        params: URLSearchParams,
-        retryAfter: number
+        params: string,
+        retryAfter: number | null
     }
 }
