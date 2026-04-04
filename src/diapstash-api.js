@@ -142,18 +142,18 @@ export class API {
                 params.append("updatedAt.gt", fetchTime.toJSON());
             }
         }
-
+        
         let currentTime = new Date();
-        if (fullRefetch) {
-            console.log("Performing a full refetch of all changes");
-            await Database.clearObjectStore(DatabaseStore.Changes);
-            params.append("updatedAt.lte", currentTime.toJSON());
-        }
-    
+        params.append("updatedAt.lte", currentTime.toJSON());
         API.setFetchTime(FetchDataType.Changes, currentTime);
+
         let history = await API.#fetchIncrementallyFromAPI(API.CHANGE_API_URL, params, FetchDataType.Changes);
         if (history == null || history.length == 0)
             return;
+
+        if (fullRefetch) {
+            await Database.clearObjectStore(DatabaseStore.Changes);
+        }
     
         await API.#modifyChangeHistory(history);
         await Database.putArrayInObjectStore(DatabaseStore.Changes, history);
@@ -211,16 +211,16 @@ export class API {
         }
 
         let currentTime = new Date();
-        if (fullRefetch) {
-            console.log("Performing a full refetch of all accidents");
-            await Database.clearObjectStore(DatabaseStore.Accidents);
-            params.append("updatedAt.lte", currentTime.toJSON());
-        }
-    
+        params.append("updatedAt.lte", currentTime.toJSON());
         API.setFetchTime(FetchDataType.Accidents, currentTime);
+
         let history = await API.#fetchIncrementallyFromAPI(API.ACCIDENT_API_URL, params, FetchDataType.Accidents);
         if (history == null || history.length == 0)
             return;
+
+        if (fullRefetch) {
+            await Database.clearObjectStore(DatabaseStore.Accidents);
+        }
     
         await Database.putArrayInObjectStore(DatabaseStore.Accidents, history);
         await API.#deserializeAccidentHistory();
@@ -280,20 +280,21 @@ export class API {
                 params.append("updatedAt.gt", fetchTime.toJSON());
             }
         }
-
-        let currentTime = new Date();
-        if (fullRefetch) {
-            console.log("Performing a full refetch of all types");
-            await Database.clearObjectStore(DatabaseStore.Types);
-            params.append("updatedAt.lte", currentTime.toJSON());
-        }
         
+        let currentTime = new Date();
+        params.append("updatedAt.lte", currentTime.toJSON());
         API.setFetchTime(FetchDataType.Types, currentTime);
+        
         let customTemp = await API.#fetchIncrementallyFromAPI(API.CUSTOM_TYPES_API_URL, params, FetchDataType.CustomTypes);
+        let temp = await API.#fetchIncrementallyFromAPI(API.TYPES_API_URL, params, FetchDataType.Types);
+
+        if (fullRefetch && (customTemp != null || temp != null)) {
+            await Database.clearObjectStore(DatabaseStore.Types);
+        }
+
         if (customTemp != null && customTemp.length > 0)
             await Database.putArrayInObjectStore(DatabaseStore.Types, customTemp);
     
-        let temp = await API.#fetchIncrementallyFromAPI(API.TYPES_API_URL, params, FetchDataType.Types);
         if (temp != null && temp.length > 0)
             await Database.putArrayInObjectStore(DatabaseStore.Types, temp);
         
