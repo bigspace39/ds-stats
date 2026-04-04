@@ -12,8 +12,8 @@ export class WidgetStatics {
      * @param {number} dashboardId Dashboard id to place widget on.
      * @param {number} widgetClassIndex The class index of the widget.
      * @param {number} widgetId The id to assign to the widget.
-     * @param {string} transform The transform style value of the widget.
-     * @param {Object} settings The settings of the widget.
+     * @param {string?} transform The transform style value of the widget.
+     * @param {Object?} settings The settings of the widget.
      * @returns The created widget.
      */
     static async createWidget(dashboardId, widgetClassIndex, widgetId = -1, transform = null, settings = null) {

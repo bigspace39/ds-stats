@@ -45,6 +45,7 @@ export class DropdownUI {
             return;
 
         for (let i = this.optionElements.length - 1; i >= 0; i--) {
+            // @ts-ignore
             this.optionElements.pop().remove();
 
             if (this.optionElements.length == options.length)
@@ -69,6 +70,11 @@ export class DropdownUI {
         this.onChange.broadcast(this, this.getSelectedIndex());
     }
 
+    /**
+     * 
+     * @param {string} text 
+     * @param {any} value 
+     */
     #createOptionElement(text, value) {
         let optionElement = UIBuilder.createElement("option", this.dropdownElement);
         optionElement.innerText = text;

@@ -34,7 +34,9 @@ export class FileImportButtonUI {
             const reader = new FileReader();
             reader.addEventListener("load", (event) => {
                 console.log("File content:");
+                // @ts-ignore
                 console.log(event.target.result);
+                // @ts-ignore
                 this.onImportText.broadcast(event.target.result);
             });
             reader.readAsText(file);

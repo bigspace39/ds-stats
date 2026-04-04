@@ -3,22 +3,22 @@ import { ElementStatics } from "../library/element-statics.js";
 import { UIBuilder } from "./ui-builder.js";
 
 export class ListUI {
-    /** @type {HTMLDivElement} */
+    /** @type {HTMLDivElement?} */
     listDiv = null;
     onAddElement = new Delegate();
     onRemoveElement = new Delegate();
     /** @type {HTMLDivElement[]} The parent elements of each element */
     elements = new Array();
     listElementClassInstances = new Array();
-    /** @type {HTMLButtonElement} */
+    /** @type {HTMLButtonElement?} */
     addButton = null;
-    /** @type {new (...args: any[]) => any} */
+    /** @type {(new (...args: any[]) => any)?} */
     listElementClass = null;
 
     /**
      * Will create a list UI where duplicates of a given list element class can be added to.
      * @param {HTMLElement} parentElement The parent element.
-     * @param {new (...args: any[]) => any} listElementClass The class that will spawn when the user clicks the add button.
+     * @param {(new (...args: any[]) => any)?} listElementClass The class that will spawn when the user clicks the add button.
      */
     constructor(parentElement, listElementClass = null) {
         this.listDiv = UIBuilder.createElement("div", parentElement, "list-ui");
@@ -108,10 +108,12 @@ export class ListUI {
     }
 
     show() {
+        // @ts-ignore
         this.listDiv.style.display = "";
     }
 
     hide() {
+        // @ts-ignore
         this.listDiv.style.display = "none";
     }
 }

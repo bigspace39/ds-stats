@@ -35,6 +35,10 @@ export class CollapsibleUI {
         this.collapsibleButton.id = this.collapsed ? "collapsible-button" : "collapsible-button-open";
     }
 
+    /**
+     * 
+     * @param {string} labelText 
+     */
     setLabelText(labelText) {
         this.collapsibleButton.innerText = labelText;
     }

@@ -4,6 +4,7 @@ export class Settings {
     static notWearingColor = "rgb(44, 62, 80)";
     static totalColor = "rgb(236, 240, 241)";
     
+    /** @type {SettingTypes.DiaperCategoryConfig[]} */
     static defaultDiaperCategoryConfigs = new Array(
         {
             name: "Default",
@@ -19,6 +20,7 @@ export class Settings {
         }
     );
     
+    /** @type {SettingTypes.SettingsData} */
     static data = {
         autoRefreshFrequency: -1, // Amount of seconds between each refresh, negative numbers means never refresh
         weekStartsOn: 1, // 0 is sunday, 1 is monday, 6 is saturday
@@ -34,6 +36,7 @@ export class Settings {
         Settings.deserializeSettings();
     }
 
+    /** @type {Map<number, Map<number, number>>} */
     static parsedExternalDiaperData = new Map();
     
     /**
@@ -131,6 +134,10 @@ export class Settings {
         return names;
     }
     
+    /**
+     * 
+     * @returns {Promise<SettingTypes.DiaperCategory[]>}
+     */
     static async getDefaultDiaperCategoryConfig() {
         const { DashboardStatics } = await import("./library/dashboard-statics.js");
         let index = DashboardStatics.selectedDashboard.defaultDiaperCatConfig;
@@ -138,6 +145,12 @@ export class Settings {
         return config.categories;
     }
     
+    /**
+     * 
+     * @param {APITypes.Change} change Change
+     * @param {SettingTypes.DiaperCategory[]?} diaperCategoryConfig 
+     * @returns 
+     */
     static async getMainCategoryFromChange(change, diaperCategoryConfig = null) {
         const { API } = await import("./diapstash-api.js");
         if (diaperCategoryConfig == null)
@@ -162,6 +175,12 @@ export class Settings {
         return await Settings.getCategoryFromId(change.diapers[0].typeId, diaperCategoryConfig);
     }
     
+    /**
+     * 
+     * @param {number} id The types id
+     * @param {SettingTypes.DiaperCategory[]?} diaperCategoryConfig 
+     * @returns 
+     */
     static async getCategoryFromId(id, diaperCategoryConfig = null) {
         const { API } = await import("./diapstash-api.js");
         if (diaperCategoryConfig == null)
@@ -175,6 +194,7 @@ export class Settings {
             let satisfiesFilter = true;
             for (let key in filter) {
                 let filterProperty = filter[key];
+                // @ts-ignore
                 let property = type[key];
                 if (Array.isArray(property)) {
                     let isIncluded = false;
@@ -203,6 +223,11 @@ export class Settings {
         return null;
     }
     
+    /**
+     * 
+     * @param {string} cost 
+     * @returns {string}
+     */
     static toCurrencyString(cost) {
         if (Settings.data.currencyIsSuffix)
             return "" + cost + Settings.data.currency;
@@ -210,14 +235,28 @@ export class Settings {
         return "" + Settings.data.currency + cost;
     }
     
+    /**
+     * 
+     * @param {Date} date 
+     */
     static dateToTimeString(date) {
         // TODO: FINISH
     }
     
+    /**
+     * 
+     * @param {Date} date 
+     * @returns 
+     */
     static getMonthStrFromDate(date) {
         return date.toLocaleString("en-GB", { month: 'long' })
     }
     
+    /**
+     * 
+     * @param {Date} date 
+     * @returns 
+     */
     static getWeekdayStrFromDate(date) {
         return date.toLocaleString("en-GB", { weekday: 'long' });
     }

@@ -13,16 +13,14 @@ declare namespace APITypes {
         changePeriod: string | null,
         createdAt: Date,
         updatedAt: Date | null,
-        diapers: [
-            {
-                order: number,
-                typeId: number,
-                variantId: string | null,
-                size: string,
-                price: number | null,
-                name: string
-            }
-        ],
+        diapers: {
+            order: number,
+            typeId: number,
+            variantId: string | null,
+            size: string,
+            price: number | null,
+            name: string
+        }[],
         price: number,
         changeString: string
     }
@@ -66,19 +64,17 @@ declare namespace APITypes {
             url: string,
             representation: string | null
         },
-        variants: [{
+        variants: {
             id: string,
             name: string,
             primaryImage: {
                 url: string,
                 representation: string | null
             }
-        }],
-        sizes: [
-            {
+        }[],
+        sizes: {
                 size: string
-            }
-        ],
+            }[],
         alternativeNames: []
     }
 

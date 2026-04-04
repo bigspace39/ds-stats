@@ -3,9 +3,9 @@ import { WidgetStatics } from "./widget-statics.js";
 export class DashboardStatics {
     /** @type {Map<number, import("../dashboard.js").Dashboard>} */
     static dashboards = new Map();
-    /** @type {import("../ui/dashboard-add-button.js").DashboardAddButton} */
+    /** @type {import("../ui/dashboard-add-button.js").DashboardAddButton?} */
     static dashboardAddButton = null;
-    /** @type {import("../dashboard.js").Dashboard} */
+    /** @type {import("../dashboard.js").Dashboard?} */
     static selectedDashboard = null;
 
     /**
@@ -30,7 +30,8 @@ export class DashboardStatics {
      */
     static destroyDashboard(dashboardId) {
         let dashboard = DashboardStatics.dashboards.get(dashboardId);
-        dashboard.destroy();
+        if (dashboard != null)
+            dashboard.destroy();
     }
 
     /**

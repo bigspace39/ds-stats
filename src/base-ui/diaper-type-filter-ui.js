@@ -7,6 +7,11 @@ export class DiaperTypeFilterUISectionData {
     displayName;
     propertyName;
 
+    /**
+     * 
+     * @param {string} displayName 
+     * @param {string} propertyName 
+     */
     constructor(displayName, propertyName) {
         this.displayName = displayName;
         this.propertyName = propertyName;
@@ -102,12 +107,21 @@ export class DiaperTypeFilterUI {
         this.button.innerText = `${filterCount} filter${filterCount != 1 ? "s" : ""} active`;
     }
 
+    /**
+     * 
+     * @param {DiaperTypeFilterUISectionData} sectionData 
+     * @param  {...SegmentedControlUIOption} options 
+     */
     #createSection(sectionData, ...options) {
         UIBuilder.createHeading(sectionData.displayName, this.tooltipParentDiv);
         let segmentedControl = new MultiSegmentedControlUI(this.tooltipParentDiv, ...options);
         this.segmentedControls.set(sectionData.propertyName, segmentedControl);
     }
 
+    /**
+     * 
+     * @param {any} filter 
+     */
     setFilter(filter) {
         this.segmentedControls.forEach((value, key, map) => {
             if (filter[key]) {
@@ -119,7 +133,12 @@ export class DiaperTypeFilterUI {
         });
     }
 
+    /**
+     * 
+     * @returns {any}
+     */
     getFilter() {
+        /** @type {any} */
         let filter = new Object();
         this.segmentedControls.forEach((value, key, map) => {
             if (value.hasAnySelectedOptions())

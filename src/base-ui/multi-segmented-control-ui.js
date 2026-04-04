@@ -4,7 +4,7 @@ import { SegmentedControlUIOption } from "./segmented-control-ui.js";
 import { UIBuilder } from "./ui-builder.js";
 
 export class MultiSegmentedControlUI {
-    /** @type {HTMLDivElement} */
+    /** @type {HTMLDivElement?} */
     horizontalDiv = null;
     options = new Array();
     /** @type {HTMLButtonElement[]} */
@@ -38,6 +38,11 @@ export class MultiSegmentedControlUI {
         }
     }
 
+    /**
+     * 
+     * @param {HTMLButtonElement} button 
+     * @param {number} index 
+     */
     #click(button, index) {
         if (this.selectedButtons.includes(button)) {
             button.id = "segmented-control";
@@ -92,6 +97,11 @@ export class MultiSegmentedControlUI {
         }
     }
 
+    /**
+     * 
+     * @param {HTMLButtonElement} button 
+     * @returns 
+     */
     #getButtonIndex(button) {
         for (let i = 0; i < this.buttons.length; i++) {
             let current = this.buttons[i];
@@ -103,10 +113,12 @@ export class MultiSegmentedControlUI {
     }
 
     show() {
+        // @ts-ignore
         this.horizontalDiv.style.display = "";
     }
 
     hide() {
+        // @ts-ignore
         this.horizontalDiv.style.display = "none";
     }
 }

@@ -33,8 +33,8 @@ export class Widget {
      * @param {number} classIndex The class index for the widget.
      * @param {number} dashboardId The dashboardId of the parent dashbaord.
      * @param {number} widgetId The widgetId to assign to this widget.
-     * @param {string} transform The transform style to apply to this widget.
-     * @param {Object} widgetSettings The widget settings.
+     * @param {string?} transform The transform style to apply to this widget.
+     * @param {Object?} widgetSettings The widget settings.
      */
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         this.mainDiv = UIBuilder.createElement("div", dashboardElement, "widget");

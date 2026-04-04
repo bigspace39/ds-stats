@@ -50,6 +50,15 @@ export class ElementStatics {
         this.#bindHelper("input", element, thisObj, func, ...extraParams);
     }
 
+    /**
+     * @template {HTMLElement} T
+     * @template {Object} U
+     * @param {string} event 
+     * @param {T} element 
+     * @param {U} thisObj 
+     * @param {ElementStaticFunction<T, U>} func 
+     * @param  {...any} extraParams 
+     */
     static #bindHelper(event, element, thisObj, func, ...extraParams) {
         let delegate = new Delegate();
         delegate.addFunction(thisObj, func);

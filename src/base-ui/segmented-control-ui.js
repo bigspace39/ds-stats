@@ -20,13 +20,13 @@ export class SegmentedControlUIOption {
 }
 
 export class SegmentedControlUI {
-    /** @type {HTMLDivElement} */
+    /** @type {HTMLDivElement?} */
     horizontalDiv = null;
     /** @type {SegmentedControlUIOption[]} */
     options = new Array();
     /** @type {HTMLButtonElement[]} */
     buttons = new Array();
-    /** @type {HTMLButtonElement} */
+    /** @type {HTMLButtonElement?} */
     selectedButton = null;
     onClick = new Delegate();
 
@@ -56,6 +56,12 @@ export class SegmentedControlUI {
         }
     }
 
+    /**
+     * 
+     * @param {HTMLButtonElement} button 
+     * @param {number} index 
+     * @returns 
+     */
     #click(button, index) {
         if (this.selectedButton == button)
             return;
@@ -95,6 +101,11 @@ export class SegmentedControlUI {
         this.#click(this.buttons[index]);
     }
 
+    /**
+     * 
+     * @param {HTMLButtonElement} button 
+     * @returns 
+     */
     #getButtonIndex(button) {
         for (let i = 0; i < this.buttons.length; i++) {
             let current = this.buttons[i];
@@ -106,10 +117,12 @@ export class SegmentedControlUI {
     }
 
     show() {
+        // @ts-ignore
         this.horizontalDiv.style.display = "";
     }
 
     hide() {
+        // @ts-ignore
         this.horizontalDiv.style.display = "none";
     }
 }

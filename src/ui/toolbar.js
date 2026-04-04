@@ -55,6 +55,11 @@ export class Toolbar {
         });
     }
 
+    /**
+     * 
+     * @param {string} text 
+     * @returns 
+     */
     createToolbarButton(text) {
         let temp = UIBuilder.createElement("button", this.div, "toolbar-button");
         temp.innerText = text;
