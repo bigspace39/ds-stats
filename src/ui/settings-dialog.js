@@ -256,8 +256,8 @@ export class SettingsDialog extends DialogBoxUI {
         UIBuilder.createText("Auto Refresh Frequency");
         this.autoRefreshFrequencySegControl = new SegmentedControlUI(this.content, 
             new SegmentedControlUIOption("Never", -1),
-            new SegmentedControlUIOption("1 minute", 60),
-            new SegmentedControlUIOption("5 minutes", 60 * 5),
+            new SegmentedControlUIOption("5 minute", 60 * 5),
+            new SegmentedControlUIOption("15 minutes", 60 * 15),
             new SegmentedControlUIOption("1 hour", 60 * 60)
         );
         UIBuilder.createText("Week Starts On");

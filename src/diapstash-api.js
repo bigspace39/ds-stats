@@ -142,6 +142,11 @@ export class API {
                 params.append("updatedAt.gt", fetchTime.toJSON());
             }
         }
+
+        if (fullRefetch) {
+            localStorage.removeItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + FetchDataType.Changes);
+            console.log("Performing full refetch of all changes");
+        }
         
         let currentTime = new Date();
         params.append("updatedAt.lte", currentTime.toJSON());
@@ -208,6 +213,11 @@ export class API {
             else {
                 params.append("updatedAt.gt", fetchTime.toJSON());
             }
+        }
+
+        if (fullRefetch) {
+            localStorage.removeItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + FetchDataType.Accidents);
+            console.log("Performing full refetch of all accidents");
         }
 
         let currentTime = new Date();
@@ -280,6 +290,12 @@ export class API {
                 params.append("updatedAt.gt", fetchTime.toJSON());
             }
         }
+
+        if (fullRefetch) {
+            localStorage.removeItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + FetchDataType.CustomTypes);
+            localStorage.removeItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + FetchDataType.Types);
+            console.log("Performing full refetch of all types");
+        }
         
         let currentTime = new Date();
         params.append("updatedAt.lte", currentTime.toJSON());
@@ -292,11 +308,19 @@ export class API {
             await Database.clearObjectStore(DatabaseStore.Types);
         }
 
-        if (customTemp != null && customTemp.length > 0)
+        let typesChanged = false;
+        if (customTemp != null && customTemp.length > 0) {
             await Database.putArrayInObjectStore(DatabaseStore.Types, customTemp);
+            typesChanged = true;
+        }
     
-        if (temp != null && temp.length > 0)
+        if (temp != null && temp.length > 0) {
             await Database.putArrayInObjectStore(DatabaseStore.Types, temp);
+            typesChanged = true;
+        }
+
+        if (!typesChanged)
+            return;
         
         await API.#deserializeTypes();
         console.log("Types after fetching:");
@@ -478,12 +502,10 @@ export class API {
                     localStorage.setItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + type, JSON.stringify(newRateLimit));
                     console.log("Saving rate limit info for fetch!");
                     console.log(newRateLimit);
+                    break;
                 }
-                else {
-                    return null;
-                }
-
-                break;
+                
+                return null;
             }
 
             data = data.concat(object.data);
