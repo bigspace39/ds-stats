@@ -5,8 +5,8 @@ export class DashboardStatics {
     static dashboards = new Map();
     /** @type {import("../ui/dashboard-add-button.js").DashboardAddButton?} */
     static dashboardAddButton = null;
-    /** @type {import("../dashboard.js").Dashboard?} */
-    static selectedDashboard = null;
+    /** @type {import("../dashboard.js").Dashboard} */
+    static selectedDashboard;
 
     /**
      * Creates a new dashboard.

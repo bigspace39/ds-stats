@@ -13,4 +13,6 @@ export class Statics {
     static settingsDialog;
     /** @type {import("../ui/toolbar.js").Toolbar} */
     static toolbar;
+    /** @type {import("../ui/notification-area.js").NotificationArea} */
+    static notificationArea;
 }

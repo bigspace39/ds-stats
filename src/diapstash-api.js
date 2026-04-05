@@ -2,7 +2,6 @@ import { Statics } from "./library/statics.js";
 import { Database, DatabaseStore } from "./database.js";
 import { Delegate } from "./library/delegate.js";
 import { WidgetStatics } from "./library/widget-statics.js";
-import { Enum } from "./library/enum.js";
 
 // Swager: https://api.diapstash.com/api/docs/#/History
 // Account: https://account.diapstash.com/account
@@ -11,15 +10,19 @@ if (!crypto.subtle) {
     console.error("Web Crypto API (subtle) is not available. PKCE is unavailable so we cannot fetch any API data");
 }
 
-class FetchDataType extends Enum {
-    static Changes = "changes";
-    static Accidents = "accidents";
-    static Brands = "brands";
-    static Types = "types";
-    static CustomTypes = "custom types";
-    static Stocks = "stocks";
-    static DisposableStocks = "disposable stocks";
-    static ReusableStocks = "reusable stocks";
+/**
+ * @readonly
+ * @enum {string}
+ */
+let FetchDataType = {
+    Changes: "changes",
+    Accidents: "accidents",
+    Brands: "brands",
+    Types: "types",
+    CustomTypes: "custom types",
+    Stocks: "stocks",
+    DisposableStocks: "disposable stocks",
+    ReusableStocks: "reusable stocks"
 }
 
 export class API {

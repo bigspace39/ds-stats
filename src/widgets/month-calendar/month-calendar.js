@@ -18,23 +18,40 @@ export class MonthCalendarWidget extends Widget {
         return MonthCalendarWidgetSettingsDialog;
     }
 
-    monthHeader = null;
-    monthLabel = null;
-    monthPrice = null;
-    navigationDiv = null;
-    prevButton = null;
-    todayButton = null;
-    nextButton = null;
-    weekdays = null;
-    firstDateIndex;
+    /** @type {HTMLDivElement} */
+    monthHeader;
+    /** @type {HTMLParagraphElement} */
+    monthLabel;
+    /** @type {HTMLParagraphElement} */
+    monthPrice;
+    /** @type {HTMLDivElement} */
+    navigationDiv;
+    /** @type {HTMLButtonElement} */
+    prevButton;
+    /** @type {HTMLButtonElement} */
+    todayButton;
+    /** @type {HTMLButtonElement} */
+    nextButton;
+    /** @type {HTMLDivElement} */
+    weekdays;
+    firstDateIndex = -1;
+    /** @type {HTMLButtonElement[]} */
     dates = new Array();
+    /** @type {HTMLParagraphElement[]} */
     datesTextBoxes = new Array();
+    /** @type {HTMLDivElement[]} */
     statusBars = new Array();
+    /** @type {HTMLDivElement[]} */
     statusBarSections = new Array();
+    /** @type {Tippy.Tippy[]} */
     tippyInstances = new Array();
+    /** @type {Date} */
     selectedMonth;
 
+    /** @type {Map<number, APITypes.Change[]>} */
     days = new Map();
+
+    /** @type {APITypes.Change?} */
     changeBeforeMonth = null;
     accumulatedPercentage = 0.0;
     price = 0.0;
@@ -102,6 +119,7 @@ export class MonthCalendarWidget extends Widget {
             this.statusBars.push(statusBar);
         }
 
+        this.selectedMonth = new Date();
         this.today();
     }
 
@@ -138,10 +156,11 @@ export class MonthCalendarWidget extends Widget {
             if (enable) {
                 button.inert = false;
                 const date = current.getDate();
-                button.innerText = date;
+                button.innerText = date.toString();
 
                 if (this.days.has(date)) {
                     let day = this.days.get(date);
+                    // @ts-ignore
                     buttonTextBox.innerText = day.length;
                 }
                 else {
@@ -190,7 +209,9 @@ export class MonthCalendarWidget extends Widget {
         for (let i = 0; i < this.days.size; i++) {
             let day = this.days.get(i + 1);
 
+            // @ts-ignore
             for (let j = 0; j < day.length; j++) {
+                // @ts-ignore
                 monthChanges.push(day[j]);
             }
         }
@@ -234,6 +255,12 @@ export class MonthCalendarWidget extends Widget {
         }
     }
 
+    /**
+     * 
+     * @param {number} percentage 
+     * @param {string} color 
+     * @param {string?} tooltip 
+     */
     addStatusBarSection(percentage, color, tooltip = null) {
         let baseAcc = this.accumulatedPercentage % 100;
         let maxPercentage = 100.0 - baseAcc;
@@ -297,6 +324,9 @@ export class MonthCalendarWidget extends Widget {
         this.update();
     }
 
+    /**
+     * @param {number} index 
+     */
     onClickMonthGraphDate(index) {
 
     }
@@ -337,6 +367,7 @@ export class MonthCalendarWidget extends Widget {
                 this.price += current.price;
 
             const date = change.startTime.getDate();
+            // @ts-ignore
             this.days.get(date).push(current);
         }
     }

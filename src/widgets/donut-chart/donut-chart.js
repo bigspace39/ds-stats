@@ -1,18 +1,17 @@
 import { UIBuilder } from "../../base-ui/ui-builder.js";
-import { Enum } from "../../library/enum.js";
 import { WidgetStatics } from "../../library/widget-statics.js";
 import { Widget } from "../widget.js";
 import { DonutChartWidgetSettingsDialog } from "./donut-chart-settings.js";
 
-export class DonutChartStatType extends Enum {
-    static DiapersPerCategoryConfig;
-    static DiapersPerType;
-    static AccidentsPerLocation;
-    static AccidentsPerPosition;
-
-    static {
-        super.init();
-    }
+/**
+ * @readonly
+ * @enum {number}
+ */
+export let DonutChartStatType = {
+    DiapersPerCategoryConfig: 0,
+    DiapersPerType: 1,
+    AccidentsPerLocation: 2,
+    AccidentsPerPosition: 3,
 }
 
 export class DonutChartWidget extends Widget {
@@ -46,6 +45,9 @@ export class DonutChartWidget extends Widget {
         }]
     };
 
+    /**
+     * @override
+     */
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
         this.label = UIBuilder.createElement("h1", this.contentDiv, "donut-label");

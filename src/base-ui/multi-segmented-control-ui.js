@@ -30,9 +30,12 @@ export class MultiSegmentedControlUI {
 
             let button = UIBuilder.createElement("button", this.horizontalDiv, "segmented-control");
             button.innerText = label;
-            ElementStatics.bindOnClick(button, this, async function(button, index) {
-                this.#click(button, index);
-            }, i);
+            ElementStatics.bindOnClick(button, this, 
+                /** @this {MultiSegmentedControlUI} */
+                async function(button, index) {
+                    this.#click(button, index);
+                },
+            i);
 
             this.buttons.push(button);
         }
@@ -93,7 +96,7 @@ export class MultiSegmentedControlUI {
             let currentlySelected = this.selectedButtons.includes(button);
             let shouldBeSelected = selectedOptions.includes(option);
             if (currentlySelected != shouldBeSelected)
-                this.#click(button);
+                this.#click(button, i);
         }
     }
 

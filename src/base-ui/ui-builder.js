@@ -1,5 +1,3 @@
-import { Enum } from "../library/enum.js";
-
 export class UIBuilder {
     /** @type {HTMLElement?} */
     static #defaultParent = null;
@@ -157,7 +155,11 @@ export class UIBuilder {
     }
 }
 
-export class ButtonStyle extends Enum {
-    static Accent = "Accent";
-    static Cancel = "Cancel";
+/**
+ * @readonly
+ * @enum {string}
+ */
+export let ButtonStyle = {
+    Accent: "Accent",
+    Cancel: "Cancel"
 }

@@ -7,6 +7,7 @@ import { MultiSegmentedControlUI } from "../../base-ui/multi-segmented-control-u
 import { SegmentedControlUIOption } from "../../base-ui/segmented-control-ui.js";
 import { DonutChartStatType } from "./donut-chart.js";
 import { EditConditionUI } from "../../base-ui/edit-condition-ui.js";
+import { EnumStatics } from "../../library/enum-statics.js";
 
 export class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
     selectMonthGraphButton;
@@ -23,15 +24,18 @@ export class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
 
         // === Stat Type ===
         UIBuilder.createHeading("Stat Type");
-        this.statTypeDropdown = new DropdownUI(this.content, ...DonutChartStatType.getDisplayNames());
+        this.statTypeDropdown = new DropdownUI(this.content, ...EnumStatics.getDisplayNames(DonutChartStatType));
         this.accidentTypeSegmentedControl = new MultiSegmentedControlUI(this.content, 
             new SegmentedControlUIOption("Wetting", 0),
             new SegmentedControlUIOption("Messing", 1)
         );
-        new EditConditionUI([this.accidentTypeSegmentedControl], this.statTypeDropdown.onChange, this, function() {
-            return this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerLocation || 
-                this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerPosition;
-        });
+        new EditConditionUI([this.accidentTypeSegmentedControl], this.statTypeDropdown.onChange, this, 
+            /** @this {DonutChartWidgetSettingsDialog} */
+            function() {
+                return this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerLocation || 
+                    this.statTypeDropdown.getSelectedIndex() == DonutChartStatType.AccidentsPerPosition;
+            }
+        );
     }
 
     setSettingsDefaults(settings) {

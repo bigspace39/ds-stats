@@ -1,14 +1,16 @@
-import { Enum } from "./library/enum.js";
-
-export class DatabaseStore extends Enum {
-    static Dashboards = "dashboards";
-    static Widgets = "widgets";
-    static Changes = "changes";
-    static Accidents = "accidents";
-    static DisposableStocks = "disposable-stocks";
-    static ReusableStocks = "reusable-stocks";
-    static Types = "types";
-    static Brands = "brands";
+/**
+ * @readonly
+ * @enum {string}
+ */
+export let DatabaseStore = {
+    Dashboards: "dashboards",
+    Widgets: "widgets",
+    Changes: "changes",
+    Accidents: "accidents",
+    DisposableStocks: "disposable-stocks",
+    ReusableStocks: "reusable-stocks",
+    Types: "types",
+    Brands: "brands",
 }
 
 export class Database {
@@ -20,7 +22,7 @@ export class Database {
     /**
      * Gets an array of all objects in the given database store.
      * @param {string} storeName The object store.
-     * @param {string} sortParameter The parameter to sort by.
+     * @param {string?} sortParameter The parameter to sort by.
      * @param {boolean} ascending Sort ascending/descending.
      * @returns {Promise<any[]>}
      */
@@ -33,6 +35,7 @@ export class Database {
             request.onsuccess = () => {
                 let array = request.result;
                 if (sortParameter != null) {
+                    // @ts-ignore
                     array.sort((a, b) => {
                         if (a[sortParameter] > b[sortParameter])
                             return ascending ? 1 : -1;
@@ -46,6 +49,7 @@ export class Database {
                 resolve(request.result);
             };
     
+            // @ts-ignore
             request.onerror = (event) => {
                 reject(event.target.error);
             };
@@ -73,6 +77,7 @@ export class Database {
                 resolve(map);
             };
     
+            // @ts-ignore
             request.onerror = (event) => {
                 reject(event.target.error);
             };
@@ -82,7 +87,7 @@ export class Database {
     /**
      * Clears the given object store
      * @param {string} storeName The object store.
-     * @returns {Promise<Error> | Promise}
+     * @returns {Promise<Error | void>}
      */
     static clearObjectStore(storeName) {
         return new Promise((resolve, reject) => {
@@ -94,6 +99,7 @@ export class Database {
                 resolve();
             };
     
+            // @ts-ignore
             request.onerror = (event) => {
                 reject(event.target.error);
             };
@@ -104,7 +110,7 @@ export class Database {
      * Deletes the object with the specified key from the object store.
      * @param {string} storeName The object store.
      * @param {*} key 
-     * @returns {Promise<Error> | Promise}
+     * @returns {Promise<Error | void>}
      */
     static deleteFromObjectStore(storeName, key) {
         return new Promise((resolve, reject) => {
@@ -116,6 +122,7 @@ export class Database {
                 resolve();
             };
     
+            // @ts-ignore
             request.onerror = (event) => {
                 reject(event.target.error);
             };
@@ -126,7 +133,7 @@ export class Database {
      * Puts an object into the object store (put replaces, whereas add will throw an error if the key already exists).
      * @param {string} storeName The object store.
      * @param {Object} object The object to store.
-     * @returns {Promise<Error> | Promise}
+     * @returns {Promise<Error | void>}
      */
     static putInObjectStore(storeName, object) {
         return new Promise((resolve, reject) => {
@@ -138,6 +145,7 @@ export class Database {
                 resolve(request.result);
             };
     
+            // @ts-ignore
             request.onerror = (event) => {
                 reject(event.target.error);
             };
@@ -149,7 +157,7 @@ export class Database {
      * @param {string} storeName The object store.
      * @param {Object[]} objectsArray The array of objects to store.
      * @param {number} chunkSize How many objects to process at one time.
-     * @returns {Promise<Error> | Promise}
+     * @returns {Promise<Error | void>}
      */
     static putArrayInObjectStore(storeName, objectsArray, chunkSize = 100) {
         return new Promise((resolve, reject) => {
@@ -170,6 +178,7 @@ export class Database {
                     }
                 };
     
+                // @ts-ignore
                 transaction.onerror = (event) => {
                     reject(event.target.error);
                 };
@@ -181,7 +190,7 @@ export class Database {
      * Adds an object to the object store (add will throw an error if the key already exists in the database).
      * @param {string} storeName The object store.
      * @param {Object} object The object to store.
-     * @returns {Promise<Error> | Promise}
+     * @returns {Promise<Error | void>}
      */
     static addToObjectStore(storeName, object) {
         return new Promise((resolve, reject) => {
@@ -193,6 +202,7 @@ export class Database {
                 resolve(request.result);
             };
     
+            // @ts-ignore
             request.onerror = (event) => {
                 reject(event.target.error);
             };
@@ -204,7 +214,7 @@ export class Database {
      * @param {string} storeName The object store.
      * @param {Object[]} objectsArray The array of objects to store.
      * @param {number} chunkSize How many objects to process at one time.
-     * @returns {Promise<Error> | Promise}
+     * @returns {Promise<Error | void>}
      */
     static addArrayToObjectStore(storeName, objectsArray, chunkSize = 100) {
         return new Promise((resolve, reject) => {
@@ -225,6 +235,7 @@ export class Database {
                     }
                 };
     
+                // @ts-ignore
                 transaction.onerror = (event) => {
                     reject(event.target.error);
                 };
@@ -235,8 +246,8 @@ export class Database {
     /**
      * Counts how many objects exists in the object store (can be queried).
      * @param {string} storeName The object store.
-     * @param {string} query Query.
-     * @returns {Promise<Error> | Promise}
+     * @param {string?} query Query.
+     * @returns {Promise<Error | void>}
      */
     static getCountInObjectStore(storeName, query = null) {
         return new Promise((resolve, reject) => {
@@ -248,6 +259,7 @@ export class Database {
                 resolve(request.result);
             };
     
+            // @ts-ignore
             request.onerror = (event) => {
                 reject(event.target.error);
             };

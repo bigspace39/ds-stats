@@ -45,12 +45,15 @@ export class SegmentedControlUI {
 
             let button = UIBuilder.createElement("button", this.horizontalDiv, "segmented-control");
             button.innerText = label;
-            ElementStatics.bindOnClick(button, this, async function(button, index) {
-                this.#click(button, index);
-            }, i);
+            ElementStatics.bindOnClick(button, this, 
+                /** @this {SegmentedControlUI} */
+                async function(button, index) {
+                    this.#click(button, index);
+                }, 
+            i);
 
             if (this.selectedButton == null) {
-                this.#click(button);
+                this.#click(button, i);
             }
             this.buttons.push(button);
         }
@@ -98,7 +101,7 @@ export class SegmentedControlUI {
             return;
         }
 
-        this.#click(this.buttons[index]);
+        this.#click(this.buttons[index], index);
     }
 
     /**

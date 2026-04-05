@@ -41,26 +41,37 @@ export class SelectConnectedWidgetButtonUI {
         
         this.ownerWidget = ownerWidget;
         this.targetClass = targetClass;
-        ElementStatics.bindOnClick(this.button, this, function() {
-            WidgetStatics.createdWidgets.forEach(function(value, key, map) {
-                if (value.dashboardId != DashboardStatics.selectedDashboard.boardId)
-                    return;
+        ElementStatics.bindOnClick(this.button, this, 
+            /** @this {SelectConnectedWidgetButtonUI} */
+            function() {
+                WidgetStatics.createdWidgets.forEach(
+                    /** @this {SelectConnectedWidgetButtonUI} */
+                    function(value, key, map) {
+                        if (value.dashboardId != DashboardStatics.selectedDashboard.boardId)
+                            return;
 
-                if (!WidgetStatics.widgetIsOfClass(value, this.targetClass))
-                    return;
+                        if (!WidgetStatics.widgetIsOfClass(value, this.targetClass))
+                            return;
 
-                value.selectWidgetButton.style.display = "";
-                ElementStatics.bindOnClick(value.selectWidgetButton, this, function(selectButton, targetWidget) {
-                    this.#exitSelectMode();
-                    this.ownerWidget.settingsDialog.show();
-                    this.setConnectedWidgetId(targetWidget.widgetId);
-                    this.onSelectConnectedWidget.broadcast(targetWidget);
-                }, value);
+                        value.selectWidgetButton.style.display = "";
+                        ElementStatics.bindOnClick(value.selectWidgetButton, this, 
+                            /** @type {SelectConnectedWidgetButtonUI} */
+                            function(selectButton, targetWidget) {
+                                this.#exitSelectMode();
+                                // @ts-ignore
+                                this.ownerWidget.settingsDialog.show();
+                                this.setConnectedWidgetId(targetWidget.widgetId);
+                                this.onSelectConnectedWidget.broadcast(targetWidget);
+                            },
+                        value);
 
-            }, this);
+                    }, 
+                this);
 
-            this.ownerWidget.settingsDialog.hide();
-        });
+                // @ts-ignore
+                this.ownerWidget.settingsDialog.hide();
+            }
+        );
 
         ElementStatics.bindOnClick(this.clearButton, this, function() {
             this.setConnectedWidgetId(-1);
@@ -68,16 +79,19 @@ export class SelectConnectedWidgetButtonUI {
     }
 
     #exitSelectMode() {
-        WidgetStatics.createdWidgets.forEach(function(value, key, map) {
-            if (value.dashboardId != DashboardStatics.selectedDashboard.boardId)
-                return;
+        WidgetStatics.createdWidgets.forEach(
+            /** @this {SelectConnectedWidgetButtonUI} */
+            function(value, key, map) {
+                if (value.dashboardId != DashboardStatics.selectedDashboard.boardId)
+                    return;
 
-            if (!WidgetStatics.widgetIsOfClass(value, this.targetClass))
-                return;
+                if (!WidgetStatics.widgetIsOfClass(value, this.targetClass))
+                    return;
 
-            value.selectWidgetButton.style.display = "none";
-            value.selectWidgetButton.onclick = null;
-        }, this);
+                value.selectWidgetButton.style.display = "none";
+                value.selectWidgetButton.onclick = null;
+            }, 
+        this);
     }
 
     #updateConnectedMonthCalendarText() {

@@ -35,15 +35,24 @@ class DiaperCategoryConfigsListUI {
         });
     }
 
+    /**
+     * Updates the UI to reflect the given diaper category configs.
+     * @param {SettingTypes.DiaperCategoryConfig[]} configs 
+     */
     setConfigs(configs) {
         this.list.setLength(configs.length);
         for (let i = 0; i < configs.length; i++) {
             let config = configs[i];
+            /** @type {DiaperCategoryConfigUI} */
             let listElement = this.list.listElementClassInstances[i];
             listElement.setConfig(config);
         }
     }
 
+    /**
+     * Gets the diaper category configs from the UI.
+     * @returns {SettingTypes.DiaperCategoryConfig[]}
+     */
     getConfigs() {
         let configs = new Array();
         for (let i = 0; i < this.list.getLength(); i++) {
@@ -57,10 +66,12 @@ class DiaperCategoryConfigsListUI {
 
 class DiaperCategoryConfigUI {
     collapsible;
-    horizontal;
     configNameField;
     list;
 
+    /**
+     * @param {HTMLElement} parentElement 
+     */
     constructor(parentElement) {
         let name = this.generateUniqueConfigName();
         this.collapsible = new CollapsibleUI(parentElement, name);
@@ -75,6 +86,10 @@ class DiaperCategoryConfigUI {
         this.list = new ListUI(this.collapsible.collapsibleContent, DiaperCategoryUI);
     }
 
+    /**
+     * Updates the UI to reflect the given config.
+     * @param {SettingTypes.DiaperCategoryConfig} config 
+     */
     setConfig(config) {
         this.setConfigName(config.name);
         let categories = config.categories;
@@ -86,6 +101,10 @@ class DiaperCategoryConfigUI {
         }
     }
 
+    /**
+     * Gets the current config from the UI.
+     * @returns {SettingTypes.DiaperCategoryConfig}
+     */
     getConfig() {
         let config = {
             name: this.getConfigName(),
@@ -100,6 +119,9 @@ class DiaperCategoryConfigUI {
         return config;
     }
 
+    /**
+     * @param {string} name 
+     */
     setConfigName(name) {
         this.collapsible.setLabelText(name);
         this.configNameField.value = name;
@@ -131,6 +153,9 @@ class DiaperCategoryUI {
     filter;
     colorPicker;
 
+    /**
+     * @param {HTMLElement} parentElement 
+     */
     constructor(parentElement) {
         parentElement.style.height = "auto";
         this.horizontal = UIBuilder.createHorizontal(parentElement);
@@ -141,12 +166,20 @@ class DiaperCategoryUI {
         this.colorPicker = new ColorPickerUI(this.horizontal, "horizontal-color-picker");
     }
 
+    /**
+     * Updates the UI with the given diaper category.
+     * @param {SettingTypes.DiaperCategory} category 
+     */
     setCategory(category) {
         this.categoryName.value = category.label;
         this.colorPicker.setColor(category.color);
         this.filter.setFilter(category.filter);
     }
 
+    /**
+     * Gets the current diaper category from the UI.
+     * @returns {SettingTypes.DiaperCategory}
+     */
     getCategory() {
         let data = {
             label: this.categoryName.value,

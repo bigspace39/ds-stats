@@ -4,19 +4,19 @@ import { ElementStatics } from "../library/element-statics.js";
 import { WidgetStatics } from "../library/widget-statics.js";
 
 export class Widget {
-    /** @type {string} */
+    /** @type {string | undefined} */
     static displayName = undefined;
 
     /** @type {HTMLDivElement} */
-    mainDiv = null;
+    mainDiv;
     /** @type {HTMLDivElement} */
-    contentDiv = null;
+    contentDiv;
     /** @type {HTMLButtonElement} */
-    deleteButton = null;
-    /** @type {HTMLButtonElement} */
+    deleteButton;
+    /** @type {HTMLButtonElement?} */
     settingsButton = null;
-    draggable = null;
-    /** @type {import("./widget-settings.js").WidgetSettingsDialog} */
+    draggable;
+    /** @type {import("./widget-settings.js").WidgetSettingsDialog?} */
     settingsDialog = null;
     settings = new Object();
     widgetId = -1;
@@ -25,7 +25,7 @@ export class Widget {
     isUpdating = false;
     additionalUpdateQueued = false;
     /** @type {HTMLButtonElement} */
-    selectWidgetButton = null;
+    selectWidgetButton;
 
     /**
      * Creates a new widget.
@@ -62,6 +62,7 @@ export class Widget {
             this.settingsDialog.hide();
 
             ElementStatics.bindOnClick(this.settingsButton, this, function() {
+                // @ts-ignore
                 this.settingsDialog.show();
             });
         }
@@ -118,7 +119,7 @@ export class Widget {
 
     /**
      * Get the widget settings dialog class.
-     * @returns {typeof import("./widget-settings.js").WidgetSettingsDialog}
+     * @returns {typeof import("./widget-settings.js").WidgetSettingsDialog?}
      * @abstract
      */
     getSettingsDialogClass() {
@@ -204,6 +205,10 @@ export class Widget {
         Database.putInObjectStore(DatabaseStore.Widgets, temp);
     }
 
+    /**
+     * 
+     * @param {Widget} widget 
+     */
     #savePosition(widget) {
         widget.saveWidget();
     }

@@ -14,12 +14,16 @@ export class WidgetStatics {
      * @param {number} widgetId The id to assign to the widget.
      * @param {string?} transform The transform style value of the widget.
      * @param {Object?} settings The settings of the widget.
-     * @returns The created widget.
+     * @returns {Promise<import("../widgets/widget.js").Widget?>} The created widget.
      */
     static async createWidget(dashboardId, widgetClassIndex, widgetId = -1, transform = null, settings = null) {
         const { DashboardStatics } = await import("./dashboard-statics.js");
         let WidgetClass = WidgetStatics.possibleWidgets[widgetClassIndex];
         let dashboad = DashboardStatics.dashboards.get(dashboardId);
+        if (dashboad == undefined) {
+            console.error("Tried to create widget on undefined dashboard.");
+            return null;
+        }
         let widget = new WidgetClass(dashboad.board, widgetClassIndex, dashboardId, widgetId, transform, settings);
         return widget;
     }
@@ -30,6 +34,10 @@ export class WidgetStatics {
      */
     static destroyWidget(widgetId) {
         let widget = WidgetStatics.createdWidgets.get(widgetId);
+        if (widget == undefined) {
+            console.error("Tried to destroy widget with widgetId that doesn't exist");
+            return;
+        }
         widget.destroy();
     }
 
