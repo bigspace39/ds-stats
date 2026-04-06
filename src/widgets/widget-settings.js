@@ -1,11 +1,11 @@
 import { DialogBoxUI } from "../base-ui/dialog-box-ui.js";
 import { ButtonStyle, UIBuilder } from "../base-ui/ui-builder.js";
 import { ElementStatics } from "../library/element-statics.js";
-import { WidgetStatics } from "../library/widget-statics.js";
+/** @typedef {import("./widget.js").Widget} Widget */
 
 export class WidgetSettingsDialog extends DialogBoxUI
 {
-    /** @type {import("./widget.js").Widget} */
+    /** @type {Widget} */
     widget;
     /** @type {HTMLDivElement} */
     footer;
@@ -16,7 +16,7 @@ export class WidgetSettingsDialog extends DialogBoxUI
 
     /**
      * Creates a widget settings dialog for the given widget.
-     * @param {import("./widget.js").Widget} widget Widget that this dialog is connected to.
+     * @param {Widget} widget Widget that this dialog is connected to.
      */
     constructor(widget) {
         super();
@@ -41,7 +41,7 @@ export class WidgetSettingsDialog extends DialogBoxUI
 
     /**
      * Set defaults for widget settings.
-     * @param {Object} settings Settings object to modify.
+     * @param {any} settings Settings object to modify.
      * @abstract
      */
     setSettingsDefaults(settings) {
@@ -50,7 +50,7 @@ export class WidgetSettingsDialog extends DialogBoxUI
 
     /**
      * Loads the settings into the dialog.
-     * @param {Object} settings Settings object.
+     * @param {any} settings Settings object.
      * @abstract
      */
     loadSettings(settings) {
@@ -59,7 +59,7 @@ export class WidgetSettingsDialog extends DialogBoxUI
 
     /**
      * Saves the settings from the dialog into the settings object.
-     * @param {Object} settings Settings object
+     * @param {any} settings Settings object
      * @abstract
      */
     saveSettings(settings) {

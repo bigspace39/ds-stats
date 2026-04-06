@@ -56,6 +56,14 @@ export class MonthCalendarWidget extends Widget {
     accumulatedPercentage = 0.0;
     price = 0.0;
 
+    /**
+     * @param {HTMLDivElement} dashboardElement The dashboard div element.
+     * @param {number} classIndex The class index for the widget.
+     * @param {number} dashboardId The dashboardId of the parent dashbaord.
+     * @param {number} widgetId The widgetId to assign to this widget.
+     * @param {string?} transform The transform style to apply to this widget.
+     * @param {Object?} widgetSettings The widget settings.
+     */
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
         
@@ -223,7 +231,9 @@ export class MonthCalendarWidget extends Widget {
 
             const startDate = change.startTime;
             const lastEndDate = lastChange != null ? lastChange.endTime : null;
+            // @ts-ignore
             let notWearingDurationBeforeCurrent = (startDate - lastEndDate) / 1000.0 / 60.0;
+            // @ts-ignore
             if (i == 1 && (lastChange == null || lastEndDate < monthStartDate)) {
                 notWearingDurationBeforeCurrent = (startDate.getTime() - monthStartDate.getTime()) / 1000.0 / 60.0;
             }
@@ -237,6 +247,7 @@ export class MonthCalendarWidget extends Widget {
             let changeDurationInMins = ((change.endTime != null ? change.endTime : new Date()) - change.startTime) / 1000.0 / 60.0;
             let percentage = (changeDurationInMins / weekLengthInMinutes) * 100.0;
             if (i == 0) {
+                // @ts-ignore
                 if (lastEndDate < monthStartDate)
                     continue;
 

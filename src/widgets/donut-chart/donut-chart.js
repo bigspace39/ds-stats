@@ -46,7 +46,12 @@ export class DonutChartWidget extends Widget {
     };
 
     /**
-     * @override
+     * @param {HTMLDivElement} dashboardElement The dashboard div element.
+     * @param {number} classIndex The class index for the widget.
+     * @param {number} dashboardId The dashboardId of the parent dashbaord.
+     * @param {number} widgetId The widgetId to assign to this widget.
+     * @param {string?} transform The transform style to apply to this widget.
+     * @param {Object?} widgetSettings The widget settings.
      */
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         super(dashboardElement, classIndex, dashboardId, widgetId, transform, widgetSettings);
@@ -72,6 +77,10 @@ export class DonutChartWidget extends Widget {
         this.chart.update();
     }
 
+    /**
+     * Sets the text of the label at the top of the widget.
+     * @param {string} text 
+     */
     setLabelText(text) {
         this.label.innerText = text;
     }

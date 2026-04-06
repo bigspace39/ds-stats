@@ -14,6 +14,7 @@ export class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
     statTypeDropdown;
     accidentTypeSegmentedControl;
     
+    /** @param {import("../widget-settings.js").Widget} widget */
     constructor(widget) {
         super(widget);
         UIBuilder.setDefaultParent(this.content);
@@ -38,16 +39,19 @@ export class DonutChartWidgetSettingsDialog extends WidgetSettingsDialog {
         );
     }
 
+    /** @param {any} settings */
     setSettingsDefaults(settings) {
         settings.connectedMonthCalendarId = -1;
         settings.statType = DonutChartStatType.DiapersPerCategoryConfig;
     }
 
+    /** @param {any} settings */
     loadSettings(settings) {
         this.selectMonthGraphButton.setConnectedWidgetId(settings.connectedMonthCalendarId);
         this.statTypeDropdown.setSelectedIndex(settings.statType);
     }
 
+    /** @param {any} settings */
     saveSettings(settings) {
         settings.connectedMonthCalendarId = this.selectMonthGraphButton.getConnectedWidgetId();
         settings.statType = this.statTypeDropdown.getSelectedIndex();
