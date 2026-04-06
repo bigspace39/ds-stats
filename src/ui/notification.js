@@ -42,7 +42,7 @@ export class Notification {
                 this.div.style.backgroundColor = "#ffc252";
             }
             else if (type == NotificationType.Info) {
-                this.leftElement.innerText = "🛈";
+                this.leftElement.innerText = "ℹ️";
             }
 
             this.startRemoveTimer();

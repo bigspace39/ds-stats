@@ -207,6 +207,8 @@ textarea {
     margin: 0px;
     user-select: none;
     align-content: center;
+    text-wrap-mode: wrap;
+    text-wrap-style: pretty;
 }
 
 #widget-add-button {
