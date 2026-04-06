@@ -1,18 +1,8 @@
-import { SpinnerUI } from "../base-ui/spinner-ui";
-import { UIBuilder } from "../base-ui/ui-builder";
-import { Statics } from "../library/statics";
-
-/**
- * @readonly
- * @enum {number}
- */
-export let NotificationType = {
-    Info: 0,
-    Warning: 1,
-    Error: 2,
-    Success: 3,
-    Loading: 4
-}
+import { SpinnerUI } from "../base-ui/spinner-ui.js";
+import { UIBuilder } from "../base-ui/ui-builder.js";
+import { ElementStatics } from "../library/element-statics.js";
+import { NotificationType, NotificationStatics } from "../library/notification-statics.js";
+import { Statics } from "../library/statics.js";
 
 export class Notification {
     /** @type {HTMLDivElement} */
@@ -22,6 +12,9 @@ export class Notification {
     leftElement;
     /** @type {HTMLParagraphElement} */
     text;
+    /** @type {NodeJS.Timeout?} */
+    timeout = null;
+    isValid = true;
 
     /**
      * @param {NotificationType} type 
@@ -32,6 +25,7 @@ export class Notification {
         if (type == NotificationType.Loading) {
             this.spinner = new SpinnerUI(this.div, false);
             this.leftElement = this.spinner.span;
+            this.spinner.span.style.margin = "0px";
         }
         else {
             this.leftElement = UIBuilder.createElement("p", this.div, "notification-icon");
@@ -51,7 +45,13 @@ export class Notification {
                 this.leftElement.innerText = "🛈";
             }
 
-            setTimeout(this.onTimeout, 5 * 1000);
+            this.startRemoveTimer();
+            ElementStatics.bindOnClick(this.div, this, 
+                /** @this {Notification} */
+                function() {
+                    this.remove();
+                },
+            this);
         }
 
         this.leftElement.style.marginRight = "10px";
@@ -59,8 +59,13 @@ export class Notification {
         this.text.innerText = text;
     }
 
-    onTimeout() {
+    remove() {
+        if (!this.isValid)
+            return;
+
         this.div.remove();
+        this.isValid = false;
+        NotificationStatics.savedNotifications.delete(this);
     }
 
     /**
@@ -69,5 +74,14 @@ export class Notification {
      */
     setText(text) {
         this.text.innerText = text;
+
+        if (this.timeout != null) {
+            clearTimeout(this.timeout);
+            this.startRemoveTimer();
+        }
+    }
+
+    startRemoveTimer() {
+        this.timeout = setTimeout(() => { this.remove(); }, 5 * 1000);
     }
 }

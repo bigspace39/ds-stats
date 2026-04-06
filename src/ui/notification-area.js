@@ -1,5 +1,5 @@
-import { UIBuilder } from "../base-ui/ui-builder";
-import { Statics } from "../library/statics";
+import { UIBuilder } from "../base-ui/ui-builder.js";
+import { Statics } from "../library/statics.js";
 
 export class NotificationArea {
     static {

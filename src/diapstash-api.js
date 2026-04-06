@@ -2,6 +2,7 @@ import { Statics } from "./library/statics.js";
 import { Database, DatabaseStore } from "./database.js";
 import { Delegate } from "./library/delegate.js";
 import { WidgetStatics } from "./library/widget-statics.js";
+import { NotificationStatics, NotificationType } from "./library/notification-statics.js";
 
 // Swager: https://api.diapstash.com/api/docs/#/History
 // Account: https://account.diapstash.com/account
@@ -53,6 +54,8 @@ export class API {
     static types = new Map();
     /** @type {Map<string, APITypes.Brand>} */
     static brands = new Map();
+    /** @type {import("./ui/notification.js").Notification?} */
+    static triedToFetchNotification = null;
     
     static isFetching = false;
     static onStartFetchAPIData = new Delegate();
@@ -85,7 +88,13 @@ export class API {
             let fetchTime = new Date(fetchTimeStr);
             let now = new Date();
             if ((now.getTime() - fetchTime.getTime()) / 1000 < 60) {
-                console.log(`Tried to fetch data but it's been ${(now.getTime() - fetchTime.getTime()) / 1000} seconds since last fetch`);
+                let secsSinceLast = (now.getTime() - fetchTime.getTime()) / 1000;
+                let secsLeft = 60 - secsSinceLast;
+                console.log(`Tried to fetch data but it's been ${secsSinceLast} seconds since last fetch, fetch again in ${secsLeft} seconds`);
+                if (this.triedToFetchNotification == null || !this.triedToFetchNotification.isValid)
+                    this.triedToFetchNotification = await NotificationStatics.createNotification(NotificationType.Info, "");
+                    
+                this.triedToFetchNotification.setText(`You can fetch again in ${secsLeft.toFixed(0)} seconds`);
                 return false;
             }
         }
@@ -375,6 +384,7 @@ export class API {
         if (type == null || type.type == null || (type.status && !type.ok))
             return null;
     
+        NotificationStatics.createNotification(NotificationType.Success, `Fetched type with id: ${id}`);
         type = type.type;
         API.types.set(id, type);
         Database.addToObjectStore(DatabaseStore.Types, type);
@@ -399,6 +409,7 @@ export class API {
         if (brand == null || brand.brand == null || (brand.status && !brand.ok))
             return null;
     
+        NotificationStatics.createNotification(NotificationType.Success, `Fetched brand with code: ${code}`);
         brand = brand.brand;
         API.brands.set(code, brand);
         Database.addToObjectStore(DatabaseStore.Brands, brand);
@@ -469,11 +480,23 @@ export class API {
      * @param {URLSearchParams} params The parameters for the fetch
      * @param {string} type The string that will be used to print what was fetched to the log and to save what was partially fetched.
      * @param {Number} page The page to start on.
+     * @param {boolean} continuePartialFetch True if recursively called to continue a previously rate limited fetch.
      * @returns {Promise<any[] | null>}
      */
-    static async #fetchIncrementallyFromAPI(url, params, type, page = 0) {
+    static async #fetchIncrementallyFromAPI(url, params, type, page = 0, continuePartialFetch = false) {
         let data = new Array();
         let rateLimitInfoStr = localStorage.getItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + type);
+        /** @type {import("./ui/notification.js").Notification?} */
+        let notification = await NotificationStatics.createNotification(NotificationType.Loading, "");
+
+        let baseNotificationText;
+        if (continuePartialFetch)
+            baseNotificationText = `Continuing rate-limited fetch of ${type}: `;
+        else
+            baseNotificationText = `Fetching ${type}: `;
+
+        notification.setText(baseNotificationText + "?/?");
+
         while (true) {
             params.set("page", String(page));
             let object = await API.#fetchObjectFromAPI(url, params, type);
@@ -491,6 +514,9 @@ export class API {
                     minutes = retryAfterFloat / 60.0;
                 }
                 console.warn(`Rate limit reached while incrementally fetching ${type}, will expire in ${minutes} minutes`);
+                if (!API.#rateLimited)
+                    NotificationStatics.createNotification(NotificationType.Error, "Rate limit reached! Try again later!");
+
                 API.#rateLimited = true;
 
                 if (page > 0 && rateLimitInfoStr == null && type != FetchDataType.Brands) {
@@ -514,11 +540,16 @@ export class API {
             data = data.concat(object.data);
             let currentCount = page * object.size + object.count;
             let totalCount = object.totalCount;
+            notification.setText(baseNotificationText + `${currentCount}/${totalCount}`);
+
             if (currentCount == totalCount)
                 break;
 
             ++page;
         }
+
+        if (notification != null)
+            notification.remove();
 
         if (rateLimitInfoStr != null) {
             /** @type {APITypes.RateLimitInfo} */
@@ -526,10 +557,13 @@ export class API {
             console.log("Continuing previously rate limited fetch!");
             console.log(rateLimitInfo);
             localStorage.removeItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + type);
-            let moreData = await API.#fetchIncrementallyFromAPI(rateLimitInfo.url, new URLSearchParams(rateLimitInfo.params), rateLimitInfo.type, rateLimitInfo.attemptedPage - 1);
+            let moreData = await API.#fetchIncrementallyFromAPI(rateLimitInfo.url, new URLSearchParams(rateLimitInfo.params), rateLimitInfo.type, rateLimitInfo.attemptedPage - 1, true);
             if (moreData != null)
                 data.concat(moreData);
         }
+
+        if (!continuePartialFetch)
+            NotificationStatics.createNotification(NotificationType.Success, `Successfully fetched ${data.length} ${type}`);
 
         return data;
     }
