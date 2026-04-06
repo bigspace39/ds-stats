@@ -486,7 +486,6 @@ export class API {
     static async #fetchIncrementallyFromAPI(url, params, type, page = 0, continuePartialFetch = false) {
         let data = new Array();
         let rateLimitInfoStr = localStorage.getItem(API.LOCAL_STORAGE_RATELIMIT_PREFIX + type);
-        /** @type {import("./ui/notification.js").Notification?} */
         let notification = await NotificationStatics.createNotification(NotificationType.Loading, "");
 
         let baseNotificationText;
@@ -500,8 +499,10 @@ export class API {
         while (true) {
             params.set("page", String(page));
             let object = await API.#fetchObjectFromAPI(url, params, type);
-            if (object == null)
+            if (object == null) {
+                notification.remove();
                 return null;
+            }
 
             if (object.status && object.status == 429) {
                 /** @type {Response} */
@@ -534,6 +535,7 @@ export class API {
                     break;
                 }
                 
+                notification.remove();
                 return null;
             }
 
@@ -548,9 +550,7 @@ export class API {
             ++page;
         }
 
-        if (notification != null)
-            notification.remove();
-
+        notification.remove();
         if (rateLimitInfoStr != null) {
             /** @type {APITypes.RateLimitInfo} */
             let rateLimitInfo = JSON.parse(rateLimitInfoStr);
