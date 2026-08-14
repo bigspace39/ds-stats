@@ -187,8 +187,9 @@ textarea {
 #notification-area {
     position: absolute;
     width: 35vw;
-    height: 100%;
+    height: fit-content;
     right: 0px;
+    bottom: 0px;
     display: flex;
     flex-direction: column-reverse;
     z-index: var(--z-index-notifications);
