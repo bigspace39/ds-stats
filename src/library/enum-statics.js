@@ -9,7 +9,9 @@ export class EnumStatics {
         let displayNames = new Array();
         for (let i = 0; i < names.length; i++) {
             let name = names[i];
-            let displayName = name.replace(/([A-Z])/g, " $1");
+            let displayName = name.replace(/([A-Z])|(\d+)/g, (_, letter, number) => 
+                letter ? ` ${letter}` : ` ${number}`
+            ).trim();
             let finalDisplayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
             displayNames.push(finalDisplayName);
         }
