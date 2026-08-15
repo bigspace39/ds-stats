@@ -87,14 +87,14 @@ export class Dashboard {
         this.board.remove();
         this.tab.remove();
         DashboardStatics.dashboards.delete(this.boardId);
-       Database.deleteFromObjectStore(DatabaseStore.Dashboards, this.boardId);
+        Database.deleteFromObjectStore(DatabaseStore.Dashboards, this.boardId);
         this.exists = false;
 
         let widgets = Array.from(WidgetStatics.createdWidgets.values());
         for (let i = widgets.length - 1; i >= 0; i--) {
             let widget = widgets[i];
             if (widget.dashboardId == this.boardId)
-                widget.destroy();
+                WidgetStatics.destroyWidget(widget.widgetId);
         }
     }
 

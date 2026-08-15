@@ -1,7 +1,8 @@
 import { UIBuilder } from "../../base-ui/ui-builder.js";
 import { WidgetStatics } from "../../library/widget-statics.js";
-import { Widget } from "../widget.js";
+import { Widget, WidgetConnectionDefinition } from "../widget.js";
 import { DonutChartWidgetSettingsDialog } from "./donut-chart-settings.js";
+import { TimeSelectorWidget } from "../time-selector/time-selector.js";
 
 /**
  * @readonly
@@ -23,6 +24,10 @@ export class DonutChartWidget extends Widget {
 
     getSettingsDialogClass() {
         return DonutChartWidgetSettingsDialog;
+    }
+
+    getConnectableWidgetClasses() {
+        return [new WidgetConnectionDefinition(TimeSelectorWidget, true)];
     }
 
     canvas;

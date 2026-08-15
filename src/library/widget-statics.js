@@ -1,4 +1,5 @@
 import { Statics } from "./statics.js";
+import { Delegate } from "./delegate.js";
 
 export class WidgetStatics {
     /** @type {Array<typeof import("../widgets/widget.js").Widget>} */
@@ -6,6 +7,11 @@ export class WidgetStatics {
     /** @type {Map<number, import("../widgets/widget.js").Widget>} */
     static createdWidgets = new Map();
     static inEditMode = false;
+
+    static onCreateWidget = new Delegate();
+    static onMoveWidget = new Delegate();
+    static onPreDestroyWidget = new Delegate();
+    static onPostDestroyWidget = new Delegate();
 
     /**
      * Creates a new widget on the given dashboardId.
@@ -25,6 +31,7 @@ export class WidgetStatics {
             return null;
         }
         let widget = new WidgetClass(dashboad.board, widgetClassIndex, dashboardId, widgetId, transform, settings);
+        WidgetStatics.onCreateWidget.broadcast(widget);
         return widget;
     }
 
@@ -38,7 +45,9 @@ export class WidgetStatics {
             console.error("Tried to destroy widget with widgetId that doesn't exist");
             return;
         }
+        WidgetStatics.onPreDestroyWidget.broadcast(widget);
         widget.destroy();
+        WidgetStatics.onPostDestroyWidget.broadcast(widget);
     }
 
     /**
@@ -92,5 +101,32 @@ export class WidgetStatics {
     static widgetIsOfClass(widget, inClass) {
         let widgetClass = WidgetStatics.possibleWidgets[widget.classIndex];
         return widgetClass == inClass;
+    }
+
+    /**
+     * Will return the shortest edge-to-edge square distance between two widgets.
+     * @param {import("../widgets/widget.js").Widget} widget1 
+     * @param {import("../widgets/widget.js").Widget} widget2 
+     * @returns {number} The distance
+     */
+    static getSqrDistanceBetweenWidgets(widget1, widget2) {
+        let rect1 = widget1.mainDiv.getBoundingClientRect();
+        let rect2 = widget2.mainDiv.getBoundingClientRect();
+
+        let dx = Math.max(0, rect1.left - rect2.right, rect2.left - rect1.right);
+        let dy = Math.max(0, rect1.top - rect2.bottom, rect2.top - rect1.bottom);
+
+        return dx * dx + dy * dy;
+    }
+
+    /**
+     * Will return the shortest edge-to-edge distance between two widgets.
+     * @param {import("../widgets/widget.js").Widget} widget1 
+     * @param {import("../widgets/widget.js").Widget} widget2 
+     * @returns {number} The distance
+     */
+    static getDistanceBetweenWidgets(widget1, widget2) {
+        let sqrDist = this.getSqrDistanceBetweenWidgets(widget1, widget2);
+        return Math.sqrt(sqrDist);
     }
 }

@@ -1,7 +1,24 @@
 import { UIBuilder } from "../base-ui/ui-builder.js";
 import { Database, DatabaseStore } from "../database.js";
+import { DashboardStatics } from "../library/dashboard-statics.js";
 import { ElementStatics } from "../library/element-statics.js";
 import { WidgetStatics } from "../library/widget-statics.js";
+
+export class WidgetConnectionDefinition {
+    /** @type {typeof Widget} */
+    widgetType;
+    /** @type {boolean} */
+    isRequired;
+
+    /**
+     * @param {typeof Widget} widgetType The widget class to allow connections to.
+     * @param {boolean} isRequired Whether or not this connection is required for the widget to function.
+     */
+    constructor(widgetType, isRequired) {
+        this.widgetType = widgetType;
+        this.isRequired = isRequired;
+    }
+}
 
 export class Widget {
     /** @type {string | undefined} */
@@ -26,6 +43,14 @@ export class Widget {
     additionalUpdateQueued = false;
     /** @type {HTMLButtonElement} */
     selectWidgetButton;
+    /** @type {Map<typeof Widget, Widget?>} */
+    connectedWidgets = new Map();
+    requireConnectWidgetOverlay;
+    requireConnectWidgetText;
+
+    createWidgetFunction;
+    moveWidgetFunction;
+    postDestroyWidgetFunction;
 
     /**
      * Creates a new widget.
@@ -39,10 +64,15 @@ export class Widget {
     constructor(dashboardElement, classIndex, dashboardId, widgetId = -1, transform = null, widgetSettings = null) {
         this.mainDiv = UIBuilder.createElement("div", dashboardElement, "widget");
         this.contentDiv = UIBuilder.createElement("div", this.mainDiv, "widget-content");
+
+        this.requireConnectWidgetOverlay = UIBuilder.createElement("div", this.mainDiv, "widget-overlay");
+        this.requireConnectWidgetText = UIBuilder.createElement("h2", this.requireConnectWidgetOverlay, "widget-overlay-text");
+        this.requireConnectWidgetOverlay.style.display = "none";
+
         this.deleteButton = UIBuilder.createElement("button", this.mainDiv, "widget-delete-button");
         this.deleteButton.innerText = "✕";
         ElementStatics.bindOnClick(this.deleteButton, this, function() {
-            this.destroy();
+            WidgetStatics.destroyWidget(this.widgetId);
         });
 
         this.classIndex = classIndex;
@@ -87,8 +117,15 @@ export class Widget {
         
         this.saveWidget();
         // @ts-ignore
-        this.draggable = Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.#savePosition, onDragEndParams: [this]})[0];
+        this.draggable = Draggable.create(this.mainDiv, {bounds: dashboardElement, onDragEnd: this.#onDragEnd, onDragEndParams: [this]})[0];
         this.exitEditMode();
+
+        if (this.getConnectableWidgetClasses().length == 0)
+            return;
+
+        this.createWidgetFunction = WidgetStatics.onCreateWidget.addFunction(this, this.#updateConnectedWidgets);
+        this.moveWidgetFunction = WidgetStatics.onMoveWidget.addFunction(this, this.#updateConnectedWidgets);
+        this.postDestroyWidgetFunction = WidgetStatics.onPostDestroyWidget.addFunction(this, this.#updateConnectedWidgets);
     }
 
     /**
@@ -153,9 +190,17 @@ export class Widget {
         return this.settings;
     }
 
+    /**
+     * Define widget types that this widget can connect to, in order to fetch data from them. 
+     * Like a time period selector providing a start/end time to filter specific stats.
+     * @returns {WidgetConnectionDefinition[]}
+     */
+    getConnectableWidgetClasses() {
+        return []
+    }
+
     getWidgetName() {
         let WidgetClass = WidgetStatics.possibleWidgets[this.classIndex];
-        // @ts-ignore
         return WidgetClass.displayName || WidgetClass.name;
     }
 
@@ -189,6 +234,13 @@ export class Widget {
         this.mainDiv.remove();
         WidgetStatics.createdWidgets.delete(this.widgetId);
         Database.deleteFromObjectStore(DatabaseStore.Widgets, this.widgetId);
+
+        if (this.createWidgetFunction == null || this.moveWidgetFunction == null || this.postDestroyWidgetFunction == null)
+            return;
+
+        WidgetStatics.onCreateWidget.removeFunction(this.createWidgetFunction);
+        WidgetStatics.onMoveWidget.removeFunction(this.moveWidgetFunction);
+        WidgetStatics.onPreDestroyWidget.removeFunction(this.postDestroyWidgetFunction);
     }
 
     /**
@@ -209,8 +261,61 @@ export class Widget {
      * 
      * @param {Widget} widget 
      */
-    #savePosition(widget) {
+    #onDragEnd(widget) {
         widget.saveWidget();
+        WidgetStatics.onMoveWidget.broadcast(this);
+    }
+
+    /**
+     * Will update the map of closest connected widgets.
+     */
+    #updateConnectedWidgets() {
+        /** @type {typeof Widget[]} */
+        let missingRequiredWidgetTypes = [];
+
+        let connectableWidgets = this.getConnectableWidgetClasses();
+        for (let i = 0; i < connectableWidgets.length; i++) {
+            let connectableWidget = connectableWidgets[i];
+            /** @type {Widget?} */
+            let closestWidget = null;
+            let closestSqrDist = Number.MAX_VALUE;
+            for (let [key, value] of WidgetStatics.createdWidgets) {
+                if (value.dashboardId != this.dashboardId)
+                    continue;
+
+                if (!WidgetStatics.widgetIsOfClass(value, connectableWidget.widgetType))
+                    continue;
+
+                let sqrDist = WidgetStatics.getSqrDistanceBetweenWidgets(this, value);
+                if (sqrDist < closestSqrDist) {
+                    closestSqrDist = sqrDist;
+                    closestWidget = value;
+                }
+            }
+
+            if (closestWidget == null && connectableWidget.isRequired) {
+                missingRequiredWidgetTypes.push(connectableWidget.widgetType);
+            }
+
+            this.connectedWidgets.set(connectableWidget.widgetType, closestWidget);
+        }
+
+        if (missingRequiredWidgetTypes.length == 0) {
+            this.requireConnectWidgetOverlay.style.display = "none";
+            return;
+        }
+
+        let str = "Requires ";
+        let first = true
+        for (let type of missingRequiredWidgetTypes) {
+            if (!first)
+                str += ", ";
+            first = false;
+            str += type.displayName || type.name;
+        }
+
+        this.requireConnectWidgetText.textContent = str;
+        this.requireConnectWidgetOverlay.style.display = "";
     }
 
     #determineId() {
