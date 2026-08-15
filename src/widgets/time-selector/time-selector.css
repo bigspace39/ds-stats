@@ -1,0 +1,29 @@
+#time-navigation {
+    display: flex;
+    flex-direction: row;
+}
+
+#time-navigation-button {
+    height: fit-content;
+    width: fit-content;
+    font-size: large;
+    padding: 2px 6px;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    color: black;
+    cursor: pointer;
+    transition-duration: var(--transition-duration);
+    border-radius: 5px;
+    font-family: var(--ui-font);
+}
+
+#time-navigation-button:hover {
+    transition-duration: var(--transition-duration);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+#time-navigation-button:active {
+    transition-duration: var(--transition-duration);
+    background-color: rgba(0, 0, 0, 0.5);
+}

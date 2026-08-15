@@ -199,6 +199,22 @@ export class Widget {
         return []
     }
 
+    /**
+     * Returns the connected widget of the supplied type if there is one.
+     * @param {typeof Widget} widgetType
+     * @returns {Widget?}
+     */
+    getConnectedWidget(widgetType) {
+        if (!this.connectedWidgets.has(widgetType))
+            return null;
+
+        let result = this.connectedWidgets.get(widgetType);
+        if (result == undefined)
+            return null;
+
+        return result;
+    }
+
     getWidgetName() {
         let WidgetClass = WidgetStatics.possibleWidgets[this.classIndex];
         return WidgetClass.displayName || WidgetClass.name;
