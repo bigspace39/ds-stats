@@ -38,7 +38,7 @@ export class API {
     static TYPES_API_URL = `${API.BASE_API_URL}/v1/type/types`;
     static CUSTOM_TYPES_API_URL = `${API.BASE_API_URL}/v1/type/types/custom`;
     static BRANDS_API_URL = `${API.BASE_API_URL}/v1/brand/brands`;
-    static SCOPE = "openid offline_access username cloud-sync.history cloud-sync.stock cloud-sync.types";
+    static SCOPE = "openid offline_access username cloud-sync.history cloud-sync.accidents cloud-sync.stock cloud-sync.types";
     static MAX_FETCH_SIZE = 200;
     static LOCAL_STORAGE_RATELIMIT_PREFIX = "rateLimit_";
     
